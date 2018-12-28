@@ -1,0 +1,70 @@
+$theme-colors: (
+    "primary": #28a745,
+);
+
+@import '~bootstrap/scss/bootstrap';
+
+@import '~ngx-toastr/toastr.css';
+@import '~ngx-toastr/toastr-bs4-alert';
+
+@import '~tempusdominus-bootstrap-4/build/css/tempusdominus-bootstrap-4.css';
+
+h2 {
+    border-bottom: solid 3px #cde6b8;
+    position: relative;
+}
+
+h2:after {
+    position: absolute;
+    content: " ";
+    display: block;
+    border-bottom: solid 3px #82b956;
+    bottom: -3px;
+    width: 20%;
+}
+
+h3 {
+    font-size: 1.1rem;
+    margin-top: 1em;
+}
+
+.switchToggle input[type=checkbox] {
+    height: 0; width: 0; visibility: hidden; position: absolute;
+}
+.switchToggle label {
+    cursor: pointer; text-indent: -9999px; width: 80px; max-width: 80px; height: 30px; background: #d1d1d1; display: block; border-radius: 100px; position: relative;
+}
+.switchToggle label:after {
+    content: ''; position: absolute; top: 2px; left: 2px; width: 26px; height: 26px; background: #fff; border-radius: 90px; transition: 0.3s;
+}
+.switchToggle input:checked + label, .switchToggle input:checked + input + label {
+    background: #28a745;
+}
+.switchToggle input + label:before, .switchToggle input + input + label:before {
+    content: 'OFF'; position: absolute; top: 5px; left: 35px; width: 26px; height: 26px; border-radius: 90px; transition: 0.3s; text-indent: 0; color: #fff;
+}
+.switchToggle input:checked + label:before, .switchToggle input:checked + input + label:before {
+    content: 'ON'; position: absolute; top: 5px; left: 10px; width: 26px; height: 26px; border-radius: 90px; transition: 0.3s; text-indent: 0; color: #fff;
+}
+.switchToggle input:checked + label:after, .switchToggle input:checked + input + label:after {
+    left: calc(100% - 2px); transform: translateX(-100%);
+}
+.switchToggle label:active:after {
+    width: 60px;
+}
+
+.fa-arrow-down:before {
+    content: "\25BC";
+}
+
+.fa-arrow-up:before {
+    content: "\25B2";
+}
+
+.toast {
+    opacity: 1 !important;
+}
+
+.toast-success {
+    color: #155724 !important
+}

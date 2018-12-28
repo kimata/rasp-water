@@ -1,0 +1,27 @@
+<div class="row mb-4">
+  <div class="col-xl-6 offset-xl-3 col-lg-8 offset-lg-2 col-md-10 offset-md-1">
+    <h2>実行ログ</h2>
+    <div class="container">
+      <div class="alert alert-danger mt-3" role="alert" *ngIf="error; else elseContent">
+        ログを取得できませんでした。
+      </div>
+      <ng-template #elseContent>
+        <p *ngIf="log?.length == 0; else elseContent">ログがありません。</p>
+        <ng-template #elseContent>
+          <table class="table-sm table-hover">
+            <tbody>
+              <tr *ngFor="let entry of log | slice: ((page-1)*pageSize): (page*pageSize)">
+                <th>{{entry.date}} <span class="text-muted">({{entry.fromNow}})</span></th>
+                <td>{{entry.message}}</td>
+              </tr>
+            </tbody>
+          </table>
+          <ngb-pagination [collectionSize]="log.length"
+                          [pageSize]="pageSize"
+                          [(page)]="page" [maxSize]="6"></ngb-pagination>
+        </ng-template>
+      </ng-template>
+    </div>
+  </div>
+</div>
+
