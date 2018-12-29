@@ -32,7 +32,7 @@ import { LogComponent } from './log/log.component';
         SchedulerModule
     ],
     providers: [
-        { provide: 'ApiEndpoint', useValue: 'http://192.168.2.247:5000/api' },
+        { provide: 'ApiEndpoint', useValue: '/rasp-water/api' },
     ],
     bootstrap: [
         AppComponent
