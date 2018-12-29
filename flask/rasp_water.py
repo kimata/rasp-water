@@ -15,6 +15,10 @@ import subprocess
 import threading
 import time
 import logging
+import json
+from crontab import CronTab
+import os
+import pprint
 
 CTRL_GPIO = 18
 FLOW_PATH = '/sys/class/hwmon/hwmon0/device/in4_input'
@@ -30,6 +34,9 @@ event_count = {
     EVENT_TYPE_SCHEDULE: 0,
 }
 
+SCHEDULE_MARKER = 'WATER SCHEDULE'
+WATER_CTRL_CMD = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'script', 'water_ctrl.py'))
+
 rasp_water = Blueprint('rasp-water', __name__, url_prefix=APP_PATH)
 
 sqlite = sqlite3.connect(':memory:', check_same_thread=False)
@@ -37,6 +44,66 @@ sqlite.execute('CREATE TABLE log(date INT, message TEXT)')
 sqlite.row_factory = lambda c, r: dict(zip([col[0] for col in c.description], r))
 
 event_lock = threading.Lock()
+schedule_lock = threading.Lock()
+
+def parse_cron_line(line):
+    match = re.compile(
+        '^(#?)\s*(\d{{1,2}})\s+(\d{{1,2}})\s+.+{}\s+(\d+)'.format(re.escape(WATER_CTRL_CMD))
+    ).search(str(line))
+    
+    if match:
+        mg = match.groups()
+        return {
+            'is_active': mg[0] == '',
+            'time': ':'.join([mg[2], mg[1]]),
+            'period': int(mg[3])
+        }
+    else:
+        match = re.compile(
+            '^(#?)\s*@daily.+{}\s+(\d+)'.format(WATER_CTRL_CMD)
+        ).search(str(line))
+        if match:
+            mg = match.groups()
+
+            return {
+                'is_active': mg[0] == '',
+                'time': '00:00',
+                'period': int(mg[1])
+            }
+        
+    return None
+
+def cron_read():
+    cron  = CronTab(user=True)
+    schedule = []
+    for i in range(2):
+        item = None
+        try:
+            item = parse_cron_line(next(cron.find_comment('{} {}'.format(SCHEDULE_MARKER, i))))
+        except:
+            pass
+        if (item == None):
+            item = {
+                'is_active': False,
+                'time': '00:00',
+                'period': 0,
+            }
+        schedule.append(item)
+                
+    return schedule
+
+def cron_write(schedule):
+    cron  = CronTab(user=True)
+    for i in range(2):
+        cron.remove_all(comment='{} {}'.format(SCHEDULE_MARKER, i))
+        job  = cron.new(command='{} {}'.format(WATER_CTRL_CMD, schedule[i]['period']))
+        time = schedule[i]['time'].split(':')
+        time.reverse()
+        
+        job.setall('{} {} * * *'.format(*time))
+        job.set_comment('{} {}'.format(SCHEDULE_MARKER, i))
+        job.enable(schedule[i]['is_active'])
+    cron.write()
 
 def log_impl(message):
     global event_count
@@ -123,19 +190,12 @@ def api_valve_flow():
 @rasp_water.route('/api/schedule_ctrl', methods=['GET', 'POST'])
 @support_jsonp
 def api_schedule_ctrl():
-    return jsonify([
-        {
-            'time': '12:13',
-            'period': 13,
-            'enabled': True,
-        },
-        {
-            'time': '14:15',
-            'period': 23,
-            'enabled': False,
-        }
-    ]
-)
+    state = request.args.get('set', None)
+    if (state != None):
+        with schedule_lock:
+            cron_write(json.loads(state))
+
+    return jsonify(cron_read())
 
 @rasp_water.route('/api/sysinfo', methods=['GET'])
 @support_jsonp
@@ -176,10 +236,8 @@ def api_event():
             
     return res
 
-
 @rasp_water.route('<path:filename>')
 def angular(filename):
-    print(filename)
     return send_from_directory(ANGULAR_DIST_PATH, filename)
 
 # @app.route('/rasp-water')
@@ -188,9 +246,9 @@ def angular(filename):
 
 #     # index.html をレンダリングする
 #     uptime = subprocess.Popen(['uptime'], stdout=subprocess.PIPE).communicate()[0].decode()
-#     uptime  = uptime.replace(',  load average', "<br>\nload average") 
-    
-    
+#     uptime  = uptime.replace(',  load average', "<br>\nload average")
+
+
 #     return render_template('index.htm',
 #                            message=message,
 #                            uptime=uptime,
