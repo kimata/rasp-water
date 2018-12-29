@@ -9,6 +9,8 @@ Raspberry Pi Zero W を使って自動的に水やりをするシステムです
 - スケジュール機能を使って自動水やりが行えます．
 - 水やりの記録が確認できます．
 
+<img src="screenshot.png" width="777">
+
 ## 構成
 
 Angular で作られた UI と，Flask で作られたアプリケーションサーバで構成
