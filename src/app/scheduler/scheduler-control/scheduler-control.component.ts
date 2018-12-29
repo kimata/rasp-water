@@ -28,8 +28,8 @@ export class SchedulerControlComponent implements OnInit {
         { 'enabled': false, 'time': '00:00', 'period': 0 },
     ];
     private savedState = null;
-    private changed = false;
-    private error = false;
+    changed = false;
+    error = false;
     
     ngOnInit() {
         this.updateSchedule();

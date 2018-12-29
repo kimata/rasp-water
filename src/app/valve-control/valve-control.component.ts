@@ -20,11 +20,11 @@ export class ValveControlComponent implements OnInit {
         'ctrl': null,
         'flow': null
     };
-    private loading = true;
+    loading = true;
     private state = false;
     private flow = 0;
     private flowZeroCount = 0;
-    private error = {
+    error = {
         'ctrl': false,
         'flow': false,
     };

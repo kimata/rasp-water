@@ -14,7 +14,7 @@ export class SchedulerEntryComponent implements OnInit {
 
     constructor() { }
     
-    private id = uuid.v4();
+    id = uuid.v4();
 
     timeOptions = {
         format: 'HH:mm',

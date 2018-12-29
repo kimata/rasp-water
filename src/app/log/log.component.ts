@@ -19,7 +19,7 @@ export class LogComponent implements OnInit {
     readonly pageSize = 10;
     readonly page = 1;
     private log = []
-    private error = false;
+    error = false;
 
     constructor(
         private http: HttpClient,
