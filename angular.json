@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "waterctrl": {
+    "rasp-water": {
       "root": "",
       "sourceRoot": "src",
       "projectType": "application",
@@ -17,7 +17,7 @@
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
-            "outputPath": "dist/waterctrl",
+            "outputPath": "dist/rasp-water",
             "index": "src/index.html",
             "main": "src/main.ts",
             "polyfills": "src/polyfills.ts",
@@ -66,18 +66,18 @@
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
-            "browserTarget": "waterctrl:build"
+            "browserTarget": "rasp-water:build"
           },
           "configurations": {
             "production": {
-              "browserTarget": "waterctrl:build:production"
+              "browserTarget": "rasp-water:build:production"
             }
           }
         },
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "waterctrl:build"
+            "browserTarget": "rasp-water:build"
           }
         },
         "test": {
@@ -111,7 +111,7 @@
         }
       }
     },
-    "waterctrl-e2e": {
+    "rasp-water-e2e": {
       "root": "e2e/",
       "projectType": "application",
       "prefix": "",
@@ -120,11 +120,11 @@
           "builder": "@angular-devkit/build-angular:protractor",
           "options": {
             "protractorConfig": "e2e/protractor.conf.js",
-            "devServerTarget": "waterctrl:serve"
+            "devServerTarget": "rasp-water:serve"
           },
           "configurations": {
             "production": {
-              "devServerTarget": "waterctrl:serve:production"
+              "devServerTarget": "rasp-water:serve:production"
             }
           }
         },
@@ -140,5 +140,5 @@
       }
     }
   },
-  "defaultProject": "waterctrl"
+  "defaultProject": "rasp-water"
 }
