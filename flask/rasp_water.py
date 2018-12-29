@@ -236,25 +236,7 @@ def api_event():
             
     return res
 
+@rasp_water.route('/', defaults={'filename': 'index.html'})
 @rasp_water.route('<path:filename>')
 def angular(filename):
     return send_from_directory(ANGULAR_DIST_PATH, filename)
-
-# @app.route('/rasp-water')
-# def index():
-#     title = "ようこそ"
-
-#     # index.html をレンダリングする
-#     uptime = subprocess.Popen(['uptime'], stdout=subprocess.PIPE).communicate()[0].decode()
-#     uptime  = uptime.replace(',  load average', "<br>\nload average")
-
-
-#     return render_template('index.htm',
-#                            message=message,
-#                            uptime=uptime,
-#                            title=title)
-
-
-# if __name__ == '__main__':
-#     app.debug = True # デバッグモード有効化
-#     app.run(host='0.0.0.0', threaded=True) # どこからでもアクセス可能に
