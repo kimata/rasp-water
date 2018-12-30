@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { Inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 
 @Component({
@@ -7,13 +8,15 @@ import { HttpClient } from '@angular/common/http';
     styleUrls: ['./footer.component.scss']
 })
 export class FooterComponent implements OnInit {
-    readonly API_URL = 'http://192.168.2.247:5000/api'
     date = '';
     uptime = '';
     loadAverage = ''
-    interval;
+    interval = null;
 
-    constructor(private http: HttpClient){}
+    constructor(
+        private http: HttpClient,
+        @Inject('ApiEndpoint') private readonly API_URL: string,
+    ){}
 
     ngOnInit() {
         this.updateSysinfo();
