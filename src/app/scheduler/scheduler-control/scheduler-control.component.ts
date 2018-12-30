@@ -24,8 +24,8 @@ export class SchedulerControlComponent implements OnInit {
 
     private subscription;
     private state:any = [
-        { 'enabled': false, 'time': '00:00', 'period': 0 },
-        { 'enabled': false, 'time': '00:00', 'period': 0 },
+        { 'is_active': false, 'time': '00:00', 'period': 0 },
+        { 'is_active': false, 'time': '00:00', 'period': 0 },
     ];
     private savedState = null;
     changed = false;
@@ -42,22 +42,29 @@ export class SchedulerControlComponent implements OnInit {
 
     save() {
         this.updateSchedule(this.state);
-        this.savedState = JSON.parse(JSON.stringify(this.state)); // NOTE: deep copy
+        this.savedState = this.state.map(x => Object.assign({}, x)); // NOTE: deep copy
         this.onChange();
     }
     
     updateSchedule(state=null) {
         let param = new HttpParams()
         if (state != null) {
-            param = param.set('set', state);
+            console.log("state", state);
+            let sendState = state.map(x => Object.assign({}, x));
+            console.log("send1", sendState);
+            for (let item of sendState) {
+                item['time'] = this.convertTime(item['time'])
+            }
+            console.log("send2", sendState);
+            param = param.set('set', JSON.stringify(sendState));
         }
         this.http.jsonp(`${this.API_URL}/schedule_ctrl?${param.toString()}`, 'callback')
             .subscribe(
                 res => {
                     if (this.savedState == null) {
                         this.savedState = JSON.parse(JSON.stringify(res)); // NOTE: deep copy
-                        for (var stateItem of this.savedState) {
-                            stateItem['time'] = moment(stateItem['time'], 'HH:mm');
+                        for (let item of this.savedState) {
+                            item['time'] = this.convertTime(item['time']);
                         }
                     }
                     if (state != null) {
@@ -71,12 +78,37 @@ export class SchedulerControlComponent implements OnInit {
                 }
             );
     }
-
+  
     onChange() {
+        console.log(this.state);
+        console.log(this.savedState);
         if (this.savedState != null) {
-            this.changed = (JSON.stringify(this.state) != JSON.stringify(this.savedState))
-            console.log(JSON.stringify(this.state));
-            console.log(JSON.stringify(this.savedState));
+            this.changed = this.isStateDiffer(this.state, this.savedState);
         }
+    }
+
+    convertTime(time) {
+        if (time instanceof moment) {
+            return time.format('HH:mm');
+        } else {
+            return moment(time, 'HH:mm').format('HH:mm');
+        }
+    }
+
+    isStateDiffer(a, b) {
+        for (let i = 0;  i < 2;  i++) {
+            for (let key in a[i]) {
+                if (key == 'time') {
+                    if (this.convertTime(a[i][key]) != this.convertTime(b[i][key])) {
+                        return true;
+                    }
+                } else {
+                    if (a[i][key] != b[i][key]) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 }
