@@ -24,5 +24,7 @@ Angular で作られた UI と，Flask で作られたアプリケーション�
 電磁弁の制御は rasp_water.py の {set,get}_valve_state で行っていますの
 で，ここを書き換えることで制御方法を変えることができます．
 
+## スクリーンショット
+
 <img src="screenshot.png" width="777">
 
