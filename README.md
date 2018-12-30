@@ -30,5 +30,7 @@ Angular で作られた UI と，Flask で作られたアプリケーション�
 
 ## ビルド方法
 
-   nmp update
-   ng build --base-href /rasp-water/ --prod
+```bash:bash
+nmp update
+ng build --base-href /rasp-water/ --prod
+```
