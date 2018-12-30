@@ -22,11 +22,11 @@
             <div class="pl-2">{{flow | number:'1.1-1' }}</div>
           </div>
         </div>
+        <div class="alert alert-danger mt-3" role="alert" *ngIf="error['ctrl'] || error['flow']">
+          <p class="mb-0" *ngIf="error['ctrl']">制御に失敗しました。</p>
+          <p class="mb-0" *ngIf="error['flow']">流量の取得に失敗しました。</p>
+        </div>
       </div>
     </ng-template>
-    <div class="alert alert-danger mt-3" role="alert" *ngIf="error['ctrl'] || error['flow']">
-      <p class="mb-0" *ngIf="error['ctrl']">制御に失敗しました。</p>
-      <p class="mb-0" *ngIf="error['flow']">流量の取得に失敗しました。</p>
-    </div>
   </div>
 </div>
