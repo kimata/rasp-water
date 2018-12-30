@@ -28,3 +28,7 @@ Angular で作られた UI と，Flask で作られたアプリケーション�
 
 <img src="screenshot.png" width="777">
 
+## ビルド方法
+
+   nmp update
+   ng build --base-href /rasp-water/ --prod
