@@ -92,18 +92,38 @@ def cron_read():
                 
     return schedule
 
+
+def cron_create_job(cron, schedule, i):
+    job  = cron.new(command='{} {}'.format(WATER_CTRL_CMD, schedule[i]['period']))
+    time = schedule[i]['time'].split(':')
+    time.reverse()
+    job.setall('{} {} * * *'.format(*time))
+    job.set_comment('{} {}'.format(SCHEDULE_MARKER, i))
+    job.enable(schedule[i]['is_active'])
+
+    return job
+
 def cron_write(schedule):
     cron  = CronTab(user=True)
+    new_cron = CronTab()
+
+    # NOTE: remove* 系のメソッドを使うとどんどん空行が増えるので，
+    # append して更新を行う．
+    
+    for job in cron:
+        for i in range(2):
+            if re.compile('{} {}'.format(re.escape(SCHEDULE_MARKER), i)).search(job.comment):
+                job  = cron_create_job(cron, schedule, i)
+                schedule[i]['append'] = True
+        # NOTE: Ubuntu の場合 apt でインストールした python-crontab
+        # では動かない．pip3 でインストールした python-crontab が必要．
+        new_cron.append(job)
+
     for i in range(2):
-        cron.remove_all(comment='{} {}'.format(SCHEDULE_MARKER, i))
-        job  = cron.new(command='{} {}'.format(WATER_CTRL_CMD, schedule[i]['period']))
-        time = schedule[i]['time'].split(':')
-        time.reverse()
+        if (not 'append' in schedule[i]):
+            new_cron.append(cron_create_job(cron, schedule, i))
         
-        job.setall('{} {} * * *'.format(*time))
-        job.set_comment('{} {}'.format(SCHEDULE_MARKER, i))
-        job.enable(schedule[i]['is_active'])
-    cron.write()
+    new_cron.write_to_user(user=True)
 
 def log_impl(message):
     global event_count
