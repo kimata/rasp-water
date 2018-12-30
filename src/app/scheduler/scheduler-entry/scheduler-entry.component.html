@@ -2,7 +2,7 @@
   <div class="container">
     <div class="switchToggle mt-2">
       <input type="checkbox" id="schedule-entry-{{id}}" name="enabled"
-             [(ngModel)]="state.enabled" (ngModelChange)="update()" />
+             [(ngModel)]="state.is_active" (ngModelChange)="update()" />
       <label for="schedule-entry-{{id}}"></label>
     </div>
   </div>
@@ -14,7 +14,7 @@
         <input type="time" class="form-control datetimepicker-input" [attr.data-target]="'#schedule-entry-time-' + id"
                [(ngModel)]="state.time" (ngModelChange)="update()"
                name="time-{{id}}" NgTempusdominusBootstrapInput [options]="timeOptions"
-               [disabled]="!state.enabled" />
+               [disabled]="!state.is_active" />
         <div class="input-group-append" [attr.data-target]="'#schedule-entry-time-' + id" data-toggle="datetimepicker">
           <div class="input-group-text time-icon"></div>
         </div>
@@ -29,7 +29,7 @@
              [(ngModel)]="state.period" (ngModelChange)="update()"
              type="number" min="1" max="30" value="42"
              aria-label="散水する期間を分単位で指定します．"
-             id="schedule-period" [disabled]="!state.enabled" />
+             id="schedule-period" [disabled]="!state.is_active" />
       <div class="input-group-append">
         <span class="input-group-text">min</span>
       </div>
