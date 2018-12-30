@@ -175,9 +175,13 @@ def get_valve_flow():
 @rasp_water.route('/api/valve_ctrl', methods=['GET', 'POST'])
 @support_jsonp
 def api_valve_ctrl():
-    state = request.args.get('set', -1, type=int)
+    state = request.args.get('set', -1, type=int);
+    auto = request.args.get('auto', False, type=bool)
     if state != -1:
-        log('手動で蛇口を{done}ました。'.format(done=['閉じ', '開き'][state % 2]));
+        log('{auto}で蛇口を{done}ました。'.format(
+            auto='自動' if auto else '手動',
+            done=['閉じ', '開き'][state % 2])
+        );
         return jsonify(dict({'cmd': 'set'}, **set_valve_state(state % 2)))
     else:
         return jsonify(dict({'cmd': 'get'}, **get_valve_state()))

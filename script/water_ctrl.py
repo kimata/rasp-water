@@ -13,7 +13,10 @@ RETRY_COUNT = 5
 def water_control_impl(state):
     try:
         req = urllib.request.Request('{}?{}'.format(
-            API_ENDPOINT, urllib.parse.urlencode({ 'set': state }))
+            API_ENDPOINT, urllib.parse.urlencode({
+                'set': state,
+                'auto': True,
+            }))
         )
         status = json.loads(urllib.request.urlopen(req).read().decode())
         return status['result'] == 'success'
