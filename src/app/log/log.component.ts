@@ -20,6 +20,7 @@ export class LogComponent implements OnInit {
     readonly page = 1;
     private log = []
     error = false;
+    interval = null;
 
     constructor(
         private http: HttpClient,
@@ -34,6 +35,10 @@ export class LogComponent implements OnInit {
                 if (msg == "log") this.updateLog();
             }
         );
+        this.interval = setInterval(() => {
+            this.updateLog();
+        }, 60000);
+
     }
     
     updateLog() {
