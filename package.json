@@ -25,13 +25,13 @@
     "core-js": "^2.5.4",
     "jquery": "^3.3.1",
     "moment": "^2.23.0",
-    "ng-tempusdominus-bootstrap4": "^1.0.0-alpha.2",
     "ngx-toastr": "^9.1.1",
     "popper.js": "^1.14.6",
     "rxjs": "~6.3.3",
     "tempusdominus-bootstrap-4": "^5.1.2",
     "tempusdominus-core": "^5.0.3",
     "tslib": "^1.9.0",
+    "typescript": "^3.1.6",
     "uuid": "^3.3.2",
     "zone.js": "~0.8.26"
   },
@@ -40,9 +40,9 @@
     "@angular/cli": "~7.1.4",
     "@angular/compiler-cli": "~7.1.0",
     "@angular/language-service": "~7.1.0",
-    "@types/node": "~10.12.18",
     "@types/jasmine": "~3.3.5",
     "@types/jasminewd2": "~2.0.3",
+    "@types/node": "~10.12.18",
     "codelyzer": "~4.5.0",
     "jasmine-core": "~3.3.0",
     "jasmine-spec-reporter": "~4.2.1",
@@ -53,7 +53,6 @@
     "karma-jasmine-html-reporter": "^1.4.0",
     "protractor": "~5.4.0",
     "ts-node": "~7.0.0",
-    "tslint": "~5.12.0",
-    "typescript": "~3.2.2"
+    "tslint": "~5.12.0"
   }
 }

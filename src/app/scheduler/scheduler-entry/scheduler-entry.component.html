@@ -6,16 +6,15 @@
       <label for="schedule-entry-{{id}}"></label>
     </div>
   </div>
-
   <div class="container">
     <h3>開始時刻</h3>
     <div class="form-group">
-      <div class="input-group date" id="schedule-entry-time-{{id}}" data-target-input="nearest" NgTempusdominusBootstrap>
-        <input type="time" class="form-control datetimepicker-input" [attr.data-target]="'#schedule-entry-time-' + id"
+      <div class="input-group" id="schedule-entry-time-{{id}}">
+        <input type="time" class="form-control" [attr.data-target]="'#schedule-entry-time-' + id"
                [(ngModel)]="state.time" (ngModelChange)="update()"
-               name="time-{{id}}" NgTempusdominusBootstrapInput [options]="timeOptions"
+               name="time-{{id}}"
                [disabled]="!state.is_active" />
-        <div class="input-group-append" [attr.data-target]="'#schedule-entry-time-' + id" data-toggle="datetimepicker">
+        <div class="input-group-append" [attr.data-target]="'#schedule-entry-time-' + id">
           <div class="input-group-text time-icon"></div>
         </div>
       </div>
