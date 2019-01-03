@@ -385,7 +385,7 @@ def api_event():
     def event_stream():
         last_count = event_count.copy()
         while True:
-            time.sleep(1)
+            time.sleep(0.3)
             for method in last_count:
                 if (last_count[method] != event_count[method]):
                     yield "data: {}\n\n".format(method)
