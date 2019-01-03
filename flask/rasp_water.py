@@ -17,8 +17,17 @@ from crontab import CronTab
 import os
 # import pprint
 
+# 電磁弁が接続されている GPIO
 CTRL_GPIO = 18
+# 流量計のアナログ出力値 (ADS1015 のドライバが公開)
 FLOW_PATH = '/sys/class/hwmon/hwmon0/device/in4_input'
+# 流量計が計れる最大流量
+FLOW_MAX = 12
+# 流量計の積算から除外する期間[秒]
+# (最初は水圧がかかってないので流量が過大に出る為)
+MEASURE_IGNORE = 3
+# 流量計を積算する間隔[秒]
+MEASURE_INTERVAL = 0.5
 
 APP_PATH = '/rasp-water'
 ANGULAR_DIST_PATH = '../dist/rasp-water'
@@ -46,7 +55,9 @@ sqlite.row_factory = lambda c, r: dict(
 
 event_lock = threading.Lock()
 schedule_lock = threading.Lock()
-
+measure_lock = threading.Lock()
+measure_stop = threading.Event()
+measure_sum = 0
 
 def parse_cron_line(line):
     match = re.compile(
@@ -204,12 +215,37 @@ def get_valve_state():
         }
 
 
+def conv_volt_to_flow(volt):
+    return volt * FLOW_MAX / 5000.0
+
+
+def measure_flow_rate():
+    measure_sum = 0
+
+    time.sleep(MEASURE_IGNORE)
+    while not measure_stop.is_set():
+        with open(FLOW_PATH, 'r') as f:
+            measure_sum += conv_volt_to_flow(int(f.read()))
+            time.sleep(MEASURE_INTERVAL)
+    log(
+        '水やり量は約 {:.2f}L でした。'.format(
+            (measure_sum / 60.0) * MEASURE_INTERVAL
+        )
+    )
+    measure_stop.clear()
+
+
 def set_valve_state(state):
     try:
         subprocess.Popen(
             ['raspi-gpio', 'set', str(CTRL_GPIO), 'op', ['dl', 'dh'][state]],
             stdout=subprocess.PIPE,
             shell=False).communicate()[0]
+        if (state == 1):
+            if measure_lock.acquire(False):
+                threading.Thread(target=measure_flow_rate).start()
+        else:
+            measure_stop.set()
     except:
         pass
 
@@ -220,7 +256,7 @@ def get_valve_flow():
     try:
         with open(FLOW_PATH, 'r') as f:
             return {
-                'flow': int(f.read()),
+                'flow': conv_volt_to_flow(int(f.read())),
                 'result': 'success'
             }
     except:

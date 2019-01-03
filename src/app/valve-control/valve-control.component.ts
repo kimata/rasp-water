@@ -15,7 +15,7 @@ import { PushService } from '../service/push.service';
 export class ValveControlComponent implements OnInit {
     private subscription;
     
-    private readonly FLOW_MAX = 12.0
+    private readonly FLOW_MAX = 12.0 // 流量系の最大値
     private interval = {
         'ctrl': null,
         'flow': null
@@ -81,7 +81,7 @@ export class ValveControlComponent implements OnInit {
         this.http.jsonp(`${this.API_URL}/valve_flow`, 'callback')
             .subscribe(
                 res => {
-                    this.flow = Math.min(Number(res['flow']) * this.FLOW_MAX / 5000, this.FLOW_MAX);
+                    this.flow = Math.min(Number(res['flow']), this.FLOW_MAX);
                     this.error['flow'] = false;
                     if (Math.round(this.flow) == 0) {
                         this.flowZeroCount++;
