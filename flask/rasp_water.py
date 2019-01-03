@@ -3,6 +3,7 @@
 
 from flask import (
     request, jsonify, current_app, Response, send_from_directory,
+    after_this_request,
     Blueprint
 )
 
@@ -15,6 +16,9 @@ import time
 import json
 from crontab import CronTab
 import os
+import functools
+import gzip
+from io import BytesIO
 # import pprint
 
 # 電磁弁が接続されている GPIO
@@ -176,6 +180,41 @@ def log_impl(message):
 
 def log(message):
     threading.Thread(target=log_impl, args=(message,)).start()
+
+
+def gzipped(f):
+    @functools.wraps(f)
+    def view_func(*args, **kwargs):
+        @after_this_request
+        def zipper(response):
+            accept_encoding = request.headers.get('Accept-Encoding', '')
+
+            if 'gzip' not in accept_encoding.lower():
+                return response
+
+            response.direct_passthrough = False
+
+            if (response.status_code < 200 or
+                response.status_code >= 300 or
+                'Content-Encoding' in response.headers):
+                return response
+            gzip_buffer = BytesIO()
+            gzip_file = gzip.GzipFile(mode='wb',
+                                      fileobj=gzip_buffer)
+            gzip_file.write(response.data)
+            gzip_file.close()
+
+            response.data = gzip_buffer.getvalue()
+            response.headers['Content-Encoding'] = 'gzip'
+            response.headers['Vary'] = 'Accept-Encoding'
+            response.headers['Content-Length'] = len(response.data)
+            response.headers['Cache-Control'] = 'max-age=31536000'
+
+            return response
+
+        return f(*args, **kwargs)
+
+    return view_func
 
 
 def support_jsonp(f):
@@ -357,5 +396,6 @@ def api_event():
 
 @rasp_water.route('/', defaults={'filename': 'index.html'})
 @rasp_water.route('<path:filename>')
+@gzipped
 def angular(filename):
     return send_from_directory(ANGULAR_DIST_PATH, filename)
