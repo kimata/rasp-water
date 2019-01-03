@@ -275,6 +275,7 @@ def measure_flow_rate():
         )
     )
     measure_stop.clear()
+    measure_lock.release()
 
 
 def set_valve_state(state):
