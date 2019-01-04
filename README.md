@@ -34,3 +34,9 @@ Angular で作られた UI と，Flask で作られたアプリケーション�
 nmp update
 ng build --base-href /rasp-water/ --prod
 ```
+
+## 実行方法
+
+```bash:bash
+python3 rasp-water/flask/app.py
+```
