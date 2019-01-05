@@ -154,7 +154,7 @@ def cron_write(schedule):
 
 def schedule_entry_str(entry):
     return '{} 開始 {} 分間 {}'.format(
-        entry['time'], entry['period'], 'ON' if entry['is_active'] else 'OFF'
+        entry['time'], entry['period'], '有効' if entry['is_active'] else '無効'
     )
 
 
@@ -349,7 +349,7 @@ def api_schedule_ctrl():
 @support_jsonp
 def api_sysinfo():
     date = subprocess.Popen(
-        ['date'], stdout=subprocess.PIPE
+        ['date', '-R'], stdout=subprocess.PIPE
     ).communicate()[0].decode().strip()
 
     uptime = subprocess.Popen(

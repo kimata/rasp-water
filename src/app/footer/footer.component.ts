@@ -2,6 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { Inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 
+import * as moment from 'moment';
+
 @Component({
     selector: 'app-footer',
     templateUrl: './footer.component.html',
@@ -29,8 +31,8 @@ export class FooterComponent implements OnInit {
         this.http.jsonp(`${this.API_URL}/sysinfo`, 'callback')
             .subscribe(
                 res => {
-                    this.date = res['date'];
-                    this.uptime = res['uptime'];
+                    this.date = moment(res['date']).format('llll');
+                    this.uptime = moment(res['uptime']).format('llll');
                     this.loadAverage = res['loadAverage'];
                 },
                 error => {
