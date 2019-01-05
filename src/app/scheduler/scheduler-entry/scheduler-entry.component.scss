@@ -14,3 +14,16 @@
     content: "\25B2";
 }
 
+.switchToggle input + label:before, .switchToggle input + input + label:before {
+    content: '無効';
+    width: 40px;
+}
+.switchToggle input:checked + label:before, .switchToggle input:checked + input + label:before {
+    content: '有効';
+    width: 40px;
+}
+
+// .switchToggle label {
+//     width: 120px;
+//     max-width: 120px;
+// }
