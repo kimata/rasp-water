@@ -26,7 +26,7 @@
     <div class="input-group mb-3">
       <input class="form-control" name="period-{{id}}"
              [(ngModel)]="state.period" (ngModelChange)="update()"
-             type="number" min="1" max="30" value="42"
+             type="number" min="1" max="30" value="42" pattern="\d*"
              aria-label="散水する期間を分単位で指定します．"
              id="schedule-period" [disabled]="!state.is_active" />
       <div class="input-group-append">

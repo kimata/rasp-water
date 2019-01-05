@@ -8,14 +8,12 @@
       <ng-template #elseContent>
         <p *ngIf="log?.length == 0; else elseContent">ログがありません。</p>
         <ng-template #elseContent>
-          <table class="table-sm table-hover">
-            <tbody>
-              <tr *ngFor="let entry of log | slice: ((page-1)*pageSize): (page*pageSize)">
-                <th>{{entry.date}} <span class="text-muted">({{entry.fromNow}})</span></th>
-                <td>{{entry.message}}</td>
-              </tr>
-            </tbody>
-          </table>
+          <div class="row mb-2" *ngFor="let entry of log | slice: ((page-1)*pageSize): (page*pageSize)">
+            <div class="col-sm-5 font-weight-bold text-nowrap">
+              {{entry.date}} <span class="text-muted">({{entry.fromNow}})</span>
+            </div>
+            <div class="col-sm-7" [innerHTML]="entry.message | nl2br"></div>
+          </div>
           <ngb-pagination [collectionSize]="log.length"
                           [pageSize]="pageSize"
                           [(page)]="page" [maxSize]="6"></ngb-pagination>

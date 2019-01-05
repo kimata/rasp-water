@@ -13,7 +13,7 @@ import { ValveControlComponent } from './valve-control/valve-control.component';
 
 import { HeaderComponent } from './header/header.component';
 import { FooterComponent } from './footer/footer.component';
-import { LogComponent } from './log/log.component';
+import { LogComponent, NewlinePipe } from './log/log.component';
 
 @NgModule({
     declarations: [
@@ -22,6 +22,7 @@ import { LogComponent } from './log/log.component';
         HeaderComponent,
         FooterComponent,
         LogComponent,
+        NewlinePipe,
     ],
     imports: [
         FormsModule,

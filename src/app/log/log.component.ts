@@ -1,6 +1,6 @@
 import { Subscription } from 'rxjs';
 
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Pipe, PipeTransform } from '@angular/core';
 import { Inject } from '@angular/core';
 import { HttpClient, HttpParams  } from '@angular/common/http';
 
@@ -9,10 +9,17 @@ import 'moment/locale/ja'
 
 import { PushService } from '../service/push.service';
 
+@Pipe({ name: 'nl2br' })
+export class NewlinePipe implements PipeTransform {
+    transform(value: string): string {
+        return value.replace(/\n/g, '<br />');
+    }
+}
+
 @Component({
     selector: 'app-log',
     templateUrl: './log.component.html',
-    styleUrls: ['./log.component.scss']
+    styleUrls: ['./log.component.scss'],
 })
 export class LogComponent implements OnInit {
     private subscription;
