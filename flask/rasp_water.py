@@ -73,7 +73,7 @@ def parse_cron_line(line):
         mg = match.groups()
         return {
             'is_active': mg[0] == '',
-            'time': ':'.join([mg[2], mg[1]]),
+            'time': '{:02}:{:02}'.format(int(mg[2]), int(mg[1])),
             'period': int(mg[3])
         }
     else:
