@@ -47,7 +47,9 @@ export class LogComponent implements OnInit {
                 res => {
                     this.log = res['data'];
                     for(let entry in this.log) {
-                        this.log[entry]['fromNow'] = moment(this.log[entry]['date']).fromNow();
+                        let date = moment(this.log[entry]['date']);
+                        this.log[entry]['date'] = date.format('M月D日(ddd) HH:mm');
+                        this.log[entry]['fromNow'] = date.fromNow();
                     }
                     this.error = false;
                 },
