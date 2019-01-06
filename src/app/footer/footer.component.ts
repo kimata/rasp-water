@@ -12,6 +12,7 @@ import * as moment from 'moment';
 export class FooterComponent implements OnInit {
     date = '';
     uptime = '';
+    uptime_from = '';
     loadAverage = ''
     interval = null;
 
@@ -31,8 +32,11 @@ export class FooterComponent implements OnInit {
         this.http.jsonp(`${this.API_URL}/sysinfo`, 'callback')
             .subscribe(
                 res => {
-                    this.date = moment(res['date']).format('llll');
-                    this.uptime = moment(res['uptime']).format('llll');
+                    let date = moment(res['date'])
+                    let uptime = moment(res['uptime'])
+                    this.date = date.format('llll');
+                    this.uptime = uptime.format('llll');
+                    this.uptime_from = uptime.from(date);
                     this.loadAverage = res['loadAverage'];
                 },
                 error => {
