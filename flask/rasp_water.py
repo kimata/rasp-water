@@ -172,7 +172,7 @@ def log_impl(message):
         )
         sqlite.execute(
             'DELETE FROM log ' +
-            'WHERE date <= DATETIME("now", "localtime", "-2 days")'
+            'WHERE date <= DATETIME("now", "localtime", "-60 days")'
         )
         event_count[EVENT_TYPE_LOG] += 1
 
