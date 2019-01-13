@@ -10,7 +10,8 @@
         <ng-template #elseContent>
           <div class="row mb-2" *ngFor="let entry of log | slice: ((page-1)*pageSize): (page*pageSize)">
             <div class="col-sm-5 font-weight-bold">
-              {{entry.date}} <span class="text-muted">({{entry.fromNow}})</span>
+              {{entry.date}}
+              <small class="text-muted">({{entry.fromNow}})</small>
             </div>
             <div class="col-sm-7" [innerHTML]="entry.message | nl2br"></div>
           </div>
