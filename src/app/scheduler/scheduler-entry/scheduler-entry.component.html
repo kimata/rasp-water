@@ -1,4 +1,4 @@
-<form>
+<form class="mb-2">
   <div class="container">
     <div class="switchToggle mt-2">
       <input type="checkbox" id="schedule-entry-{{id}}" name="enabled"
@@ -33,6 +33,18 @@
         <span class="input-group-text">min</span>
       </div>
     </div>
+  </div>
+  <div class="container">
+    <h3>曜日</h3>
+    <span *ngFor="let wday of ['日', '月', '火', '水', '木', '金', '土']; let i=index"
+          class="mr-2">
+      <input type="checkbox" name="wday" id="wday-{{id}}-{{i}}"
+             [(ngModel)]="state.wday[i]" (ngModelChange)="update()"
+             (click)="changeWday($event, i)"
+             [ngModelOptions]="{standalone: true}"
+             [disabled]="!state.is_active" />
+      <label for="wday-{{id}}-{{i}}">{{wday}}</label>
+    </span>
   </div>
 </form>
 

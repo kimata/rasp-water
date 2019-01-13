@@ -18,14 +18,24 @@ export class SchedulerControlComponent implements OnInit {
     constructor(
         private http: HttpClient,
         private pushService: PushService,
-        private toastrService: ToastrService,
+        public toastrService: ToastrService,
         @Inject('ApiEndpoint') private readonly API_URL: string,
     ) { }
 
     private subscription;
     private state:any = [
-        { 'is_active': false, 'time': '00:00', 'period': 0 },
-        { 'is_active': false, 'time': '00:00', 'period': 0 },
+        {
+            'is_active': true,
+            'time': '00:00',
+            'period': 0,
+            'wday': [],
+        },
+        {
+            'is_active': true,
+            'time': '00:00',
+            'period': 0,
+            'wday': [],
+        },
     ];
     private savedState = null;
     changed = false;
@@ -98,7 +108,7 @@ export class SchedulerControlComponent implements OnInit {
                         return true;
                     }
                 } else {
-                    if (a[i][key] != b[i][key]) {
+                    if (JSON.stringify(a[i][key]) != JSON.stringify(b[i][key])) {
                         return true;
                     }
                 }

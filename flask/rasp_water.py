@@ -62,32 +62,29 @@ measure_lock = threading.Lock()
 measure_stop = threading.Event()
 measure_sum = 0
 
+WDAY_STR = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT']
+
+def wday_str_list(wday_list):
+    return map(lambda i: WDAY_STR[i], (i for i in range(len(wday_list)) if wday_list[i]))
+
+
 def parse_cron_line(line):
     match = re.compile(
-        '^(#?)\s*(\d{{1,2}})\s+(\d{{1,2}})\s+.+{}\s+(\d+)'.format(
+        '^(#?)\s*(\d{{1,2}})\s+(\d{{1,2}})\s.+\s(\S+)\s+{}\s+(\d+)'.format(
             re.escape(WATER_CTRL_CMD)
         )
     ).search(str(line))
 
     if match:
         mg = match.groups()
+        wday_str_list = mg[3].split(',')
+
         return {
             'is_active': mg[0] == '',
             'time': '{:02}:{:02}'.format(int(mg[2]), int(mg[1])),
-            'period': int(mg[3])
+            'period': int(mg[4]),
+            'wday': list(map(lambda str: str in wday_str_list, WDAY_STR)),
         }
-    else:
-        match = re.compile(
-            '^(#?)\s*@daily.+{}\s+(\d+)'.format(WATER_CTRL_CMD)
-        ).search(str(line))
-        if match:
-            mg = match.groups()
-
-            return {
-                'is_active': mg[0] == '',
-                'time': '00:00',
-                'period': int(mg[1])
-            }
 
     return None
 
@@ -108,6 +105,7 @@ def cron_read():
                 'is_active': False,
                 'time': '00:00',
                 'period': 0,
+                'wday': [True] * 7,
             }
         schedule.append(item)
 
@@ -121,6 +119,7 @@ def cron_create_job(cron, schedule, i):
     time = schedule[i]['time'].split(':')
     time.reverse()
     job.setall('{} {} * * *'.format(*time))
+    job.dow.on(*(wday_str_list(schedule[i]['wday'])))
     job.set_comment('{} {}'.format(SCHEDULE_MARKER, i))
     job.enable(schedule[i]['is_active'])
 
