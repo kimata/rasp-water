@@ -260,6 +260,9 @@ def conv_volt_to_flow(volt):
 def measure_flow_rate():
     measure_sum = 0
 
+    if not measure_lock.acquire(True, 0.5):
+        return
+
     time.sleep(MEASURE_IGNORE)
     while not measure_stop.is_set():
         with open(FLOW_PATH, 'r') as f:
@@ -285,8 +288,7 @@ def set_valve_state(state):
             stdout=subprocess.PIPE,
             shell=False).communicate()[0]
         if (state == 1):
-            if measure_lock.acquire(False):
-                threading.Thread(target=measure_flow_rate).start()
+            threading.Thread(target=measure_flow_rate).start()
         else:
             measure_stop.set()
     except:
