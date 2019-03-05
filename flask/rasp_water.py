@@ -150,6 +150,9 @@ def cron_write(schedule):
 
     new_cron.write_to_user(user=True)
 
+    # すぐに反映されるよう，明示的にリロード
+    os.system('sudo /etc/init.d/cron reload')
+
 
 def schedule_entry_str(entry):
     return '{} 開始 {} 分間 {}'.format(
