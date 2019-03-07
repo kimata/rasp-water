@@ -63,9 +63,14 @@ measure_stop = threading.Event()
 measure_sum = 0
 
 WDAY_STR = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT']
+WDAY_STR_JA = ['日', '月', '火', '水', '木', '金', '土']
 
-def wday_str_list(wday_list):
-    return map(lambda i: WDAY_STR[i], (i for i in range(len(wday_list)) if wday_list[i]))
+def wday_str_list(wday_list, lang='en'):
+    wday_str = WDAY_STR
+    if (lang == 'ja'):
+        wday_str = WDAY_STR_JA
+
+    return map(lambda i: wday_str[i], (i for i in range(len(wday_list)) if wday_list[i]))
 
 
 def parse_cron_line(line):
@@ -155,8 +160,10 @@ def cron_write(schedule):
 
 
 def schedule_entry_str(entry):
-    return '{} 開始 {} 分間 {}'.format(
-        entry['time'], entry['period'], '有効' if entry['is_active'] else '無効'
+    return '{} 開始 {} 分間 {} {}'.format(
+        entry['time'], entry['period'],
+        ','.join(wday_str_list(entry['wday'], 'ja')),
+        '有効' if entry['is_active'] else '無効'
     )
 
 
