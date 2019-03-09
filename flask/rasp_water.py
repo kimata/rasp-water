@@ -156,7 +156,7 @@ def cron_write(schedule):
     new_cron.write_to_user(user=True)
 
     # すぐに反映されるよう，明示的にリロード
-    os.system('sudo /etc/init.d/cron reload')
+    subprocess.check_call(['sudo', '/etc/init.d/cron', 'restart'])
 
 
 def schedule_entry_str(entry):
