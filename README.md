@@ -30,6 +30,22 @@ Angular で作られた UI と，Flask で作られたアプリケーション�
 
 <img src="screenshot.png" width="777">
 
+## 準備
+
+### ライブラリのインストール
+
+```bash:bash
+sudo apt-get install python3-crontab
+```
+
+### ADS1015 のドライバの有効化
+
+/boot/config.txt に次の行を追加．
+
+```bash:bash
+dtoverlay=ads1015
+```
+
 ## ビルド方法
 
 ```bash:bash
