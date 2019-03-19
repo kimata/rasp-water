@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+import logging
 from flask import Flask
 
 from rasp_water import rasp_water
+
+logging.getLogger().addHandler(logging.FileHandler('/dev/null'))
 
 app = Flask(__name__)
 
