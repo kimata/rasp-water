@@ -6,8 +6,6 @@ from flask import Flask
 
 from rasp_water import rasp_water
 
-logging.getLogger().addHandler(logging.FileHandler('/dev/null'))
-
 app = Flask(__name__)
 
 app.register_blueprint(rasp_water)
