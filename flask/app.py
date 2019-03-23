@@ -20,4 +20,4 @@ if __name__ == '__main__':
         ), shell=True
     )
     app.debug = True
-    app.run(host='0.0.0.0', threaded=True)
+    app.run(host='0.0.0.0', threaded=True, use_reloader=False)
