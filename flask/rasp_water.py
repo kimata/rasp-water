@@ -328,7 +328,7 @@ def get_valve_flow():
 
 
 def momentary_ctrl_worker(period):
-    time.sleep(period)
+    time.sleep(period*60)
     set_valve_state(0, False)
 
 
