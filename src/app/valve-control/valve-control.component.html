@@ -3,31 +3,35 @@
     <h2>コントロール</h2>
     <div class="alert alert-info" role="alert" *ngIf="loading; else elseContent">Loading...</div>
     <ng-template #elseContent>
-      <div class="container">
-        <form class="row">
-          <div class="col-6">
-            <h3>スイッチ状態</h3>
-            <div class="switchToggle">
-              <input #valveSwitch type="checkbox" id="valveSwitch" name="valveSwich"
-                     [ngModel]="state" (change)="updateCtrl(valveSwitch.checked)" />
-              <label for="valveSwitch"></label>
-            </div>
-          </div>
-          <div class="col-6">
-            <h3>時間 (オプション)</h3>
-            <div class="input-group">
-              <input class="form-control"
-                     [(ngModel)]="period"
-                     type="number" min="0" max="30" value="0" pattern="\d*"
-                     aria-label="散水する期間を分単位で指定します．0 は指定無しです．"
-                     id="momentaryPeriod" name="momentaryPeriod" />
-              <div class="input-group-append">
-                <span class="input-group-text">min</span>
+      <form>
+        <div class="row">
+          <div class="col-lg-6 col-md-12">
+            <div class="container">
+              <h3>スイッチ状態</h3>
+              <div class="switchToggle">
+                <input #valveSwitch type="checkbox" id="valveSwitch" name="valveSwich"
+                       [ngModel]="state" (change)="updateCtrl(valveSwitch.checked)" />
+                <label for="valveSwitch"></label>
               </div>
             </div>
           </div>
-        </form>
-      </div>
+          <div class="col-lg-6 col-md-12">
+            <div class="container">
+              <h3>時間 (オプション)</h3>
+              <div class="input-group">
+                <input class="form-control"
+                       [(ngModel)]="period"
+                       type="number" min="0" max="30" value="0" pattern="\d*"
+                       aria-label="散水する期間を分単位で指定します．0 は指定無しです．"
+                       id="momentaryPeriod" name="momentaryPeriod" />
+                <div class="input-group-append">
+                  <span class="input-group-text">min</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </form>
       <div class="container">
         <h3>水量 <small>(L/min)</small></h3>
         <div class="progress" style="height: 30px">
