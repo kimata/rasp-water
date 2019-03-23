@@ -18,10 +18,12 @@ export class ValveControlComponent implements OnInit {
     private readonly FLOW_MAX = 12.0 // 流量系の最大値
     private interval = {
         'ctrl': null,
-        'flow': null
+        'flow': null,
+        'period': null
     };
     loading = true;
     private state = false;
+    private period = 0;
     private flow = 0;
     private flowZeroCount = 0;
     error = {
@@ -63,6 +65,21 @@ export class ValveControlComponent implements OnInit {
                     this.loading = false;     
                 }
             );
+        if ((state != null) && (this.period != 0)) {
+            this.interval['period'] = setInterval(() => {
+                this.periodCtrl();
+            }, 60000);
+        }
+    }
+
+    periodCtrl() {
+        this.period -= 1;
+
+        if (this.period == 0) {
+            this.updateCtrl(false);
+            clearInterval(this.interval['period']);
+            this.interval['period'] = null;
+        }
     }
 
     watchFlow() {
