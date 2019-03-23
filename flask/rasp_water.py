@@ -410,7 +410,7 @@ def api_event():
 
 
 @rasp_water.route('/', defaults={'filename': 'index.html'})
-@rasp_water.route('<path:filename>')
+@rasp_water.route('/<path:filename>')
 @gzipped
 def angular(filename):
     return send_from_directory(ANGULAR_DIST_PATH, filename)
