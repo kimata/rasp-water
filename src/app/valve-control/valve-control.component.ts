@@ -51,6 +51,7 @@ export class ValveControlComponent implements OnInit {
         let param = new HttpParams()
         if (state != null) {
             param = param.set('set', state ? '1' : '0');
+            param = param.set('period', String(this.period));
         }
         this.http.jsonp(`${this.API_URL}/valve_ctrl?${param.toString()}`, 'callback')
             .subscribe(
@@ -76,7 +77,6 @@ export class ValveControlComponent implements OnInit {
         this.period -= 1;
 
         if (this.period == 0) {
-            this.updateCtrl(false);
             clearInterval(this.interval['period']);
             this.interval['period'] = null;
         }

@@ -290,7 +290,7 @@ def measure_flow_rate():
     measure_lock.release()
 
 
-def set_valve_state(state):
+def set_valve_state(state, auto):
     try:
         subprocess.Popen(
             ['raspi-gpio', 'set', str(CTRL_GPIO), 'op', ['dl', 'dh'][state]],
@@ -302,6 +302,13 @@ def set_valve_state(state):
             measure_stop.set()
     except:
         pass
+
+    log(
+        '{auto}で蛇口を{done}ました。'.format(
+            auto='自動' if auto else '手動',
+            done=['閉じ', '開き'][state % 2]
+        )
+    )
 
     return get_valve_state()
 
@@ -320,19 +327,21 @@ def get_valve_flow():
         }
 
 
+def momentary_ctrl_worker(period):
+    time.sleep(period)
+    set_valve_state(0, False)
+
+
 @rasp_water.route('/api/valve_ctrl', methods=['GET', 'POST'])
 @support_jsonp
 def api_valve_ctrl():
     state = request.args.get('set', -1, type=int)
+    period = request.args.get('period',0, type=int)
     auto = request.args.get('auto', False, type=bool)
     if state != -1:
-        log(
-            '{auto}で蛇口を{done}ました。'.format(
-                auto='自動' if auto else '手動',
-                done=['閉じ', '開き'][state % 2]
-            )
-        )
-        return jsonify(dict({'cmd': 'set'}, **set_valve_state(state % 2)))
+        if period != 0:
+            threading.Thread(target=momentary_ctrl_worker, args=(period,)).start()
+        return jsonify(dict({'cmd': 'set'}, **set_valve_state(state % 2, auto)))
     else:
         return jsonify(dict({'cmd': 'get'}, **get_valve_state()))
 
