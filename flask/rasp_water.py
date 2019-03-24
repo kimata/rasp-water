@@ -269,7 +269,7 @@ def get_valve_state():
 
 
 def conv_volt_to_flow(volt):
-    return volt * FLOW_MAX / 5000.0
+    return (volt * FLOW_MAX) / 5000.0
 
 
 def measure_flow_rate():
