@@ -361,9 +361,10 @@ def api_valve_ctrl():
                 if period != 0:
                     ctrl_period = period
                     threading.Thread(target=manual_ctrl_worker).start()
-                    return jsonify(dict({'cmd': 'set'}, **set_valve_state(state % 2, auto)))
             else:
                 ctrl_period = 0
+
+        return jsonify(dict({'cmd': 'set'}, **set_valve_state(state % 2, auto)))
     else:
         return jsonify(dict({'cmd': 'get'}, **get_valve_state()))
 
