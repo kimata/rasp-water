@@ -42,7 +42,7 @@ export class ValveControlComponent implements OnInit {
         this.watchFlow();
         this.subscription = this.pushService.dataSource$.subscribe(
             msg => {
-                this.updateCtrl();
+                if (msg != "schedule") this.updateCtrl();
             }
         );
     }
@@ -58,6 +58,7 @@ export class ValveControlComponent implements OnInit {
                 res => {
                     if (res['state'] =="1") this.watchFlow();
                     this.state = (res['state'] =="1");
+                    this.period = Number(res['period']);
                     this.error['ctrl'] = false;
                     this.loading = false;
                 },
@@ -66,20 +67,6 @@ export class ValveControlComponent implements OnInit {
                     this.loading = false;     
                 }
             );
-        if ((state != null) && (this.period != 0)) {
-            this.interval['period'] = setInterval(() => {
-                this.periodCtrl();
-            }, 60000);
-        }
-    }
-
-    periodCtrl() {
-        this.period -= 1;
-
-        if (this.period == 0) {
-            clearInterval(this.interval['period']);
-            this.interval['period'] = null;
-        }
     }
 
     watchFlow() {

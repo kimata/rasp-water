@@ -35,10 +35,12 @@ MEASURE_INTERVAL = 0.5
 APP_PATH = '/rasp-water'
 ANGULAR_DIST_PATH = '../dist/rasp-water'
 
+EVENT_TYPE_MANUAL = 'manual'
 EVENT_TYPE_LOG = 'log'
 EVENT_TYPE_SCHEDULE = 'schedule'
 
 event_count = {
+    EVENT_TYPE_MANUAL: 0,
     EVENT_TYPE_LOG: 0,
     EVENT_TYPE_SCHEDULE: 0,
 }
@@ -59,8 +61,10 @@ sqlite.row_factory = lambda c, r: dict(
 event_lock = threading.Lock()
 schedule_lock = threading.Lock()
 measure_lock = threading.Lock()
+period_lock = threading.Lock()
 measure_stop = threading.Event()
 measure_sum = 0
+ctrl_period = 0
 
 WDAY_STR = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT']
 WDAY_STR_JA = ['日', '月', '火', '水', '木', '金', '土']
@@ -253,11 +257,13 @@ def get_valve_state():
     if m:
         return {
             'state': m.group(1),
+            'period': ctrl_period,
             'result': 'success'
         }
     else:
         return {
             'state': 0,
+            'period': ctrl_period,
             'result': 'fail'
         }
 
@@ -327,21 +333,37 @@ def get_valve_flow():
         }
 
 
-def momentary_ctrl_worker(period):
-    time.sleep(period*60)
+def manual_ctrl_worker():
+    global ctrl_period
+
+    while ctrl_period != 0:
+        time.sleep(60)
+        with period_lock:
+            if (ctrl_period != 0):
+                ctrl_period -= 1
+        with event_lock:
+            event_count[EVENT_TYPE_MANUAL] += 1
+
     set_valve_state(0, False)
 
 
 @rasp_water.route('/api/valve_ctrl', methods=['GET', 'POST'])
 @support_jsonp
 def api_valve_ctrl():
+    global ctrl_period
+
     state = request.args.get('set', -1, type=int)
     period = request.args.get('period',0, type=int)
     auto = request.args.get('auto', False, type=bool)
     if state != -1:
-        if period != 0:
-            threading.Thread(target=momentary_ctrl_worker, args=(period,)).start()
-        return jsonify(dict({'cmd': 'set'}, **set_valve_state(state % 2, auto)))
+        with period_lock:
+            if state == 1:
+                if period != 0:
+                    ctrl_period = period
+                    threading.Thread(target=manual_ctrl_worker).start()
+                    return jsonify(dict({'cmd': 'set'}, **set_valve_state(state % 2, auto)))
+            else:
+                ctrl_period = 0
     else:
         return jsonify(dict({'cmd': 'get'}, **get_valve_state()))
 
