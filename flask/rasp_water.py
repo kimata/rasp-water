@@ -269,7 +269,7 @@ def get_valve_state():
 
 
 def conv_volt_to_flow(volt):
-    return volt * FLOW_MAX / 5000.0
+    return (volt * FLOW_MAX) / 5000.0
 
 
 def measure_flow_rate():
@@ -356,6 +356,7 @@ def api_valve_ctrl():
     period = request.args.get('period',0, type=int)
     auto = request.args.get('auto', False, type=bool)
     if state != -1:
+        result = set_valve_state(state % 2, auto)
         with period_lock:
             if state == 1:
                 if period != 0:
@@ -364,7 +365,7 @@ def api_valve_ctrl():
             else:
                 ctrl_period = 0
 
-        return jsonify(dict({'cmd': 'set'}, **set_valve_state(state % 2, auto)))
+        return jsonify(dict({'cmd': 'set'}, **result))
     else:
         return jsonify(dict({'cmd': 'get'}, **get_valve_state()))
 
