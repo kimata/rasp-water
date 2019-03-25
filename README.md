@@ -35,8 +35,11 @@ Angular で作られた UI と，Flask で作られたアプリケーション�
 ### ライブラリのインストール
 
 ```bash:bash
-sudo apt-get install python3-crontab
+pip3 install python-crontab
 ```
+
+Ubuntu 18.04 の場合，apt install python3-crontab でインストールしたライブラ
+リだとバージョンが古いのでエラーが出ます．
 
 ### ADS1015 のドライバの有効化
 
