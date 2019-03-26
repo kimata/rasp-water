@@ -351,19 +351,24 @@ def manual_ctrl_worker():
 @support_jsonp
 def api_valve_ctrl():
     global ctrl_period
+    is_worker_start = False
 
     state = request.args.get('set', -1, type=int)
     period = request.args.get('period',0, type=int)
     auto = request.args.get('auto', False, type=bool)
     if state != -1:
-        result = set_valve_state(state % 2, auto)
         with period_lock:
             if state == 1:
-                if period != 0:
-                    ctrl_period = period
-                    threading.Thread(target=manual_ctrl_worker).start()
+                is_worker_start = ctrl_period != 0
+                ctrl_period = period
             else:
                 ctrl_period = 0
+
+        # NOTE: バルブの制御は ctrl_period の変更後にしないと UI 表示が一瞬おかしくなる．
+        result = set_valve_state(state % 2, auto)
+
+        if (state == 1) and (period != 0) and (not is_worker_start):
+            threading.Thread(target=manual_ctrl_worker).start()
 
         return jsonify(dict({'cmd': 'set'}, **result))
     else:

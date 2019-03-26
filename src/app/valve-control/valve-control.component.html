@@ -21,9 +21,9 @@
               <div class="input-group">
                 <input class="form-control"
                        [(ngModel)]="period"
+                       (change)="updatePeriod()"
                        type="number" min="0" max="30" value="0" pattern="\d*"
                        aria-label="散水する期間を分単位で指定します．0 は指定無しです．"
-                       [disabled]="state"
                        id="momentaryPeriod" name="momentaryPeriod" />
                 <div class="input-group-append">
                   <span class="input-group-text">min</span>

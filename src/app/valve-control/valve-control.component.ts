@@ -47,6 +47,12 @@ export class ValveControlComponent implements OnInit {
         );
     }
 
+    updatePeriod() {
+        if (!this.state) return;
+        if (this.period == 0) this.period = 1;
+        this.updateCtrl(true);
+    }
+
     updateCtrl(state=null) {
         let param = new HttpParams()
         if (state != null) {
@@ -100,6 +106,5 @@ export class ValveControlComponent implements OnInit {
                     this.error['flow'] = true;
                 }
             );
-        
     }
 }
