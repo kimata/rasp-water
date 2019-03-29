@@ -61,6 +61,7 @@ sqlite.row_factory = lambda c, r: dict(
 event_lock = threading.Lock()
 schedule_lock = threading.Lock()
 measure_lock = threading.Lock()
+ctrl_lock = threading.Lock()
 period_lock = threading.Lock()
 measure_stop = threading.Event()
 measure_sum = 0
@@ -297,24 +298,28 @@ def measure_flow_rate():
 
 
 def set_valve_state(state, auto):
-    try:
-        subprocess.Popen(
-            ['raspi-gpio', 'set', str(CTRL_GPIO), 'op', ['dl', 'dh'][state]],
-            stdout=subprocess.PIPE,
-            shell=False).communicate()[0]
-        if (state == 1):
-            threading.Thread(target=measure_flow_rate).start()
-        else:
-            measure_stop.set()
-    except:
-        pass
+    with ctrl_lock:
+        cur_state = get_valve_state()['state'] == '1'
 
-    log(
-        '{auto}で蛇口を{done}ました。'.format(
-            auto='自動' if auto else '手動',
-            done=['閉じ', '開き'][state % 2]
+        try:
+            subprocess.Popen(
+                ['raspi-gpio', 'set', str(CTRL_GPIO), 'op', ['dl', 'dh'][state]],
+                stdout=subprocess.PIPE,
+                shell=False).communicate()[0]
+            if (state == 1):
+                threading.Thread(target=measure_flow_rate).start()
+            else:
+                measure_stop.set()
+        except:
+            pass
+
+    if state != cur_state:
+        log(
+            '{auto}で蛇口を{done}ました。'.format(
+                auto='自動' if auto else '手動',
+                done=['閉じ', '開き'][state % 2]
+            )
         )
-    )
 
     return get_valve_state()
 
