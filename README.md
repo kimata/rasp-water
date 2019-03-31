@@ -63,5 +63,5 @@ ng build --base-href /rasp-water/ --prod
 ## 実行方法
 
 ```bash:bash
-python3 rasp-water/flask/app.py
+python3 flask/app.py
 ```
