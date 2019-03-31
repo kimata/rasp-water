@@ -35,7 +35,10 @@ Angular で作られた UI と，Flask で作られたアプリケーション�
 ### ライブラリのインストール
 
 ```bash:bash
-pip3 install python-crontab
+sudo apt install npm
+sudo apt install python3-pip
+sudo apt install python3-flask
+sudo pip3 install python-crontab
 ```
 
 Ubuntu 18.04 の場合，apt install python3-crontab でインストールしたライブラ
