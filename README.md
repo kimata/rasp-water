@@ -49,7 +49,7 @@ Ubuntu 18.04 の場合，apt install python3-crontab でインストールした
 /boot/config.txt に次の行を追加．
 
 ```bash:bash
-dtoverlay=ads1015
+dtoverlay=ads1015,cha_gain=1
 ```
 
 ## ビルド方法
