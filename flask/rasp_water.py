@@ -403,7 +403,11 @@ def api_schedule_ctrl():
         with schedule_lock:
             schedule = json.loads(state)
             cron_write(schedule)
-            log('スケジュールを更新しました。\n({})'.format(schedule_str(schedule)))
+            host=remote_host(request)
+            log('スケジュールを更新しました。\n({schedule} {by})'.format(
+                schedule=schedule_str(schedule),
+                by='by {}'.format(host) if host != '' else ''
+            ))
 
     return jsonify(cron_read())
 
