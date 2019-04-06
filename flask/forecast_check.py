@@ -5,6 +5,7 @@ import urllib.request
 import functools
 import json
 from pytz import timezone
+from datetime import datetime
 from dateutil import parser
 import pprint
 
@@ -43,14 +44,17 @@ def get_weather_info_openweathermap():
 def check_rain_fall_openweathermap():
     json = get_weather_info_openweathermap()
     rainfall_list = map(lambda x: x['rain']['3h'],
-                        filter(lambda x: '3h' in x['rain'], json['list']))
+                        filter(lambda x: (datetime.fromtimestamp(x['dt']) - datetime.now()).days < 1,
+                               filter(lambda x: 'rain' in x, json['list'])))
 
-    return functools.reduce(lambda x, y: x + y, rainfall_list)
+    return functools.reduce(lambda x, y: x + y, rainfall_list, 0)
 
 def is_rain_forecast():
     try:
-        return check_rain_fall_openweathermap() > 5
+        return check_rain_fall_openweathermap() > 0.1
     except:
+        import traceback
+        print(traceback.format_exc())
         pass
 
     return False

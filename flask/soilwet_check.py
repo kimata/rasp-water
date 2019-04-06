@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 
 from influxdb import InfluxDBClient
+from datetime import datetime
+
 
 INFLUXDB_ADDR = '192.168.2.20'
 INFLUXDB_PORT = 8086
@@ -13,21 +15,21 @@ SELECT mean("touchpad") FROM "sensor.esp32" WHERE ("hostname" = \'ESP32-raindrop
 
 WET_THRESHOLD = 380
 
-def get_latest_mean(result):
-    for status in result.get_points():
-        if not status['mean'] is None:
-            return status['mean']
-    return None
-
 def is_soil_wet():
     try:
         client = InfluxDBClient(host=INFLUXDB_ADDR, port=INFLUXDB_PORT, database=INFLUXDB_DB)
         result = client.query(INFLUXDB_QUERY)
-        mean = get_latest_mean(result)
 
-        if mean is None:
+        points = list(filter(lambda x: not x is None,
+                             map(lambda x: x['mean'], result.get_points())))
+
+        with open("solwet.log", mode='a') as f:
+            print('{} {}'.format(datetime.now(), list(points)), file=f)
+
+        val = points[0]
+        if val is None:
             return False
-        return mean < WET_THRESHOLD
+        return val < WET_THRESHOLD
     except:
         pass
 
