@@ -166,15 +166,20 @@ def cron_write(schedule):
 
 
 def schedule_entry_str(entry):
-    return '{} 開始 {} 分間 {} {}'.format(
+    return '{} 開始 {} 分間 {}'.format(
         entry['time'], entry['period'],
-        ','.join(wday_str_list(entry['wday'], 'ja')),
-        '有効' if entry['is_active'] else '無効'
+        ','.join(wday_str_list(entry['wday'], 'ja'))
     )
 
 
 def schedule_str(schedule):
-    return ', '.join(map(lambda entry: schedule_entry_str(entry), schedule))
+    str = []
+    for entry in schedule:
+        if not entry['is_active']:
+            continue
+        str.append(schedule_entry_str(entry))
+
+    return ', '.join(str)
 
 
 def log_impl(message):
