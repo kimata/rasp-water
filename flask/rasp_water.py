@@ -9,6 +9,7 @@ from flask import (
 
 from functools import wraps
 import re
+import socket
 import sqlite3
 import subprocess
 import threading
@@ -297,7 +298,7 @@ def measure_flow_rate():
     measure_lock.release()
 
 
-def set_valve_state(state, auto):
+def set_valve_state(state, auto, host=''):
     with ctrl_lock:
         cur_state = get_valve_state()['state'] == '1'
 
@@ -315,9 +316,10 @@ def set_valve_state(state, auto):
 
     if state != cur_state:
         log(
-            '{auto}で蛇口を{done}ました。'.format(
+            '{auto}で蛇口を{done}ました。{by}'.format(
                 auto='自動' if auto else '手動',
-                done=['閉じ', '開き'][state % 2]
+                done=['閉じ', '開き'][state % 2],
+                by='(by {})'.format(host) if host != '' else ''
             )
         )
 
@@ -352,6 +354,13 @@ def manual_ctrl_worker():
     set_valve_state(0, False)
 
 
+def remote_host(request):
+    try:
+        return socket.gethostbyaddr(request.remote_addr)[0]
+    except:
+        return request.remote_addr
+
+
 @rasp_water.route('/api/valve_ctrl', methods=['GET', 'POST'])
 @support_jsonp
 def api_valve_ctrl():
@@ -370,7 +379,7 @@ def api_valve_ctrl():
                 ctrl_period = 0
 
         # NOTE: バルブの制御は ctrl_period の変更後にしないと UI 表示が一瞬おかしくなる．
-        result = set_valve_state(state % 2, auto)
+        result = set_valve_state(state % 2, auto, remote_host(request))
 
         if (state == 1) and (period != 0) and (not is_worker_start):
             threading.Thread(target=manual_ctrl_worker).start()
