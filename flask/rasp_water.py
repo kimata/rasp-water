@@ -21,7 +21,8 @@ import functools
 import gzip
 from io import BytesIO
 
-from rain_check import is_soil_wet
+from soilwet_check import is_soil_wet
+from forecast_check import is_rain_forecast
 
 # import pprint
 
@@ -308,7 +309,7 @@ def measure_flow_rate():
 
 def set_valve_state(state, auto, host=''):
     with ctrl_lock:
-        if (state == 1) and auto and is_soil_wet():
+        if (state == 1) and auto and (is_soil_wet() or is_rain_forecast()):
             log('土が湿っている為、自動での水やりを見合わせました。');
             return get_valve_state()
 
