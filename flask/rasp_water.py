@@ -20,6 +20,9 @@ import os
 import functools
 import gzip
 from io import BytesIO
+
+from rain_check import is_soil_wet
+
 # import pprint
 
 # 電磁弁が接続されている GPIO
@@ -179,7 +182,7 @@ def schedule_str(schedule):
             continue
         str.append(schedule_entry_str(entry))
 
-    return ', '.join(str)
+    return ",\n ".join(str)
 
 
 def log_impl(message):
@@ -305,6 +308,10 @@ def measure_flow_rate():
 
 def set_valve_state(state, auto, host=''):
     with ctrl_lock:
+        if (state == 1) and auto and is_soil_wet():
+            log('土が湿っている為、自動での水やりを見合わせました。');
+            return get_valve_state()
+
         cur_state = get_valve_state()['state'] == '1'
 
         try:
