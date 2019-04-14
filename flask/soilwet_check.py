@@ -8,7 +8,7 @@ INFLUXDB_PORT = 8086
 INFLUXDB_DB = 'sensor'
 
 INFLUXDB_QUERY = """
-SELECT mean("touchpad") FROM "sensor.esp32" WHERE ("hostname" = \'ESP32-raindrop\') AND time >= now() - 1h GROUP BY time(5m) fill(previous) LIMIT 1
+SELECT mean("touchpad") FROM "sensor.esp32" WHERE ("hostname" = \'ESP32-raindrop\') AND time >= now() - 1h GROUP BY time(5m) fill(previous) ORDER by time desc LIMIT 1
 """
 
 WET_THRESHOLD = 380
