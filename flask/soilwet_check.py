@@ -17,7 +17,10 @@ def is_soil_wet():
     try:
         client = InfluxDBClient(host=INFLUXDB_ADDR, port=INFLUXDB_PORT, database=INFLUXDB_DB)
         result = client.query(INFLUXDB_QUERY)
-        return result.get_points().__next__()['mean'] < WET_THRESHOLD
+        status = result.get_points().__next__()['mean']
+        if status is None:
+            return False
+        return status < WET_THRESHOLD
     except:
         pass
 
