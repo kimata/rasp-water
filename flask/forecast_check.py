@@ -48,7 +48,12 @@ def check_rain_fall_openweathermap():
     return functools.reduce(lambda x, y: x + y, rainfall_list)
 
 def is_rain_forecast():
-    return check_rain_fall_openweathermap() > 5
+    try:
+        return check_rain_fall_openweathermap() > 5
+    except:
+        pass
+
+    return False
 
 if __name__ == '__main__':
     print(is_rain_forecast())

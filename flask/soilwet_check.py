@@ -14,9 +14,14 @@ SELECT mean("touchpad") FROM "sensor.esp32" WHERE ("hostname" = \'ESP32-raindrop
 WET_THRESHOLD = 380
 
 def is_soil_wet():
-    client = InfluxDBClient(host=INFLUXDB_ADDR, port=INFLUXDB_PORT, database=INFLUXDB_DB)
-    result = client.query(QUERY)
-    return result.get_points().__next__()['mean'] < WET_THRESHOLD
+    try:
+        client = InfluxDBClient(host=INFLUXDB_ADDR, port=INFLUXDB_PORT, database=INFLUXDB_DB)
+        result = client.query(QUERY)
+        return result.get_points().__next__()['mean'] < WET_THRESHOLD
+    except:
+        pass
+
+    return False
 
 if __name__ == '__main__':
     print(is_soil_wet())
