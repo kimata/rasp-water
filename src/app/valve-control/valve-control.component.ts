@@ -15,7 +15,7 @@ import { PushService } from '../service/push.service';
 export class ValveControlComponent implements OnInit {
     private subscription;
     
-    private readonly FLOW_MAX = 12.0 // 流量系の最大値
+    private readonly FLOW_MAX = 10.0 // 表示する流量の最大値
     private interval = {
         'ctrl': null,
         'flow': null,
