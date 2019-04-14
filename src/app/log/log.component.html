@@ -9,11 +9,11 @@
         <p *ngIf="log?.length == 0; else elseContent">ログがありません。</p>
         <ng-template #elseContent>
           <div class="row mb-2" *ngFor="let entry of log | slice: ((page-1)*pageSize): (page*pageSize)">
-            <div class="col-sm-5 font-weight-bold">
+            <div class="col-12 font-weight-bold">
               {{entry.date}}
               <small class="text-muted">({{entry.fromNow}})</small>
             </div>
-            <div class="col-sm-7" [innerHTML]="entry.message | nl2br"></div>
+            <div class="col-12" [innerHTML]="entry.message | nl2br"></div>
           </div>
           <ngb-pagination [collectionSize]="log.length"
                           [pageSize]="pageSize" [(page)]="page" [maxSize]="6"
@@ -23,4 +23,3 @@
     </div>
   </div>
 </div>
-
