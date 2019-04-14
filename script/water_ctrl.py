@@ -19,22 +19,31 @@ def water_control_impl(state):
             }))
         )
         status = json.loads(urllib.request.urlopen(req).read().decode())
-        return status['result'] == 'success'
+        return (status['result'] == 'success', status['pending'])
     except:
         pass
-    
+
     return False
 
 def water_control(state):
     for i in range(RETRY_COUNT):
-        if (water_control_impl(state)): return;
+        result = water_control_impl(state)
+        if (result != False): return result
+    return False
 
 period = int(sys.argv[1])
 
 print('{}    {} 分間水やりをします。'.format(datetime.now(), period))
 
 print('{}    開始。'.format(datetime.now()))
-water_control(1)
+result = water_control(1)
+
+if result == False:
+    print('{}    制御に失敗しました。'.format(datetime.now()))
+    sys.exit(-1)
+if result[1]:
+    print('{}    雨により、自動での水やりを見合わせました。'.format(datetime.now()))
+    sys.exit(0)
 
 print('{}    {} 分間待ちます。'.format(datetime.now(), period))
 time.sleep(period * 60)

@@ -254,7 +254,7 @@ def support_jsonp(f):
     return decorated_function
 
 
-def get_valve_state():
+def get_valve_state(is_pending=False):
     out = ''
     try:
         out = subprocess.Popen(
@@ -269,6 +269,7 @@ def get_valve_state():
         return {
             'state': m.group(1),
             'period': ctrl_period,
+            'pending': is_pending,
             'result': 'success'
         }
     else:
@@ -310,8 +311,8 @@ def measure_flow_rate():
 def set_valve_state(state, auto, host=''):
     with ctrl_lock:
         if (state == 1) and auto and (is_soil_wet() or is_rain_forecast()):
-            log('土が湿っている為、自動での水やりを見合わせました。');
-            return get_valve_state()
+            log('雨により、自動での水やりを見合わせました。');
+            return get_valve_state(True)
 
         cur_state = get_valve_state()['state'] == '1'
 
