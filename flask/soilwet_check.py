@@ -13,7 +13,7 @@ INFLUXDB_QUERY = """
 SELECT mean("touchpad") FROM "sensor.esp32" WHERE ("hostname" = \'ESP32-raindrop\') AND time >= now() - 1h GROUP BY time(5m) fill(previous) ORDER by time desc LIMIT 10
 """
 
-WET_THRESHOLD = 380
+WET_THRESHOLD = 370
 
 def is_soil_wet():
     try:
