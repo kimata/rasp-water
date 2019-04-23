@@ -3,11 +3,11 @@
 
 import urllib.request
 import functools
+import os
 import json
 from pytz import timezone
 from datetime import datetime
 from dateutil import parser
-import pprint
 
 from config import *
 
@@ -43,18 +43,24 @@ def get_weather_info_openweathermap():
 
 def check_rain_fall_openweathermap():
     json = get_weather_info_openweathermap()
-    rainfall_list = map(lambda x: x['rain']['3h'],
-                        filter(lambda x: (datetime.fromtimestamp(x['dt']) - datetime.now()).days < 1,
-                               filter(lambda x: 'rain' in x, json['list'])))
 
-    return functools.reduce(lambda x, y: x + y, rainfall_list, 0)
+    rainfall_list = list(map(lambda x: x['rain']['3h'],
+                             filter(lambda x: ((datetime.fromtimestamp(x['dt']) - datetime.now()).seconds / (8*60*60)) < 1,
+                                    filter(lambda x: 'rain' in x, json['list']))))
+
+    with open(os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                           'forecast.log'), mode='a') as f:
+        print('{} {} => {}'.format(
+            datetime.now(), list(rainfall_list),
+            functools.reduce(lambda x, y: x + y, rainfall_list, 0.0)
+        ), file=f)
+
+    return functools.reduce(lambda x, y: x + y, rainfall_list, 0.0)
 
 def is_rain_forecast():
     try:
-        return check_rain_fall_openweathermap() > 0.1
+        return check_rain_fall_openweathermap() > 0.5
     except:
-        import traceback
-        print(traceback.format_exc())
         pass
 
     return False
