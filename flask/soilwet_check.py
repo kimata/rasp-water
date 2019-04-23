@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+import os
 from influxdb import InfluxDBClient
 from datetime import datetime
-
 
 INFLUXDB_ADDR = '192.168.2.20'
 INFLUXDB_PORT = 8086
@@ -23,7 +23,8 @@ def is_soil_wet():
         points = list(filter(lambda x: not x is None,
                              map(lambda x: x['mean'], result.get_points())))
 
-        with open("solwet.log", mode='a') as f:
+        with open(os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                               'soilwet.log'), mode='a') as f:
             print('{} {}'.format(datetime.now(), list(points)), file=f)
 
         val = points[0]
