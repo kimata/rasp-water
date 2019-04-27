@@ -1,26 +1,36 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+import os
 from influxdb import InfluxDBClient
+from datetime import datetime
 
 INFLUXDB_ADDR = '192.168.2.20'
 INFLUXDB_PORT = 8086
 INFLUXDB_DB = 'sensor'
 
 INFLUXDB_QUERY = """
-SELECT mean("touchpad") FROM "sensor.esp32" WHERE ("hostname" = \'ESP32-raindrop\') AND time >= now() - 1h GROUP BY time(5m) fill(previous) ORDER by time desc LIMIT 1
+SELECT mean("touchpad") FROM "sensor.esp32" WHERE ("hostname" = \'ESP32-raindrop\') AND time >= now() - 1h GROUP BY time(5m) fill(previous) ORDER by time desc LIMIT 10
 """
 
-WET_THRESHOLD = 380
+WET_THRESHOLD = 370
 
 def is_soil_wet():
     try:
         client = InfluxDBClient(host=INFLUXDB_ADDR, port=INFLUXDB_PORT, database=INFLUXDB_DB)
         result = client.query(INFLUXDB_QUERY)
-        status = result.get_points().__next__()['mean']
-        if status is None:
+
+        points = list(filter(lambda x: not x is None,
+                             map(lambda x: x['mean'], result.get_points())))
+
+        with open(os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                               'soilwet.log'), mode='a') as f:
+            print('{} {}'.format(datetime.now(), list(points)), file=f)
+
+        val = points[0]
+        if val is None:
             return False
-        return status < WET_THRESHOLD
+        return val < WET_THRESHOLD
     except:
         pass
 
