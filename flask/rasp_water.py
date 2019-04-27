@@ -296,7 +296,7 @@ def measure_flow_rate():
             flow = conv_volt_to_flow(int(f.read()))
             # 最初，水圧がかかっていない期間は流量が過大にでるので，
             # 流量が最大値の9割未満の時のみ積算する
-            if flow < (FLOW_MAX * 0.9):
+            if flow < (FLOW_MAX * 0.8):
                 measure_sum += flow
             time.sleep(MEASURE_INTERVAL)
     log(
@@ -310,9 +310,13 @@ def measure_flow_rate():
 
 def set_valve_state(state, auto, host=''):
     with ctrl_lock:
-        if (state == 1) and auto and (is_soil_wet() or is_rain_forecast()):
-            log('雨により、自動での水やりを見合わせました。');
-            return get_valve_state(True)
+        if (state == 1) and auto:
+            if is_soil_wet():
+                log('雨が降ったため、自動での水やりを見合わせました。')
+                return get_valve_state(True)
+            elif is_rain_forecast():
+                log('雨が降る予報があるため、自動での水やりを見合わせました。')
+                return get_valve_state(True)
 
         cur_state = get_valve_state()['state'] == '1'
 
@@ -323,21 +327,21 @@ def set_valve_state(state, auto, host=''):
                 shell=False).communicate()[0]
             if (state == 1):
                 threading.Thread(target=measure_flow_rate).start()
-            else:
+            elif (cur_state == 1):
                 measure_stop.set()
         except:
             pass
 
-    if state != cur_state:
-        log(
-            '{auto}で蛇口を{done}ました。{by}'.format(
-                auto='自動' if auto else '手動',
-                done=['閉じ', '開き'][state % 2],
-                by='(by {})'.format(host) if host != '' else ''
+        if state != cur_state:
+            log(
+                '{auto}で蛇口を{done}ました。{by}'.format(
+                    auto='自動' if auto else '手動',
+                    done=['閉じ', '開き'][state % 2],
+                    by='(by {})'.format(host) if host != '' else ''
+                )
             )
-        )
 
-    return get_valve_state()
+        return get_valve_state()
 
 
 def get_valve_flow():
