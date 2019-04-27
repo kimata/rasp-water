@@ -43,7 +43,6 @@ def get_weather_info_openweathermap():
 
 def check_rain_fall_openweathermap():
     json = get_weather_info_openweathermap()
-
     rainfall_list = list(map(lambda x: x['rain']['3h'],
                              filter(lambda x: ((datetime.fromtimestamp(x['dt']) - datetime.now()).seconds / (8*60*60)) < 1,
                                     filter(lambda x: 'rain' in x, json['list']))))
@@ -61,6 +60,8 @@ def is_rain_forecast():
     try:
         return check_rain_fall_openweathermap() > 0.5
     except:
+        import traceback
+        print(traceback.format_exc())
         pass
 
     return False

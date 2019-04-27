@@ -20,4 +20,5 @@ if __name__ == '__main__':
         ), shell=True
     )
     app.debug = True
-    app.run(host='0.0.0.0', threaded=True, use_reloader=False)
+    # NOTE: スクリプトの自動リロード停止したい場合は use_reloader=False にする
+    app.run(host='0.0.0.0', threaded=True, use_reloader=True)
