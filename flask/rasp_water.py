@@ -168,6 +168,9 @@ def cron_write(schedule):
     # すぐに反映されるよう，明示的にリロード
     subprocess.check_call(['sudo', '/etc/init.d/cron', 'restart'])
 
+    with event_lock:
+        event_count[EVENT_TYPE_SCHEDULE] += 1
+
 
 def schedule_entry_str(entry):
     return '{} 開始 {} 分間 {}'.format(
