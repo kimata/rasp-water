@@ -43,9 +43,11 @@ def get_weather_info_openweathermap():
 
 def check_rain_fall_openweathermap():
     json = get_weather_info_openweathermap()
-    rainfall_list = list(map(lambda x: x['rain']['3h'],
-                             filter(lambda x: ((datetime.fromtimestamp(x['dt']) - datetime.now()).seconds / (8*60*60)) < 1,
-                                    filter(lambda x: 'rain' in x, json['list']))))
+    rainfall_list = \
+        list(map(lambda x: x['rain']['3h'],
+                 filter(lambda x: ((datetime.fromtimestamp(x['dt']) -
+                                    datetime.now()).total_seconds() / (60*60)) < 8,
+                        filter(lambda x: 'rain' in x, json['list']))))
     with open(os.path.join(os.path.dirname(os.path.abspath(__file__)),
                            'forecast.log'), mode='a') as f:
         print('{} {} => {}'.format(
