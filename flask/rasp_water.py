@@ -168,6 +168,9 @@ def cron_write(schedule):
     # すぐに反映されるよう，明示的にリロード
     subprocess.check_call(['sudo', '/etc/init.d/cron', 'restart'])
 
+    with event_lock:
+        event_count[EVENT_TYPE_SCHEDULE] += 1
+
 
 def schedule_entry_str(entry):
     return '{} 開始 {} 分間 {}'.format(
@@ -310,9 +313,13 @@ def measure_flow_rate():
 
 def set_valve_state(state, auto, host=''):
     with ctrl_lock:
-        if (state == 1) and auto and (is_soil_wet() or is_rain_forecast()):
-            log('雨により、自動での水やりを見合わせました。');
-            return get_valve_state(True)
+        if (state == 1) and auto:
+            if is_soil_wet():
+                log('雨が降ったため、自動での水やりを見合わせました。')
+                return get_valve_state(True)
+            elif is_rain_forecast():
+                log('雨が降る予報があるため、自動での水やりを見合わせました。')
+                return get_valve_state(True)
 
         cur_state = get_valve_state()['state'] == '1'
 
