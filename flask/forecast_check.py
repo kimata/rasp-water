@@ -44,7 +44,8 @@ def get_weather_info_openweathermap():
 def check_rain_fall_openweathermap():
     json = get_weather_info_openweathermap()
     rainfall_list = \
-        list(map(lambda x: x['rain']['3h'],
+        list(map(lambda x: [ timezone('Asia/Tokyo').localize(datetime.fromtimestamp(x['dt'])).strftime('%c %z'),
+                             x['rain']['3h'] ],
                  filter(lambda x: ((datetime.fromtimestamp(x['dt']) -
                                     datetime.now()).total_seconds() / (60*60)) < 8,
                         filter(lambda x: 'rain' in x, json['list']))))
@@ -52,10 +53,10 @@ def check_rain_fall_openweathermap():
                            'forecast.log'), mode='a') as f:
         print('{} {} => {}'.format(
             datetime.now(), list(rainfall_list),
-            functools.reduce(lambda x, y: x + y, rainfall_list, 0.0)
+            functools.reduce(lambda x, y: x + y[1], rainfall_list, 0.0)
         ), file=f)
 
-    return functools.reduce(lambda x, y: x + y, rainfall_list, 0.0)
+    return functools.reduce(lambda x, y: x + y[1], rainfall_list, 0.0)
 
 def is_rain_forecast():
     try:
