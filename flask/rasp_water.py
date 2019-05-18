@@ -36,6 +36,8 @@ FLOW_MAX = 12
 MEASURE_IGNORE = 3
 # 流量計を積算する間隔[秒]
 MEASURE_INTERVAL = 0.5
+# バルブを止めてからも水が出流れていると想定される時間[秒]
+TAIL_SEC = 10
 
 APP_PATH = '/rasp-water'
 ANGULAR_DIST_PATH = '../dist/rasp-water'
@@ -208,6 +210,13 @@ def log(message):
     threading.Thread(target=log_impl, args=(message,)).start()
 
 
+def alert(message):
+    subprocess.call(
+        'echo "{}" | mail -s "rasp-water アラート" root'.format(message),
+        shell=True
+    )
+
+
 def gzipped(f):
     @functools.wraps(f)
     def view_func(*args, **kwargs):
@@ -302,6 +311,19 @@ def measure_flow_rate():
             if flow < (FLOW_MAX * 0.8):
                 measure_sum += flow
             time.sleep(MEASURE_INTERVAL)
+
+    stop_time = time.time()
+    while True:
+        with open(FLOW_PATH, 'r') as f:
+            flow = conv_volt_to_flow(int(f.read()))
+            if flow < 0.1:
+                break
+            measure_sum += flow
+
+        if (time.time() - stop_time) > TAIL_SEC:
+            alert('バルブを閉めても水が流れ続けています．')
+            break
+
     log(
         '水やり量は約 {:.2f}L でした。'.format(
             (measure_sum / 60.0) * MEASURE_INTERVAL
