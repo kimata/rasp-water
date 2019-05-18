@@ -351,7 +351,7 @@ def set_valve_state(state, auto, host=''):
                 log('雨が降る予報があるため、自動での水やりを見合わせました。')
                 return get_valve_state(True)
 
-        cur_state = get_valve_state()['state'] == '1'
+        cur_state = get_valve_state()['state']
 
         try:
             gpio_set_state(CTRL_GPIO, GPIO.HIGH if (state == 1) else GPIO.LOW)
