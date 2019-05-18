@@ -360,6 +360,7 @@ def set_valve_state(state, auto, host=''):
             elif (cur_state == 1):
                 measure_stop.set()
         except:
+            alert('電磁弁の制御に失敗しました．')
             pass
 
         if state != cur_state:
