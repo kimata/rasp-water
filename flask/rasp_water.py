@@ -74,7 +74,6 @@ measure_lock = threading.Lock()
 ctrl_lock = threading.Lock()
 period_lock = threading.Lock()
 measure_stop = threading.Event()
-measure_sum = 0
 ctrl_period = 0
 
 WDAY_STR = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT']
