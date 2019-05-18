@@ -1,4 +1,3 @@
-
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
@@ -21,6 +20,9 @@ import os
 import functools
 import gzip
 from io import BytesIO
+
+import RPi.GPIO as GPIO
+GPIO.setmode(GPIO.BCM)
 
 from soilwet_check import is_soil_wet
 from forecast_check import is_rain_forecast
@@ -118,6 +120,7 @@ def cron_read():
             )
         except:
             pass
+
         if (item is None):
             item = {
                 'is_active': False,
@@ -190,6 +193,15 @@ def schedule_str(schedule):
         str.append(schedule_entry_str(entry))
 
     return ",\n ".join(str)
+
+
+def gpio_set_state(pin, state):
+    GPIO.setup(pin, GPIO.OUT)
+    GPIO.output(pin, state)
+
+
+def gpio_get_state(pin):
+    return GPIO.input(pin)
 
 
 def log_impl(message):
@@ -268,24 +280,15 @@ def support_jsonp(f):
 
 
 def get_valve_state(is_pending=False):
-    out = ''
     try:
-        out = subprocess.Popen(
-            ['raspi-gpio', 'get', str(CTRL_GPIO)],
-            stdout=subprocess.PIPE,
-            shell=False).communicate()[0].decode()
-    except:
-        pass
-
-    m = re.match(r'GPIO \d+:\s+level=(\d)\s', out)
-    if m:
+        state = gpio_get_state(CTRL_GPIO)
         return {
-            'state': m.group(1),
+            'state': 1 if (state == GPIO.HIGH) else 0,
             'period': ctrl_period,
             'pending': is_pending,
             'result': 'success'
         }
-    else:
+    except:
         return {
             'state': 0,
             'period': ctrl_period,
@@ -351,17 +354,13 @@ def set_valve_state(state, auto, host=''):
         cur_state = get_valve_state()['state'] == '1'
 
         try:
-            subprocess.Popen(
-                ['raspi-gpio', 'set', str(CTRL_GPIO), 'op', ['dl', 'dh'][state]],
-                stdout=subprocess.PIPE,
-                shell=False).communicate()[0]
+            gpio_set_state(CTRL_GPIO, GPIO.HIGH if (state == 1) else GPIO.LOW)
             if (state == 1):
                 threading.Thread(target=measure_flow_rate).start()
             elif (cur_state == 1):
                 measure_stop.set()
         except:
             alert('電磁弁の制御に失敗しました．')
-            pass
 
         if state != cur_state:
             log(
