@@ -1,3 +1,4 @@
+
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
@@ -37,7 +38,7 @@ MEASURE_IGNORE = 3
 # 流量計を積算する間隔[秒]
 MEASURE_INTERVAL = 0.5
 # バルブを止めてからも水が出流れていると想定される時間[秒]
-TAIL_SEC = 10
+TAIL_SEC = 30
 
 APP_PATH = '/rasp-water'
 ANGULAR_DIST_PATH = '../dist/rasp-water'
@@ -297,6 +298,7 @@ def conv_volt_to_flow(volt):
 
 
 def measure_flow_rate():
+    start_time = time.time()
     measure_sum = 0
 
     if not measure_lock.acquire(True, 0.5):
@@ -324,11 +326,14 @@ def measure_flow_rate():
             alert('バルブを閉めても水が流れ続けています．')
             break
 
-    log(
-        '水やり量は約 {:.2f}L でした。'.format(
-            (measure_sum / 60.0) * MEASURE_INTERVAL
-        )
-    )
+    water_sum = (measure_sum / 60.0) * MEASURE_INTERVAL
+    log('水やり量は約 {:.2f}L でした。'.format(water_sum))
+
+    if ((stop_time - start_time) > 30) and (water_sum < 1):
+        alert('元栓が閉まっている可能性があります．(時間: {:.0f}sec, 合計: {:.2f}L)'.format(
+            stop_time - start_time, water_sum
+        ));
+
     measure_stop.clear()
     measure_lock.release()
 
