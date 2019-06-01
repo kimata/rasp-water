@@ -36,7 +36,7 @@ FLOW_PATH = '/sys/class/hwmon/hwmon0/device/in4_input'
 # 流量計が計れる最大流量
 FLOW_MAX = 12
 # 流量計の積算から除外する期間[秒]
-MEASURE_IGNORE = 3
+MEASURE_IGNORE = 5
 # 流量計を積算する間隔[秒]
 MEASURE_INTERVAL = 0.5
 # バルブを止めてからも水が出流れていると想定される時間[秒]
@@ -311,9 +311,9 @@ def measure_flow_rate():
         with open(FLOW_PATH, 'r') as f:
             flow = conv_volt_to_flow(int(f.read()))
             # 最初，水圧がかかっていない期間は流量が過大にでるので，
-            # 流量が最大値の9割未満の時のみ積算する
-            if flow < (FLOW_MAX * 0.8):
-                measure_sum += flow
+            # 流量が最大値の 7 割未満の時のみ積算する
+            # if flow < (FLOW_MAX * 0.7):
+            measure_sum += flow
             time.sleep(MEASURE_INTERVAL)
 
     stop_time = time.time()
