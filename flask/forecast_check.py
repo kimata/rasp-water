@@ -28,8 +28,12 @@ def get_weather_info_yahoo():
 def check_rain_fall_yahoo():
     json = get_weather_info_yahoo()
     weather_info = json['Feature'][0]['Property']['WeatherList']['Weather']
-    rainfall_list = map(lambda x: x['Rainfall'], weather_info)
-
+    # NOTE: YAhoo の場合，1 時間後までしか情報がとれないので，4 時間前以降を参考にする
+    rainfall_list = map(lambda x: x['Rainfall'],
+                        filter(lambda x:
+                               (datetime.now() -
+                                datetime.strptime(x['Date'], '%Y%m%d%H%M')).total_seconds() / (60*60) < 4,
+                               weather_info))
     return functools.reduce(lambda x, y: x + y, rainfall_list)
 
 def get_weather_info_openweathermap():
@@ -43,6 +47,7 @@ def get_weather_info_openweathermap():
 
 def check_rain_fall_openweathermap():
     json = get_weather_info_openweathermap()
+    # OpenWeatherMap の場合，かなり先まで取得できるので，8 時間後までを参考にする
     rainfall_list = \
         list(map(lambda x: [ timezone('Asia/Tokyo').localize(datetime.fromtimestamp(x['dt'])).strftime('%c %z'),
                              x['rain']['3h'] ],
@@ -60,7 +65,8 @@ def check_rain_fall_openweathermap():
 
 def is_rain_forecast():
     try:
-        return check_rain_fall_openweathermap() > 0.5
+        # OpenWeatherMap は値がおかしいことが度々あったので，Yahoo を採用する
+        return check_rain_fall_yahoo() > 2
     except:
         pass
 
