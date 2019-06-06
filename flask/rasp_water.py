@@ -323,6 +323,7 @@ def measure_flow_rate():
             if flow < 0.1:
                 break
             measure_sum += flow
+            time.sleep(MEASURE_INTERVAL)
 
         if (time.time() - stop_time) > TAIL_SEC:
             alert('バルブを閉めても水が流れ続けています．')
