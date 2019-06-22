@@ -40,7 +40,7 @@ MEASURE_IGNORE = 5
 # 流量計を積算する間隔[秒]
 MEASURE_INTERVAL = 0.5
 # バルブを止めてからも水が出流れていると想定される時間[秒]
-TAIL_SEC = 30
+TAIL_SEC = 60
 
 APP_PATH = '/rasp-water'
 ANGULAR_DIST_PATH = '../dist/rasp-water'
