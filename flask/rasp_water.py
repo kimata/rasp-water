@@ -485,13 +485,26 @@ def api_sysinfo():
     })
 
 
-@rasp_water.route('/api/log', methods=['GET'])
+@rasp_water.route('/api/log_view', methods=['GET'])
 @support_jsonp
-def api_log():
+def api_log_view():
     cur = sqlite.cursor()
     cur.execute('SELECT * FROM log')
     return jsonify({
         'data': cur.fetchall()[::-1]
+    })
+
+
+@rasp_water.route('/api/log_clear', methods=['GET'])
+@support_jsonp
+def api_log_clear():
+    with event_lock:
+        cur = sqlite.cursor()
+        cur.execute('DELETE FROM log')
+    log('ログがクリアされました。')
+
+    return jsonify({
+        'result': 'success'
     })
 
 
