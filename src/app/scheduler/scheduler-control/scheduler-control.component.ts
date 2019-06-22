@@ -94,7 +94,7 @@ export class SchedulerControlComponent implements OnInit {
 
     convertTime(time) {
         if (time instanceof moment) {
-            return time.format('HH:mm');
+            return (time as moment.Moment).format('HH:mm');
         } else {
             return moment(time, 'HH:mm').format('HH:mm');
         }
