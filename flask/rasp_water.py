@@ -531,3 +531,6 @@ def api_event():
 @gzipped
 def angular(filename):
     return send_from_directory(ANGULAR_DIST_PATH, filename)
+
+print("最初に GPIO を L に初期化します...");
+gpio_set_state(CTRL_GPIO, GPIO.LOW)
