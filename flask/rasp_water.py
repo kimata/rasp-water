@@ -32,7 +32,7 @@ from forecast_check import is_rain_forecast
 # 電磁弁が接続されている GPIO
 CTRL_GPIO = 18
 # 流量計のアナログ出力値 (ADS1015 のドライバが公開)
-FLOW_PATH = '/sys/class/hwmon/hwmon0/device/in4_input'
+FLOW_PATH = '/sys/class/hwmon/hwmon1/device/in4_input'
 # 流量計が計れる最大流量
 FLOW_MAX = 12
 # 流量計の積算から除外する期間[秒]
