@@ -57,6 +57,7 @@ dtoverlay=ads1015,cha_gain=0
 ```bash:bash
 npm update
 sudo npm install -g @angular/cli
+npm install
 ng build --base-href /rasp-water/ --prod
 ```
 
