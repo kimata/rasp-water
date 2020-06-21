@@ -32,8 +32,13 @@ from forecast_check import is_rain_forecast
 
 # 電磁弁が接続されている GPIO
 CTRL_GPIO = 18
-# 流量計のアナログ出力値 (ADS1015 のドライバが公開)
-FLOW_PATH = '/sys/class/hwmon/hwmon1/device/in4_input'
+
+# 流量計をモニタする ADC の設定 (ADS1015 のドライバ ti_ads1015 が公開)
+SCALE_PATH = '/sys/bus/iio/devices/iio:device0/in_voltage0_scale'
+SCALE_VALUE = '2'
+# 流量計のアナログ出力値 (ADS1015 のドライバ ti_ads1015 が公開)
+FLOW_PATH = '/sys/bus/iio/devices/iio:device0/in_voltage0_raw'
+
 # 流量計が計れる最大流量
 FLOW_MAX = 12
 # 流量計の積算から除外する期間[秒]
@@ -536,3 +541,7 @@ def angular(filename):
 print('GPIO を L に初期化します...');
 GPIO.setup(CTRL_GPIO, GPIO.OUT)
 gpio_set_state(CTRL_GPIO, GPIO.LOW)
+
+print('ADC の設定を行います...');
+with open(SCALE_PATH, 'w') as f:
+    f.write(SCALE_VALUE)
