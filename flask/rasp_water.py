@@ -23,6 +23,7 @@ from io import BytesIO
 
 import RPi.GPIO as GPIO
 GPIO.setmode(GPIO.BCM)
+GPIO.setwarnings(False)
 
 from soilwet_check import is_soil_wet
 from forecast_check import is_rain_forecast
@@ -532,5 +533,6 @@ def api_event():
 def angular(filename):
     return send_from_directory(ANGULAR_DIST_PATH, filename)
 
-print("最初に GPIO を L に初期化します...");
+print('GPIO を L に初期化します...');
+GPIO.setup(CTRL_GPIO, GPIO.OUT)
 gpio_set_state(CTRL_GPIO, GPIO.LOW)
