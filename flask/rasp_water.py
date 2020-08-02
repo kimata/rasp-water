@@ -65,6 +65,9 @@ SCHEDULE_MARKER = 'WATER SCHEDULE'
 WATER_CTRL_CMD = os.path.abspath(
     os.path.join(os.path.dirname(__file__), '..', 'script', 'water_ctrl.py')
 )
+SYNC_OVERLAY_CMD = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), '..', 'script', 'sync_overlay.zsh')
+)
 
 rasp_water = Blueprint('rasp-water', __name__, url_prefix=APP_PATH)
 
@@ -178,6 +181,8 @@ def cron_write(schedule):
 
     # すぐに反映されるよう，明示的にリロード
     subprocess.check_call(['sudo', '/etc/init.d/cron', 'restart'])
+    # Read only にしてある root にも反映
+    subprocess.check_call([SYNC_OVERLAY_CMD])
 
     with event_lock:
         event_count[EVENT_TYPE_SCHEDULE] += 1
