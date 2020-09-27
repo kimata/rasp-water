@@ -312,7 +312,7 @@ def conv_rawadc_to_flow(adc):
 
 def measure_flow_rate():
     start_time = time.time()
-    measure_sum = 0
+    measure_list = []
 
     if not measure_lock.acquire(True, 0.5):
         return
@@ -320,27 +320,26 @@ def measure_flow_rate():
     time.sleep(MEASURE_IGNORE)
     while not measure_stop.is_set():
         with open(FLOW_PATH, 'r') as f:
-            flow = conv_volt_to_flow(int(f.read()))
-            # 最初，水圧がかかっていない期間は流量が過大にでるので，
-            # 流量が最大値の 7 割未満の時のみ積算する
-            # if flow < (FLOW_MAX * 0.7):
-            measure_sum += flow
+            flow = conv_rawadc_to_flow(int(f.read()))
+            measure_list.append(flow)
             time.sleep(MEASURE_INTERVAL)
 
     stop_time = time.time()
     while True:
         with open(FLOW_PATH, 'r') as f:
-            flow = conv_volt_to_flow(int(f.read()))
+            flow = conv_rawadc_to_flow(int(f.read()))
             if flow < 0.1:
                 break
-            measure_sum += flow
+            measure_list.append(flow)
             time.sleep(MEASURE_INTERVAL)
 
         if (time.time() - stop_time) > TAIL_SEC:
             alert('バルブを閉めても水が流れ続けています．')
             break
 
-    water_sum = (measure_sum / 60.0) * MEASURE_INTERVAL
+    measure_sum = sum(measure_list)
+    time_delta = (stop_time - start_time) / (len(measure_list) - 1)
+    water_sum = (measure_sum / 60.0) * time_delta
     log('水やり量は約 {:.2f}L でした。'.format(water_sum))
 
     if ((stop_time - start_time) > 30) and (water_sum < 1):
@@ -389,7 +388,7 @@ def get_valve_flow():
     try:
         with open(FLOW_PATH, 'r') as f:
             return {
-                'flow': conv_volt_to_flow(int(f.read())),
+                'flow': conv_rawadc_to_flow(int(f.read())),
                 'result': 'success'
             }
     except:
@@ -549,4 +548,4 @@ gpio_set_state(CTRL_GPIO, GPIO.LOW)
 
 print('ADC の設定を行います...');
 with open(SCALE_PATH, 'w') as f:
-    f.write(SCALE_VALUE)
+    f.write(str(SCALE_VALUE))
