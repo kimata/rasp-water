@@ -20,6 +20,7 @@ import os
 import functools
 import gzip
 from io import BytesIO
+from fluent import sender
 
 import RPi.GPIO as GPIO
 GPIO.setmode(GPIO.BCM)
@@ -44,12 +45,14 @@ FLOW_MAX = 12
 # 流量計の積算から除外する期間[秒]
 MEASURE_IGNORE = 5
 # 流量計を積算する間隔[秒]
-MEASURE_INTERVAL = 0.5
+MEASURE_INTERVAL = 0.3
 # バルブを止めてからも水が出流れていると想定される時間[秒]
 TAIL_SEC = 60
 
 APP_PATH = '/rasp-water'
 ANGULAR_DIST_PATH = '../dist/rasp-water'
+
+FLUENTD_HOST = 'columbia.green-rabbit.net'
 
 EVENT_TYPE_MANUAL = 'manual'
 EVENT_TYPE_LOG = 'log'
@@ -310,6 +313,30 @@ def conv_rawadc_to_flow(adc):
     return (adc * SCALE_VALUE * FLOW_MAX) / 5000.0
 
 
+def post_fluentd(start_time, time_delta, measure_list):
+    fluentd = sender.FluentSender('sensor', host=FLUENTD_HOST)
+
+    hostname = os.uname()[1]
+    measure_time = start_time
+    post_time = int(measure_time)
+    sec_sum = 0
+    for measure in measure_list:
+        if (int(measure_time) != post_time):
+            # NOTE: 秒単位で積算してから Fluentd に投げる
+            fluentd.emit_with_time(
+                'water', post_time, {'hostname': hostname, 'water': sec_sum }
+            )
+            post_time = int(measure_time)
+            sec_sum = 0
+        sec_sum += (measure / 60.0) * time_delta
+        measure_time += time_delta
+    fluentd.emit_with_time(
+        'water', post_time, {'hostname': hostanme, 'water': sec_sum }
+    )
+
+    fluentd.close()
+
+
 def measure_flow_rate():
     start_time = time.time()
     measure_list = []
@@ -346,6 +373,8 @@ def measure_flow_rate():
         alert('元栓が閉まっている可能性があります．(時間: {:.0f}sec, 合計: {:.2f}L)'.format(
             stop_time - start_time, water_sum
         ));
+
+    post_fluentd(start_time, time_delta, measure_list)
 
     measure_stop.clear()
     measure_lock.release()
