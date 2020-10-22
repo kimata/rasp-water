@@ -331,9 +331,8 @@ def post_fluentd(start_time, time_delta, measure_list):
         sec_sum += (measure / 60.0) * time_delta
         measure_time += time_delta
     fluentd.emit_with_time(
-        'water', post_time, {'hostname': hostanme, 'water': sec_sum }
+        'water', post_time, {'hostname': hostname, 'water': sec_sum }
     )
-
     fluentd.close()
 
 
