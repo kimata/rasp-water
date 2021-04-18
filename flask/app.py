@@ -19,11 +19,6 @@ def initialize():
 
 
 if __name__ == '__main__':
-    subprocess.call(
-        'echo "{} に再起動しました．" | mail -s "rasp-water 再起動" root'.format(
-            datetime.datetime.today()
-        ), shell=True
-    )
     app.debug = True
     # NOTE: スクリプトの自動リロード停止したい場合は use_reloader=False にする
     app.run(host='0.0.0.0', threaded=True, use_reloader=True)

@@ -468,6 +468,12 @@ def remote_host(request):
 
 
 def app_init():
+    subprocess.call(
+        'echo "{} に再起動しました．" | mail -s "rasp-water 再起動" root'.format(
+            datetime.datetime.today()
+        ), shell=True
+    )
+
     log('アプリが再起動しました．')
 
     print('GPIO を L に初期化します...');
