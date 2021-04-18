@@ -467,6 +467,17 @@ def remote_host(request):
         return request.remote_addr
 
 
+def app_init():
+
+    print('GPIO を L に初期化します...');
+    GPIO.setup(CTRL_GPIO, GPIO.OUT)
+    gpio_set_state(CTRL_GPIO, GPIO.LOW)
+
+    print('ADC の設定を行います...');
+    with open(SCALE_PATH, 'w') as f:
+    f.write(str(SCALE_VALUE))
+
+
 @rasp_water.route('/api/valve_ctrl', methods=['GET', 'POST'])
 @support_jsonp
 def api_valve_ctrl():
@@ -593,11 +604,3 @@ def api_event():
 @gzipped
 def angular(filename):
     return send_from_directory(ANGULAR_DIST_PATH, filename)
-
-print('GPIO を L に初期化します...');
-GPIO.setup(CTRL_GPIO, GPIO.OUT)
-gpio_set_state(CTRL_GPIO, GPIO.LOW)
-
-print('ADC の設定を行います...');
-with open(SCALE_PATH, 'w') as f:
-    f.write(str(SCALE_VALUE))

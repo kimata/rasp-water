@@ -7,11 +7,16 @@ import subprocess
 
 from flask import Flask
 
-from rasp_water import rasp_water
+from rasp_water import rasp_water,app_init
 
 app = Flask(__name__)
 
 app.register_blueprint(rasp_water)
+
+@app.before_first_request
+def initialize():
+    app_init()
+
 
 if __name__ == '__main__':
     subprocess.call(
