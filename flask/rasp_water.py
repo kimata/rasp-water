@@ -468,6 +468,7 @@ def remote_host(request):
 
 
 def app_init():
+    log('アプリが再起動しました．')
 
     print('GPIO を L に初期化します...');
     GPIO.setup(CTRL_GPIO, GPIO.OUT)
