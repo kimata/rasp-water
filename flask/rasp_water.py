@@ -88,6 +88,10 @@ period_lock = threading.Lock()
 measure_stop = threading.Event()
 ctrl_period = 0
 
+log_thread = None
+manual_ctrl_thread = None
+measure_flow_thread = None
+
 WDAY_STR = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT']
 WDAY_STR_JA = ['日', '月', '火', '水', '木', '金', '土']
 
@@ -233,7 +237,11 @@ def log_impl(message):
 
 
 def log(message):
-    threading.Thread(target=log_impl, args=(message,)).start()
+    global log_thread
+    if log_thread is not None:
+        log_thread.join()
+    log_thread = threading.Thread(target=log_impl, args=(message,))
+    log_thread.start()
 
 
 def alert(message):
@@ -394,7 +402,11 @@ def set_valve_state(state, auto, host=''):
         try:
             gpio_set_state(CTRL_GPIO, GPIO.HIGH if (state == 1) else GPIO.LOW)
             if (state == 1):
-                threading.Thread(target=measure_flow_rate).start()
+                global measure_flow_thread
+                if measure_flow_thread is not None:
+                    measure_flow_thread.join()
+                measure_flow_thread = threading.Thread(target=measure_flow_rate)
+                measure_flow_thread.start()
             elif (cur_state == 1):
                 measure_stop.set()
         except:
@@ -468,7 +480,11 @@ def api_valve_ctrl():
         result = set_valve_state(state % 2, auto, remote_host(request))
 
         if (state == 1) and (period != 0) and (not is_worker_start):
-            threading.Thread(target=manual_ctrl_worker).start()
+            global manual_ctrl_thread
+            if manual_ctrl_thread is not None:
+                manual_ctrl_thread.join()
+            manual_ctrl_thread = threading.Thread(target=manual_ctrl_worker)
+            manual_ctrl_thread.start()
 
         return jsonify(dict({'cmd': 'set'}, **result))
     else:
