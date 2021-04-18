@@ -76,7 +76,7 @@ SYNC_OVERLAY_CMD = os.path.abspath(
 
 rasp_water = Blueprint('rasp-water', __name__, url_prefix=APP_PATH)
 
-qlite = sqlite3.connect(LOG_DATABASE, check_same_thread=False)
+sqlite = sqlite3.connect(LOG_DATABASE, check_same_thread=False)
 sqlite.execute('CREATE TABLE IF NOT EXISTS log(date INT, message TEXT)')
 sqlite.commit()
 sqlite.row_factory = lambda c, r: dict(
