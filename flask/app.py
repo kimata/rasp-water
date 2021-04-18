@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 import logging
-import datetime
 import subprocess
 
 from flask import Flask
