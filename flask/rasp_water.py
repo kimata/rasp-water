@@ -49,6 +49,8 @@ MEASURE_INTERVAL = 0.3
 # バルブを止めてからも水が出流れていると想定される時間[秒]
 TAIL_SEC = 60
 
+LOG_DATABASE = '/var/log/rasp-water.db'
+
 APP_PATH = '/rasp-water'
 ANGULAR_DIST_PATH = '../dist/rasp-water'
 
@@ -74,8 +76,9 @@ SYNC_OVERLAY_CMD = os.path.abspath(
 
 rasp_water = Blueprint('rasp-water', __name__, url_prefix=APP_PATH)
 
-sqlite = sqlite3.connect(':memory:', check_same_thread=False)
-sqlite.execute('CREATE TABLE log(date INT, message TEXT)')
+qlite = sqlite3.connect(LOG_DATABASE, check_same_thread=False)
+sqlite.execute('CREATE TABLE IF NOT EXISTS log(date INT, message TEXT)')
+sqlite.commit()
 sqlite.row_factory = lambda c, r: dict(
     zip([col[0] for col in c.description], r)
 )
@@ -188,7 +191,7 @@ def cron_write(schedule):
 
     # すぐに反映されるよう，明示的にリロード
     subprocess.check_call(['sudo', '/etc/init.d/cron', 'restart'])
-    # Read only にしてある root にも反映
+    # Read only にしてある root filesystem にも反映
     subprocess.check_call([SYNC_OVERLAY_CMD])
 
     with event_lock:
@@ -233,6 +236,11 @@ def log_impl(message):
             'DELETE FROM log ' +
             'WHERE date <= DATETIME("now", "localtime", "-60 days")'
         )
+        sqlite.commit()
+
+        # Read only にしてある root filesystem にも反映
+        subprocess.check_call([SYNC_OVERLAY_CMD])
+
         event_count[EVENT_TYPE_LOG] += 1
 
 
