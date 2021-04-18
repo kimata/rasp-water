@@ -476,7 +476,7 @@ def app_init():
 
     print('ADC の設定を行います...');
     with open(SCALE_PATH, 'w') as f:
-    f.write(str(SCALE_VALUE))
+        f.write(str(SCALE_VALUE))
 
 
 @rasp_water.route('/api/valve_ctrl', methods=['GET', 'POST'])
