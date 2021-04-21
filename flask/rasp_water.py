@@ -110,7 +110,7 @@ def thread_pool_add(new_thread):
         for thread in thread_pool:
             thread.join(0.001)
             if thread.is_alive():
-                actice_pool.append(thread)
+                active_pool.append(thread)
         thread_pool = active_pool
 
 def wday_str_list(wday_list, lang='en'):
