@@ -51,6 +51,7 @@ MEASURE_INTERVAL = 0.3
 TAIL_SEC = 60
 
 LOG_DATABASE = '/var/log/rasp-water.db'
+CRONTAB = '/var/spool/cron/crontabs/root'
 
 APP_PATH = '/rasp-water'
 ANGULAR_DIST_PATH = '../dist/rasp-water'
@@ -193,7 +194,7 @@ def cron_write(schedule):
     # すぐに反映されるよう，明示的にリロード
     subprocess.check_call(['sudo', '/etc/init.d/cron', 'restart'])
     # Read only にしてある root filesystem にも反映
-    subprocess.check_call([SYNC_OVERLAY_CMD])
+    subprocess.check_call([SYNC_OVERLAY_CMD, CRONTAB])
 
     with event_lock:
         event_count[EVENT_TYPE_SCHEDULE] += 1
@@ -240,7 +241,7 @@ def log_impl(message):
         sqlite.commit()
 
         # Read only にしてある root filesystem にも反映
-        subprocess.check_call([SYNC_OVERLAY_CMD])
+        subprocess.check_call([SYNC_OVERLAY_CMD, LOG_DATABASE])
 
         event_count[EVENT_TYPE_LOG] += 1
 
