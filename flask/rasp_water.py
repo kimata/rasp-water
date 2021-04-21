@@ -85,6 +85,7 @@ sqlite.row_factory = lambda c, r: dict(
     zip([col[0] for col in c.description], r)
 )
 
+thread_pool_lock = threading.Lock()
 event_lock = threading.Lock()
 schedule_lock = threading.Lock()
 measure_lock = threading.Lock()
@@ -99,6 +100,18 @@ measure_flow_thread = None
 
 WDAY_STR = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT']
 WDAY_STR_JA = ['日', '月', '火', '水', '木', '金', '土']
+
+thread_pool = []
+
+def thread_pool_add(new_thread):
+    global thread_pool
+    with thread_pool_lock:
+        active_pool = [new_thread]
+        for thread in thread_pool:
+            thread.join(0.001)
+            if thread.is_alive():
+                actice_pool.append(thread)
+        thread_pool = active_pool
 
 def wday_str_list(wday_list, lang='en'):
     wday_str = WDAY_STR
@@ -417,6 +430,7 @@ def set_valve_state(state, auto, host=''):
                 #     measure_flow_thread.join()
                 measure_flow_thread = threading.Thread(target=measure_flow_rate)
                 measure_flow_thread.start()
+                thread_pool_add(measure_flow_thread)
             elif (cur_state == 1):
                 measure_stop.set()
         except:
@@ -513,6 +527,7 @@ def api_valve_ctrl():
             #     manual_ctrl_thread.join()
             manual_ctrl_thread = threading.Thread(target=manual_ctrl_worker)
             manual_ctrl_thread.start()
+            thread_pool_add(manual_ctrl_thread)
 
         return jsonify(dict({'cmd': 'set'}, **result))
     else:
