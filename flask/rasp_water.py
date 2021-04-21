@@ -413,8 +413,8 @@ def set_valve_state(state, auto, host=''):
             gpio_set_state(CTRL_GPIO, GPIO.HIGH if (state == 1) else GPIO.LOW)
             if (state == 1):
                 global measure_flow_thread
-                if measure_flow_thread is not None:
-                    measure_flow_thread.join()
+                # if measure_flow_thread is not None:
+                #     measure_flow_thread.join()
                 measure_flow_thread = threading.Thread(target=measure_flow_rate)
                 measure_flow_thread.start()
             elif (cur_state == 1):
@@ -509,8 +509,8 @@ def api_valve_ctrl():
 
         if (state == 1) and (period != 0) and (not is_worker_start):
             global manual_ctrl_thread
-            if manual_ctrl_thread is not None:
-                manual_ctrl_thread.join()
+            # if manual_ctrl_thread is not None:
+            #     manual_ctrl_thread.join()
             manual_ctrl_thread = threading.Thread(target=manual_ctrl_worker)
             manual_ctrl_thread.start()
 
