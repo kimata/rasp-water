@@ -6,7 +6,7 @@ import pprint
 from influxdb import InfluxDBClient
 from datetime import datetime
 
-INFLUXDB_ADDR = '192.168.2.20'
+INFLUXDB_ADDR = '192.168.0.10'
 INFLUXDB_PORT = 8086
 INFLUXDB_DB = 'sensor'
 
