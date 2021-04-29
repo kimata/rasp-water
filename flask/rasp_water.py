@@ -37,7 +37,7 @@ CTRL_GPIO = 18
 
 # 流量計をモニタする ADC の設定 (ADS1015 のドライバ ti_ads1015 が公開)
 SCALE_PATH = '/sys/bus/iio/devices/iio:device0/in_voltage0_scale'
-SCALE_VALUE = 2
+SCALE_VALUE = 3
 # 流量計のアナログ出力値 (ADS1015 のドライバ ti_ads1015 が公開)
 FLOW_PATH = '/sys/bus/iio/devices/iio:device0/in_voltage0_raw'
 
