@@ -22,6 +22,8 @@ import functools
 import gzip
 from io import BytesIO
 from fluent import sender
+import tracemalloc
+import psutil
 
 import RPi.GPIO as GPIO
 GPIO.setmode(GPIO.BCM)
@@ -75,6 +77,10 @@ WATER_CTRL_CMD = os.path.abspath(
 SYNC_OVERLAY_CMD = os.path.abspath(
     os.path.join(os.path.dirname(__file__), '..', 'script', 'sync_overlay.zsh')
 )
+
+process = psutil.Process(os.getpid())
+tracemalloc.start()
+snapshot_prev = None
 
 rasp_water = Blueprint('rasp-water', __name__, url_prefix=APP_PATH)
 
@@ -499,6 +505,31 @@ def app_init():
     print('ADC の設定を行います...');
     with open(SCALE_PATH, 'w') as f:
         f.write(str(SCALE_VALUE))
+
+
+@rasp_water.route('/api/memory', methods=['GET'])
+@support_jsonp
+def print_memory():
+    return { 'memory': process.memory_info().rss }
+
+
+@rasp_water.route('/api/snapshot', methods=['GET'])
+@support_jsonp
+def snap():
+    global snapshot_prev
+    if not snapshot_prev:
+        snapshot_prev = tracemalloc.take_snapshot()
+        return { 'msg': 'taken snapshot' }
+    else:
+        lines = []
+        snapshot = tracemalloc.take_snapshot()
+        top_stats = snapshot.compare_to(snapshot_prev, 'lineno')
+        snapshot_prev = snapshot
+
+        for stat in top_stats[:10]:
+            lines.append(str(stat))
+
+        return jsonify(lines)
 
 
 @rasp_water.route('/api/valve_ctrl', methods=['GET', 'POST'])

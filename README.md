@@ -38,6 +38,7 @@ Angular で作られた UI と，Flask で作られたアプリケーション�
 sudo apt install npm
 sudo apt install python3-pip
 sudo apt install python3-flask
+sudo apt install python3-psutil
 sudo pip3 install python-crontab
 ```
 
