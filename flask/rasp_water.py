@@ -32,8 +32,6 @@ GPIO.setwarnings(False)
 from soilwet_check import is_soil_wet
 from forecast_check import is_rain_forecast
 
-# import pprint
-
 # 電磁弁が接続されている GPIO
 CTRL_GPIO = 18
 
