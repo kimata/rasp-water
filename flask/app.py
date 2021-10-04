@@ -11,6 +11,7 @@ from rasp_water import rasp_water,app_init
 app = Flask(__name__)
 
 app.register_blueprint(rasp_water)
+app.config['JSONIFY_PRETTYPRINT_REGULAR'] = True
 
 @app.before_first_request
 def initialize():
