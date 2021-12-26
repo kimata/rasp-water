@@ -48,7 +48,7 @@ MEASURE_IGNORE = 5
 # 流量計を積算する間隔[秒]
 MEASURE_INTERVAL = 0.3
 # バルブを止めてからも水が出流れていると想定される時間[秒]
-TAIL_SEC = 60
+TAIL_SEC = 120
 
 LOG_DATABASE = '/var/log/rasp-water.db'
 CRONTAB = '/var/spool/cron/crontabs/root'
