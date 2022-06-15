@@ -513,8 +513,11 @@ def app_init():
     gpio_set_state(CTRL_GPIO, GPIO.LOW)
 
     print("ADC の設定を行います...")
-    with open(SCALE_PATH, "w") as f:
-        f.write(str(SCALE_VALUE))
+    if os.path.exists(SCALE_PATH):
+        with open(SCALE_PATH, "w") as f:
+            f.write(str(SCALE_VALUE))
+    else:
+        print("\u001b[31m!!WARNING!! ADC が見つかりません．デバッグ目的と見なして動作を継続します...\u001b[00m")
 
 
 @rasp_water.route("/api/memory", methods=["GET"])
