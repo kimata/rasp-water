@@ -57,7 +57,7 @@ dtoverlay=ads1015,cha_gain=0
 ## ビルド方法
 
 ```bash:bash
-npm install
+npm ci
 ng build --base-href /rasp-water/ --configuration production
 ```
 
