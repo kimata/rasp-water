@@ -39,6 +39,7 @@ sudo apt install npm
 sudo apt install python3-pip
 sudo apt install python3-flask
 sudo apt install python3-psutil
+sudo apt install python3-fluent-logger
 sudo pip3 install python-crontab
 ```
 
