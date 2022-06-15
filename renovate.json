@@ -7,5 +7,5 @@
   ],
   "labels": ["renovate"],
   "schedule": ["every weekend"],
-  "dependencyDashboard": true,
+  "dependencyDashboard": true
 }
