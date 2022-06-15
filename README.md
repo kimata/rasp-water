@@ -56,10 +56,8 @@ dtoverlay=ads1015,cha_gain=0
 ## ビルド方法
 
 ```bash:bash
-npm update
-sudo npm install -g @angular/cli
 npm install
-ng build --base-href /rasp-water/ --prod
+ng build --base-href /rasp-water/
 ```
 
 ## 実行方法
