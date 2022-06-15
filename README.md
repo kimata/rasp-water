@@ -57,7 +57,7 @@ dtoverlay=ads1015,cha_gain=0
 
 ```bash:bash
 npm install
-ng build --base-href /rasp-water/
+ng build --base-href /rasp-water/ --configuration production
 ```
 
 ## 実行方法
