@@ -37,7 +37,7 @@
   <div class="container">
     <h3>曜日</h3>
     <span *ngFor="let wday of ['日', '月', '火', '水', '木', '金', '土']; let i=index"
-          class="mr-2">
+          class="me-2">
       <input type="checkbox" name="wday" id="wday-{{id}}-{{i}}"
              [(ngModel)]="state.wday[i]" (ngModelChange)="update()"
              (click)="changeWday($event, i)"
