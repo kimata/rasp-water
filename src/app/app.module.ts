@@ -15,6 +15,8 @@ import { HeaderComponent } from './header/header.component';
 import { FooterComponent } from './footer/footer.component';
 import { LogComponent, NewlinePipe } from './log/log.component';
 
+import { NgToastModule } from 'ng-angular-popup' 
+
 @NgModule({
     declarations: [
         AppComponent,
@@ -30,7 +32,8 @@ import { LogComponent, NewlinePipe } from './log/log.component';
         HttpClientJsonpModule,
         BrowserModule,
         NgbModule,
-        SchedulerModule
+        SchedulerModule,
+        NgToastModule
     ],
     providers: [
         { provide: 'ApiEndpoint', useValue: '/rasp-water/api' },

@@ -4,10 +4,10 @@ $theme-colors: (
 
 @import '~bootstrap/scss/bootstrap';
 
-@import '~ngx-toastr/toastr.css';
-@import '~ngx-toastr/toastr-bs4-alert';
-
 @import '~tempusdominus-bootstrap-4/build/css/tempusdominus-bootstrap-4.css';
+
+@import "~@fortawesome/fontawesome-free/css/all.css";
+
 
 h2 {
     border-bottom: solid 3px #cde6b8;
@@ -61,14 +61,7 @@ h3 {
     content: "\25B2";
 }
 
-.toast {
-    opacity: 1 !important;
-}
-
-.toast-success {
-    color: #155724 !important
-}
-
-.toast-info {
-    color: #31708f !important
+.toast-right-top {
+    min-height: 80px !important;
+    height: auto !important;
 }
