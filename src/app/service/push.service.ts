@@ -4,7 +4,7 @@ import { Injectable } from '@angular/core';
 import { Inject } from '@angular/core';
 
 @Injectable({
-  providedIn: 'root'
+    providedIn: 'root'
 })
 
 export class PushService {

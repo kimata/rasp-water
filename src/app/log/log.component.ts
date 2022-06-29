@@ -4,7 +4,7 @@ import { Component, OnInit, Pipe, PipeTransform } from '@angular/core';
 import { Inject } from '@angular/core';
 import { HttpClient, HttpParams  } from '@angular/common/http';
 
-import { NgToastService } from 'ng-angular-popup';
+import { ToastService } from '../service/toast.service';
 
 import * as moment from 'moment'; 
 import 'moment/locale/ja'
@@ -34,7 +34,7 @@ export class LogComponent implements OnInit {
     constructor(
         private http: HttpClient,
         private pushService: PushService,
-        private toast: NgToastService,
+        private toast: ToastService,
         @Inject('ApiEndpoint') private readonly API_URL: string,
     ){}
 
@@ -55,7 +55,9 @@ export class LogComponent implements OnInit {
         this.http.jsonp(`${this.API_URL}/log_clear`, 'callback')
             .subscribe(
                 res => {
-                    this.toast.success({detail:'正常にクリアできました。',summary:'成功'});
+                    this.toast.show_sccess('正常にクリアできました。', {
+                        title: '成功',
+                    });
                 },
                 error => {
                 }

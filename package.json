@@ -31,7 +31,6 @@
     "core-js": "3.23.3",
     "jquery": "3.6.0",
     "moment": "2.29.3",
-    "ng-angular-popup": "0.1.2",
     "popper.js": "1.16.1",
     "rxjs": "7.5.5",
     "tempusdominus-bootstrap-4": "5.39.2",

@@ -2,12 +2,11 @@ $theme-colors: (
     "primary": #28a745,
 );
 
-@import '~bootstrap/scss/bootstrap';
+@import '~bootstrap/scss/bootstrap'; 
 
 @import '~tempusdominus-bootstrap-4/build/css/tempusdominus-bootstrap-4.css';
 
 @import "~@fortawesome/fontawesome-free/css/all.css";
-
 
 h2 {
     border-bottom: solid 3px #cde6b8;
@@ -59,9 +58,4 @@ h3 {
 
 .fa-arrow-up:before {
     content: "\25B2";
-}
-
-.toast-right-top {
-    min-height: 80px !important;
-    height: auto !important;
 }

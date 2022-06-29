@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Inject } from '@angular/core';
 import { HttpClient, HttpParams  } from '@angular/common/http';
 
-import { NgToastService } from 'ng-angular-popup';
+import { ToastService } from '../../service/toast.service';
 
 import * as moment from 'moment';
 
@@ -18,7 +18,7 @@ export class SchedulerControlComponent implements OnInit {
     constructor(
         private http: HttpClient,
         private pushService: PushService,
-        public toast: NgToastService,
+        public toast: ToastService,
         @Inject('ApiEndpoint') private readonly API_URL: string,
     ) { }
 
@@ -75,7 +75,9 @@ export class SchedulerControlComponent implements OnInit {
                         }
                     }
                     if (state != null) {
-                        this.toast.success({detail:'正常に保存できました。',summary:'成功'});
+                        this.toast.show_sccess('正常に保存できました。', {
+                            title: '成功',
+                        });
                     }
                     this.state = res;
                     this.error = false;
