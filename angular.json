@@ -23,20 +23,20 @@
             "polyfills": "src/polyfills.ts",
             "tsConfig": "src/tsconfig.app.json",
             "allowedCommonJsDependencies": [
-                  "moment/locale/ja"
+              "moment/locale/ja"
             ],
             "assets": [
-                  "src/assets",
+              "src/assets"
             ],
             "styles": [
-                  "src/styles.scss"
-              ],
-              "scripts": [
-                  "node_modules/jquery/dist/jquery.min.js",
-                  "node_modules/bootstrap/dist/js/bootstrap.min.js",
-                  "node_modules/moment/min/moment.min.js",
-                  "node_modules/tempusdominus-bootstrap-4/build/js/tempusdominus-bootstrap-4.js"
-              ],
+              "src/styles.scss"
+            ],
+            "scripts": [
+              "node_modules/jquery/dist/jquery.min.js",
+              "node_modules/bootstrap/dist/js/bootstrap.min.js",
+              "node_modules/moment/min/moment.min.js",
+              "node_modules/tempusdominus-bootstrap-4/build/js/tempusdominus-bootstrap-4.js"
+            ],
             "aot": false,
             "vendorChunk": true,
             "extractLicenses": false,
@@ -54,12 +54,12 @@
                 }
               ],
               "optimization": {
-                  "scripts": true,
-                  "styles": {
-                       "minify": true,
-                       "inlineCritical": false
-                       },
-                  "fonts": true
+                "scripts": true,
+                "styles": {
+                  "minify": true,
+                  "inlineCritical": false
+                },
+                "fonts": true
               },
               "outputHashing": "all",
               "sourceMap": false,
@@ -104,12 +104,21 @@
             "tsConfig": "src/tsconfig.spec.json",
             "karmaConfig": "src/karma.conf.js",
             "styles": [
-                "src/styles.scss"
+              "src/styles.scss"
             ],
             "scripts": [],
             "assets": [
               "src/favicon.ico",
               "src/assets"
+            ]
+          }
+        },
+        "lint": {
+          "builder": "@angular-eslint/builder:lint",
+          "options": {
+            "lintFilePatterns": [
+              "src/**/*.ts",
+              "src/**/*.html"
             ]
           }
         }
@@ -136,6 +145,7 @@
     }
   },
   "cli": {
-    "analytics": false
+    "analytics": false,
+    "defaultCollection": "@angular-eslint/schematics"
   }
 }
