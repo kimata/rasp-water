@@ -6,8 +6,8 @@ import { HttpClient, HttpParams  } from '@angular/common/http';
 
 import { ToastService } from '../service/toast.service';
 
-import * as moment from 'moment'; 
-import 'moment/locale/ja'
+import * as moment from 'moment';
+import 'moment/locale/ja';
 
 import { PushService } from '../service/push.service';
 
@@ -27,7 +27,7 @@ export class LogComponent implements OnInit {
     private subscription;
     readonly pageSize = 10;
     readonly page = 1;
-    private log = []
+    private log = [];
     error = false;
     interval = null;
 
@@ -42,7 +42,9 @@ export class LogComponent implements OnInit {
         this.updateLog();
         this.subscription = this.pushService.dataSource$.subscribe(
             msg => {
-                if (msg == "log") this.updateLog();
+                if (msg == 'log') {
+this.updateLog();
+}
             }
         );
         this.interval = setInterval(() => {
@@ -63,14 +65,14 @@ export class LogComponent implements OnInit {
                 }
             );
     }
-    
+
     updateLog() {
         this.http.jsonp(`${this.API_URL}/log_view`, 'callback')
             .subscribe(
                 res => {
                     this.log = res['data'];
-                    for(let entry in this.log) {
-                        let date = moment(this.log[entry]['date']);
+                    for(const entry in this.log) {
+                        const date = moment(this.log[entry]['date']);
                         this.log[entry]['date'] = date.format('M月D日(ddd) HH:mm');
                         this.log[entry]['fromNow'] = date.fromNow();
                     }

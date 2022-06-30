@@ -14,12 +14,12 @@ import { PushService } from '../service/push.service';
 
 export class ValveControlComponent implements OnInit {
     private subscription;
-    
-    private readonly FLOW_MAX = 12.0 // 表示する流量の最大値
+
+    private readonly FLOW_MAX = 12.0; // 表示する流量の最大値
     private interval = {
-        'ctrl': null,
-        'flow': null,
-        'period': null
+        ctrl: null,
+        flow: null,
+        period: null
     };
     loading = true;
     private state = false;
@@ -27,10 +27,10 @@ export class ValveControlComponent implements OnInit {
     private flow = 0;
     private flowZeroCount = 0;
     error = {
-        'ctrl': false,
-        'flow': false,
+        ctrl: false,
+        flow: false,
     };
-    
+
     constructor(
         private http: HttpClient,
         private pushService: PushService,
@@ -42,19 +42,25 @@ export class ValveControlComponent implements OnInit {
         this.watchFlow();
         this.subscription = this.pushService.dataSource$.subscribe(
             msg => {
-                if (msg != "schedule") this.updateCtrl();
+                if (msg != 'schedule') {
+this.updateCtrl();
+}
             }
         );
     }
 
     updatePeriod() {
-        if (!this.state) return;
-        if (this.period == 0) this.period = 1;
+        if (!this.state) {
+return;
+}
+        if (this.period == 0) {
+this.period = 1;
+}
         this.updateCtrl(true);
     }
 
     updateCtrl(state=null) {
-        let param = new HttpParams()
+        let param = new HttpParams();
         if (state != null) {
             param = param.set('set', state ? '1' : '0');
             param = param.set('period', String(this.period));
@@ -62,21 +68,25 @@ export class ValveControlComponent implements OnInit {
         this.http.jsonp(`${this.API_URL}/valve_ctrl?${param.toString()}`, 'callback')
             .subscribe(
                 res => {
-                    if (res['state'] =="1") this.watchFlow();
-                    this.state = (res['state'] =="1");
+                    if (res['state'] =='1') {
+this.watchFlow();
+}
+                    this.state = (res['state'] =='1');
                     this.period = Number(res['period']);
                     this.error['ctrl'] = false;
                     this.loading = false;
                 },
                 error => {
                     this.error['ctrl'] = true;
-                    this.loading = false;     
+                    this.loading = false;
                 }
             );
     }
 
     watchFlow() {
-        if (this.interval['flow'] != null) return;
+        if (this.interval['flow'] != null) {
+return;
+}
         this.interval['flow'] = setInterval(() => {
             this.updateFlow();
         }, 500);
@@ -86,7 +96,7 @@ export class ValveControlComponent implements OnInit {
         clearInterval(this.interval['flow']);
         this.interval['flow'] = null;
     }
-    
+
     updateFlow() {
         this.http.jsonp(`${this.API_URL}/valve_flow`, 'callback')
             .subscribe(

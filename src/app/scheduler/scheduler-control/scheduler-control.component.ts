@@ -23,29 +23,31 @@ export class SchedulerControlComponent implements OnInit {
     ) { }
 
     private subscription;
-    private state:any = [
+    private state: any = [
         {
-            'is_active': true,
-            'time': '00:00',
-            'period': 0,
-            'wday': [],
+            is_active: true,
+            time: '00:00',
+            period: 0,
+            wday: [],
         },
         {
-            'is_active': true,
-            'time': '00:00',
-            'period': 0,
-            'wday': [],
+            is_active: true,
+            time: '00:00',
+            period: 0,
+            wday: [],
         },
     ];
     private savedState = null;
     changed = false;
     error = false;
-    
+
     ngOnInit() {
         this.updateSchedule();
         this.subscription = this.pushService.dataSource$.subscribe(
             msg => {
-                if (msg == "schedule") this.updateSchedule();
+                if (msg == 'schedule') {
+this.updateSchedule();
+}
             }
         );
     }
@@ -55,13 +57,13 @@ export class SchedulerControlComponent implements OnInit {
         this.savedState = this.state.map(x => Object.assign({}, x)); // NOTE: deep copy
         this.onChange();
     }
-    
+
     updateSchedule(state=null) {
-        let param = new HttpParams()
+        let param = new HttpParams();
         if (state != null) {
-            let sendState = state.map(x => Object.assign({}, x));
-            for (let item of sendState) {
-                item['time'] = this.convertTime(item['time'])
+            const sendState = state.map(x => Object.assign({}, x));
+            for (const item of sendState) {
+                item['time'] = this.convertTime(item['time']);
             }
             param = param.set('set', JSON.stringify(sendState));
         }
@@ -70,7 +72,7 @@ export class SchedulerControlComponent implements OnInit {
                 res => {
                     if (this.savedState == null) {
                         this.savedState = JSON.parse(JSON.stringify(res)); // NOTE: deep copy
-                        for (let item of this.savedState) {
+                        for (const item of this.savedState) {
                             item['time'] = this.convertTime(item['time']);
                         }
                     }
@@ -87,7 +89,7 @@ export class SchedulerControlComponent implements OnInit {
                 }
             );
     }
-  
+
     onChange() {
         if (this.savedState != null) {
             this.changed = this.isStateDiffer(this.state, this.savedState);
@@ -104,7 +106,7 @@ export class SchedulerControlComponent implements OnInit {
 
     isStateDiffer(a, b) {
         for (let i = 0;  i < 2;  i++) {
-            for (let key in a[i]) {
+            for (const key in a[i]) {
                 if (key == 'time') {
                     if (this.convertTime(a[i][key]) != this.convertTime(b[i][key])) {
                         return true;

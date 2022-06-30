@@ -17,13 +17,13 @@ export class SchedulerEntryComponent implements OnInit {
         private control: SchedulerControlComponent,
         private changeDetectorRef: ChangeDetectorRef
     ) { }
-    
+
     id = uuid.v4();
 
     timeOptions = {
         format: 'HH:mm',
     };
-    
+
     ngOnInit() {
     }
 
@@ -35,13 +35,13 @@ export class SchedulerEntryComponent implements OnInit {
     }
 
     changeWday(event, i) {
-        let wday = [...this.state['wday']];
+        const wday = [...this.state['wday']];
         wday[i] = !wday[i];
         if (wday.filter(x => x).length == 0) {
             this.control.toast.show_info('いずれかの曜日を選択する必要があります。', {
                 title: '通知',
             });
-            
+
             event.preventDefault();
         }
     }

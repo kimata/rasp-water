@@ -13,7 +13,7 @@ export class FooterComponent implements OnInit {
     date = '';
     uptime = '';
     uptime_from = '';
-    loadAverage = ''
+    loadAverage = '';
     interval = null;
 
     constructor(
@@ -32,8 +32,8 @@ export class FooterComponent implements OnInit {
         this.http.jsonp(`${this.API_URL}/sysinfo`, 'callback')
             .subscribe(
                 res => {
-                    let date = moment(res['date'])
-                    let uptime = moment(res['uptime'])
+                    const date = moment(res['date']);
+                    const uptime = moment(res['uptime']);
                     this.date = date.format('llll');
                     this.uptime = uptime.format('llll');
                     this.uptime_from = uptime.from(date);
@@ -43,7 +43,7 @@ export class FooterComponent implements OnInit {
                     // ignore
                 }
             );
-        
+
     }
 
 }

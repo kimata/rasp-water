@@ -11,13 +11,13 @@ export class PushService {
     private dataSource = new Subject<string>();
     public dataSource$ = this.dataSource.asObservable();
     private eventSource;
-   
+
     constructor(
         @Inject('ApiEndpoint') private readonly API_URL: string,
     ) {
-        let self = this;
+        const self = this;
         this.eventSource = new EventSource(`${this.API_URL}/event`);
-        this.eventSource.addEventListener('message', function (e) {
+        this.eventSource.addEventListener('message', function(e) {
             self.notify(e.data);
         });
     }

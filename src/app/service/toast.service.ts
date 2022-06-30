@@ -13,7 +13,7 @@ export class ToastService {
             text, ...options
         });
     }
-    
+
     show_info(text: string, options: any = {}) {
         this.toasts.push({
             icon_color: '#0dcaf0',
