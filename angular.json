@@ -33,7 +33,7 @@
             ],
             "stylePreprocessorOptions": {
               "includePaths": [
-                  "node_modules/"
+                "node_modules/"
               ]
             },
             "scripts": [
@@ -126,19 +126,37 @@
               "src/**/*.html"
             ]
           }
-        }
-      }
-    },
-    "rasp-water-e2e": {
-      "root": "e2e/",
-      "projectType": "application",
-      "prefix": "",
-      "architect": {
-        "e2e": {
-          "builder": "@angular-devkit/build-angular:protractor",
+        },
+        "cypress-run": {
+          "builder": "@briebug/cypress-schematic:cypress",
           "options": {
-            "protractorConfig": "e2e/protractor.conf.js",
             "devServerTarget": "rasp-water:serve"
+          },
+          "configurations": {
+            "production": {
+              "devServerTarget": "rasp-water:serve:production"
+            }
+          }
+        },
+        "cypress-open": {
+          "builder": "@briebug/cypress-schematic:cypress",
+          "options": {
+            "devServerTarget": "rasp-water:serve",
+            "watch": true,
+            "headless": false
+          },
+          "configurations": {
+            "production": {
+              "devServerTarget": "rasp-water:serve:production"
+            }
+          }
+        },
+        "e2e": {
+          "builder": "@briebug/cypress-schematic:cypress",
+          "options": {
+            "devServerTarget": "rasp-water:serve",
+            "watch": true,
+            "headless": false
           },
           "configurations": {
             "production": {
