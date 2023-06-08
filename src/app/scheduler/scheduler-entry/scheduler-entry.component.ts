@@ -21,13 +21,24 @@ export interface ScheduleEntry {
 })
 
 export class SchedulerEntryComponent implements OnInit {
-    @Output() onChange = new EventEmitter();
-    @Input() state: ScheduleEntry = {
+    private _state = {
         time: "00:00",
         period: 0,
         wday: new Array<boolean>(7).fill(false),
         is_active: false
     };
+
+    @Output() stateChange = new EventEmitter();
+
+    public get state(): ScheduleEntry {
+        return this._state;
+    }
+
+    @Input()
+    public set state(state: ScheduleEntry) {
+        this._state = state;
+        this.update();
+    }
 
     constructor(
         private control: SchedulerControlComponent,
@@ -44,10 +55,11 @@ export class SchedulerEntryComponent implements OnInit {
     }
 
     update() {
-        if (this.state['wday'].filter((x: boolean) => x).length == 0) {
-            this.state['wday'] = new Array<boolean>(7).fill(true);
+        if (this._state['wday'].filter((x: boolean) => x).length == 0) {
+            this._state['wday'] = new Array<boolean>(7).fill(true);
         }
-        this.onChange.emit(this.state);
+        this.stateChange.emit(this.state);
+        this.control.onChange();
     }
 
     changeWday(event: Event, i:number) {

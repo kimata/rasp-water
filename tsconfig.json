@@ -24,8 +24,6 @@
     "enableI18nLegacyMessageIdFormat": false,
     "strictInjectionParameters": true,
     "strictInputAccessModifiers": true,
-    // NOTE: schedule-control で，双方向バインディングしつつ，
-    // イベントハンドラも使いたいので，一旦コメントアウト
-     // "strictTemplates": true
+    "strictTemplates": true
   }
 }
