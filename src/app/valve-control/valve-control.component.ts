@@ -5,11 +5,15 @@ import { Inject } from '@angular/core';
 import { HttpClient, HttpParams  } from '@angular/common/http';
 
 import { PushService } from '../service/push.service';
+import { FormsModule } from '@angular/forms';
+import { NgIf, DecimalPipe, PercentPipe } from '@angular/common';
 
 @Component({
     selector: 'app-valve-control',
     templateUrl: './valve-control.component.html',
-    styleUrls: ['./valve-control.component.scss']
+    styleUrls: ['./valve-control.component.scss'],
+    standalone: true,
+    imports: [NgIf, FormsModule, DecimalPipe, PercentPipe]
 })
 
 export class ValveControlComponent implements OnInit {

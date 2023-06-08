@@ -10,8 +10,13 @@ import * as moment from 'moment';
 import 'moment/locale/ja';
 
 import { PushService } from '../service/push.service';
+import { NgbPagination } from '@ng-bootstrap/ng-bootstrap';
+import { NgIf, NgFor, SlicePipe } from '@angular/common';
 
-@Pipe({ name: 'nl2br' })
+@Pipe({
+    name: 'nl2br',
+    standalone: true
+})
 export class NewlinePipe implements PipeTransform {
     transform(value: string): string {
         return value.replace(/\n/g, '<br />');
@@ -22,6 +27,14 @@ export class NewlinePipe implements PipeTransform {
     selector: 'app-log',
     templateUrl: './log.component.html',
     styleUrls: ['./log.component.scss'],
+    standalone: true,
+    imports: [
+        NgIf,
+        NgFor,
+        NgbPagination,
+        SlicePipe,
+        NewlinePipe,
+    ],
 })
 export class LogComponent implements OnInit {
     private subscription;

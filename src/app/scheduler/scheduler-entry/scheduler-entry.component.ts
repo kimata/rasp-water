@@ -2,11 +2,15 @@ import { Component, OnInit, EventEmitter, Input, Output, ChangeDetectorRef } fro
 import { SchedulerControlComponent } from '../scheduler-control/scheduler-control.component';
 
 import * as uuid from 'uuid';
+import { NgFor } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 
 @Component({
     selector: 'app-scheduler-entry',
     templateUrl: './scheduler-entry.component.html',
-    styleUrls: ['./scheduler-entry.component.scss']
+    styleUrls: ['./scheduler-entry.component.scss'],
+    standalone: true,
+    imports: [FormsModule, NgFor]
 })
 
 export class SchedulerEntryComponent implements OnInit {

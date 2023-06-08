@@ -7,11 +7,15 @@ import { ToastService } from '../../service/toast.service';
 import * as moment from 'moment';
 
 import { PushService } from '../../service/push.service';
+import { SchedulerEntryComponent } from '../scheduler-entry/scheduler-entry.component';
+import { NgIf } from '@angular/common';
 
 @Component({
     selector: 'app-scheduler-control',
     templateUrl: './scheduler-control.component.html',
     styleUrls: ['./scheduler-control.component.scss'],
+    standalone: true,
+    imports: [NgIf, SchedulerEntryComponent],
 })
 
 export class SchedulerControlComponent implements OnInit {

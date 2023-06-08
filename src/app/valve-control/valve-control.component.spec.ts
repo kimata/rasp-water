@@ -8,8 +8,8 @@ describe('ValveControlComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ ValveControlComponent ]
-    })
+    imports: [ValveControlComponent]
+})
     .compileComponents();
   }));
 

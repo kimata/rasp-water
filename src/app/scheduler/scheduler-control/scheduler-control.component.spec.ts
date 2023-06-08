@@ -8,8 +8,8 @@ describe('SchedulerControlComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ SchedulerControlComponent ]
-    })
+    imports: [SchedulerControlComponent]
+})
     .compileComponents();
   }));
 
