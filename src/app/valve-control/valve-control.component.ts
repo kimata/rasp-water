@@ -8,6 +8,17 @@ import { PushService } from '../service/push.service';
 import { FormsModule } from '@angular/forms';
 import { NgIf, DecimalPipe, PercentPipe } from '@angular/common';
 
+export interface ControlResponse {
+    state: string;
+    ctrl: string;
+    period: string;
+}
+
+export interface FlowResponse {
+    flow: string;
+}
+
+
 @Component({
     selector: 'app-valve-control',
     templateUrl: './valve-control.component.html',
@@ -15,25 +26,25 @@ import { NgIf, DecimalPipe, PercentPipe } from '@angular/common';
     standalone: true,
     imports: [NgIf, FormsModule, DecimalPipe, PercentPipe]
 })
-
 export class ValveControlComponent implements OnInit {
-    private subscription;
+    private subscription: Subscription = Subscription.EMPTY;
 
-    private readonly FLOW_MAX = 12.0; // 表示する流量の最大値
+    readonly FLOW_MAX = 12.0; // 表示する流量の最大値
     private interval = {
         ctrl: null,
-        flow: null,
+        flow: 0,
         period: null
     };
-    loading = true;
-    private state = false;
-    private period = 0;
-    private flow = 0;
     private flowZeroCount = 0;
+    loading = true;
+    state = false;
+    period = 0;
+    flow = 0;
     error = {
         ctrl: false,
         flow: false,
     };
+
 
     constructor(
         private http: HttpClient,
@@ -63,15 +74,15 @@ this.period = 1;
         this.updateCtrl(true);
     }
 
-    updateCtrl(state=null) {
+    updateCtrl(state=false) {
         let param = new HttpParams();
-        if (state != null) {
+        if (state) {
             param = param.set('set', state ? '1' : '0');
             param = param.set('period', String(this.period));
         }
-        this.http.jsonp(`${this.API_URL}/valve_ctrl?${param.toString()}`, 'callback')
+        this.http.jsonp<ControlResponse>(`${this.API_URL}/valve_ctrl?${param.toString()}`, 'callback')
             .subscribe(
-                res => {
+                (res: ControlResponse) => {
                     if (res['state'] =='1') {
 this.watchFlow();
 }
@@ -98,13 +109,13 @@ return;
 
     unwatchFlow() {
         clearInterval(this.interval['flow']);
-        this.interval['flow'] = null;
+        this.interval['flow'] = 0;
     }
 
     updateFlow() {
-        this.http.jsonp(`${this.API_URL}/valve_flow`, 'callback')
+        this.http.jsonp<FlowResponse>(`${this.API_URL}/valve_flow`, 'callback')
             .subscribe(
-                res => {
+                (res:FlowResponse) => {
                     this.flow = Math.min(Number(res['flow']), this.FLOW_MAX);
                     this.error['flow'] = false;
                     if (Math.round(this.flow) == 0) {

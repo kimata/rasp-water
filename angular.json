@@ -23,7 +23,9 @@
             "polyfills": "src/polyfills.ts",
             "tsConfig": "src/tsconfig.app.json",
             "allowedCommonJsDependencies": [
-              "moment/locale/ja"
+                "moment",
+                "moment/locale/ja"
+
             ],
             "assets": [
               "src/assets"

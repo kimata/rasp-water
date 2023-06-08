@@ -5,6 +5,13 @@ import * as uuid from 'uuid';
 import { NgFor } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
+
+export interface ScheduleEntry {
+    time: string;
+    period: number;
+    wday: boolean[];
+    is_active: boolean;
+}
 @Component({
     selector: 'app-scheduler-entry',
     templateUrl: './scheduler-entry.component.html',
@@ -15,7 +22,12 @@ import { FormsModule } from '@angular/forms';
 
 export class SchedulerEntryComponent implements OnInit {
     @Output() onChange = new EventEmitter();
-    @Input() state;
+    @Input() state: ScheduleEntry = {
+        time: "00:00",
+        period: 0,
+        wday: new Array<boolean>(7).fill(false),
+        is_active: false
+    };
 
     constructor(
         private control: SchedulerControlComponent,
@@ -32,16 +44,16 @@ export class SchedulerEntryComponent implements OnInit {
     }
 
     update() {
-        if (this.state['wday'].filter(x => x).length == 0) {
+        if (this.state['wday'].filter((x: boolean) => x).length == 0) {
             this.state['wday'] = new Array<boolean>(7).fill(true);
         }
         this.onChange.emit(this.state);
     }
 
-    changeWday(event, i) {
+    changeWday(event: Event, i:number) {
         const wday = [...this.state['wday']];
         wday[i] = !wday[i];
-        if (wday.filter(x => x).length == 0) {
+        if (wday.filter((x: Boolean) => x).length == 0) {
             this.control.toast.show_info('いずれかの曜日を選択する必要があります。', {
                 title: '通知',
             });

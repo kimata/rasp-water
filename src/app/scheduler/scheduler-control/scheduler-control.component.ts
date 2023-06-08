@@ -7,8 +7,9 @@ import { ToastService } from '../../service/toast.service';
 import * as moment from 'moment';
 
 import { PushService } from '../../service/push.service';
-import { SchedulerEntryComponent } from '../scheduler-entry/scheduler-entry.component';
+import { SchedulerEntryComponent,ScheduleEntry } from '../scheduler-entry/scheduler-entry.component';
 import { NgIf } from '@angular/common';
+import { Subscription } from 'rxjs';
 
 @Component({
     selector: 'app-scheduler-control',
@@ -26,8 +27,8 @@ export class SchedulerControlComponent implements OnInit {
         @Inject('ApiEndpoint') private readonly API_URL: string,
     ) { }
 
-    private subscription;
-    private state: any = [
+    private subscription: Subscription = Subscription.EMPTY;
+    state: ScheduleEntry[] = [
         {
             is_active: true,
             time: '00:00',
@@ -41,7 +42,7 @@ export class SchedulerControlComponent implements OnInit {
             wday: [],
         },
     ];
-    private savedState = null;
+    private savedState: ScheduleEntry[]|null = null;
     changed = false;
     error = false;
 
@@ -50,8 +51,8 @@ export class SchedulerControlComponent implements OnInit {
         this.subscription = this.pushService.dataSource$.subscribe(
             msg => {
                 if (msg == 'schedule') {
-this.updateSchedule();
-}
+                   this.updateSchedule();
+                }
             }
         );
     }
@@ -62,7 +63,7 @@ this.updateSchedule();
         this.onChange();
     }
 
-    updateSchedule(state=null) {
+    updateSchedule(state: ScheduleEntry[]|null = null) {
         let param = new HttpParams();
         if (state != null) {
             const sendState = state.map(x => Object.assign({}, x));
@@ -71,12 +72,12 @@ this.updateSchedule();
             }
             param = param.set('set', JSON.stringify(sendState));
         }
-        this.http.jsonp(`${this.API_URL}/schedule_ctrl?${param.toString()}`, 'callback')
+        this.http.jsonp<ScheduleEntry[]>(`${this.API_URL}/schedule_ctrl?${param.toString()}`, 'callback')
             .subscribe(
-                res => {
+                (res: ScheduleEntry[]) => {
                     if (this.savedState == null) {
                         this.savedState = JSON.parse(JSON.stringify(res)); // NOTE: deep copy
-                        for (const item of this.savedState) {
+                        for (const item of this.savedState!) {
                             item['time'] = this.convertTime(item['time']);
                         }
                     }
@@ -100,7 +101,7 @@ this.updateSchedule();
         }
     }
 
-    convertTime(time) {
+    convertTime(time: any) {
         if (time instanceof moment) {
             return (time as moment.Moment).format('HH:mm');
         } else {
@@ -108,18 +109,19 @@ this.updateSchedule();
         }
     }
 
-    isStateDiffer(a, b) {
+    isStateDiffer(a: ScheduleEntry[], b: ScheduleEntry[]) {
         for (let i = 0;  i < 2;  i++) {
-            for (const key in a[i]) {
-                if (key == 'time') {
-                    if (this.convertTime(a[i][key]) != this.convertTime(b[i][key])) {
-                        return true;
-                    }
-                } else {
-                    if (JSON.stringify(a[i][key]) != JSON.stringify(b[i][key])) {
-                        return true;
-                    }
-                }
+            if (this.convertTime(a[i]['time']) != this.convertTime(b[i]['time'])) {
+                return true;
+            }
+            if (a[i]['is_active'] != b[i]['is_active']) {
+                return true;
+            }
+            if (a[i]['period'] != b[i]['period']) {
+                return true;
+            }
+            if (JSON.stringify(a[i]['wday']) != JSON.stringify(b[i]['wday'])) {
+                return true;
             }
         }
         return false;

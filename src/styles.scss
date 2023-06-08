@@ -40,10 +40,10 @@ h3 {
     background: #28a745;
 }
 .switchToggle input + label:before, .switchToggle input + input + label:before {
-    content: 'OFF'; position: absolute; top: 5px; left: 35px; width: 26px; height: 26px; border-radius: 90px; transition: 0.3s; text-indent: 0; color: #fff;
+    content: 'OFF'; position: absolute; top: 2px; left: 35px; width: 26px; height: 26px; border-radius: 90px; transition: 0.3s; text-indent: 0; color: #fff;
 }
 .switchToggle input:checked + label:before, .switchToggle input:checked + input + label:before {
-    content: 'ON'; position: absolute; top: 5px; left: 10px; width: 26px; height: 26px; border-radius: 90px; transition: 0.3s; text-indent: 0; color: #fff;
+    content: 'ON'; position: absolute; top: 2px; left: 10px; width: 26px; height: 26px; border-radius: 90px; transition: 0.3s; text-indent: 0; color: #fff;
 }
 .switchToggle input:checked + label:after, .switchToggle input:checked + input + label:after {
     left: calc(100% - 2px); transform: translateX(-100%);

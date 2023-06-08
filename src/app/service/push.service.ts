@@ -22,7 +22,7 @@ export class PushService {
         });
     }
 
-    private notify(message) {
+    private notify(message: string) {
         this.dataSource.next(message);
     }
 }

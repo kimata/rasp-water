@@ -23,6 +23,15 @@ export class NewlinePipe implements PipeTransform {
     }
 }
 
+export interface LogData {
+    date: string;
+    fromNow: string;
+    message: string;
+}
+export interface LogResponse {
+    data: LogData[];
+}
+
 @Component({
     selector: 'app-log',
     templateUrl: './log.component.html',
@@ -37,12 +46,12 @@ export class NewlinePipe implements PipeTransform {
     ],
 })
 export class LogComponent implements OnInit {
-    private subscription;
+    private subscription: Subscription = Subscription.EMPTY;
     readonly pageSize = 10;
-    readonly page = 1;
-    private log = [];
+    page = 1;
+    log: LogData[] = [];
     error = false;
-    interval = null;
+    interval = 0;
 
     constructor(
         private http: HttpClient,
@@ -80,9 +89,9 @@ this.updateLog();
     }
 
     updateLog() {
-        this.http.jsonp(`${this.API_URL}/log_view`, 'callback')
+        this.http.jsonp<LogResponse>(`${this.API_URL}/log_view`, 'callback')
             .subscribe(
-                res => {
+                (res:LogResponse) => {
                     this.log = res['data'];
                     for(const entry in this.log) {
                         const date = moment(this.log[entry]['date']);

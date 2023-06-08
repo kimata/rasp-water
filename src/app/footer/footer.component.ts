@@ -4,6 +4,12 @@ import { HttpClient } from '@angular/common/http';
 
 import * as moment from 'moment';
 
+export interface SysinfoResponse {
+    date: string;
+    uptime: string;
+    loadAverage: string;
+}
+
 @Component({
     selector: 'app-footer',
     templateUrl: './footer.component.html',
@@ -15,7 +21,7 @@ export class FooterComponent implements OnInit {
     uptime = '';
     uptime_from = '';
     loadAverage = '';
-    interval = null;
+    interval = 0;
 
     constructor(
         private http: HttpClient,
@@ -30,9 +36,9 @@ export class FooterComponent implements OnInit {
     }
 
     updateSysinfo() {
-        this.http.jsonp(`${this.API_URL}/sysinfo`, 'callback')
+        this.http.jsonp<SysinfoResponse>(`${this.API_URL}/sysinfo`, 'callback')
             .subscribe(
-                res => {
+                (res: SysinfoResponse) => {
                     const date = moment(res['date']);
                     const uptime = moment(res['uptime']);
                     this.date = date.format('llll');
