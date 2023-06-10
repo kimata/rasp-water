@@ -19,7 +19,7 @@ repos:
     rev: v2.7.1
     hooks:
       -   id: prettier
-          files: '.*\.(ts|tsx)'
+          files: '.*\.(ts|html|scss|css)'
           args: ['--parser', 'typescript', '--write']
 
 -   repo: https://github.com/pre-commit/mirrors-eslint
