@@ -2,7 +2,7 @@ $theme-colors: (
     "primary": #28a745,
 );
 
-@import "bootstrap/scss/bootstrap";
+@import "bootstrap/scss/bootstrap.scss";
 
 @import "tempusdominus-bootstrap-4/build/css/tempusdominus-bootstrap-4.css";
 
@@ -29,6 +29,18 @@ h3 {
 
 header {
     background: #eeeeee;
+}
+
+input[type="number"] {
+    text-align: right;
+}
+
+.progress {
+    --bs-progress-bar-bg: #28a745;
+}
+
+.remain {
+    color: #23903c;
 }
 
 .btn-primary,

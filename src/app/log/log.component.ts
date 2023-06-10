@@ -61,9 +61,10 @@ export class LogComponent implements OnInit {
                 this.updateLog();
             }
         });
-        this.interval = setInterval(() => {
-            this.updateLog();
-        }, 60000);
+        // NOTE: pushService に任せる．
+        // this.interval = setInterval(() => {
+        //     this.updateLog();
+        // }, 60000);
     }
 
     clear() {

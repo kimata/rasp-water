@@ -11,7 +11,7 @@ import { NgIf, DecimalPipe, PercentPipe } from "@angular/common";
 export interface ControlResponse {
     state: string;
     ctrl: string;
-    period: string;
+    remain: string;
 }
 
 export interface FlowResponse {
@@ -29,6 +29,7 @@ export class ValveControlComponent implements OnInit {
     private subscription: Subscription = Subscription.EMPTY;
 
     readonly FLOW_MAX = 12.0; // 表示する流量の最大値
+
     private interval = {
         ctrl: null,
         flow: 0,
@@ -37,7 +38,8 @@ export class ValveControlComponent implements OnInit {
     private flowZeroCount = 0;
     loading = true;
     state = false;
-    period = 0;
+    period = 1;
+    remain = 0;
     flow = 0;
     error = {
         ctrl: false,
@@ -51,11 +53,11 @@ export class ValveControlComponent implements OnInit {
     ) {}
 
     ngOnInit() {
-        this.updateCtrl();
+        this.updateCtrl(false);
         this.watchFlow();
         this.subscription = this.pushService.dataSource$.subscribe((msg) => {
-            if (msg != "schedule") {
-                this.updateCtrl();
+            if (msg == "valve") {
+                this.updateCtrl(false);
             }
         });
     }
@@ -64,17 +66,16 @@ export class ValveControlComponent implements OnInit {
         if (!this.state) {
             return;
         }
-        if (this.period == 0) {
-            this.period = 1;
-        }
-        this.updateCtrl(true);
+        this.updateCtrl(true, this.state);
     }
 
-    updateCtrl(state = false) {
+    updateCtrl(cmd: boolean, state = false) {
+        // NOTE: state が true の場合は制御
         let param = new HttpParams();
-        if (state) {
-            param = param.set("set", state ? "1" : "0");
-            param = param.set("period", String(this.period));
+        if (cmd) {
+            param = param.set("cmd", "1");
+            param = param.set("state", state ? 1 : 0);
+            param = param.set("period", String(this.period * 60));
         }
         this.http
             .jsonp<ControlResponse>(
@@ -87,7 +88,8 @@ export class ValveControlComponent implements OnInit {
                         this.watchFlow();
                     }
                     this.state = res["state"] == "1";
-                    this.period = Number(res["period"]);
+                    this.remain = Number(res["remain"]);
+                    console.log(this.remain);
                     this.error["ctrl"] = false;
                     this.loading = false;
                 },
@@ -99,10 +101,11 @@ export class ValveControlComponent implements OnInit {
     }
 
     watchFlow() {
-        if (this.interval["flow"] != null) {
+        if (this.interval["flow"] != 0) {
             return;
         }
         this.interval["flow"] = setInterval(() => {
+            this.updateCtrl(false);
             this.updateFlow();
         }, 500);
     }
@@ -124,6 +127,9 @@ export class ValveControlComponent implements OnInit {
                     } else {
                         this.flowZeroCount = 0;
                     }
+
+                    // NOTE: バルブを閉じてから，流量が 0 になって落ち着いたら，
+                    // 流量バーの更新を停止する．
                     if (this.flowZeroCount == 10 && !this.state) {
                         this.unwatchFlow();
                     }
