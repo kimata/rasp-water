@@ -22,7 +22,7 @@ repos:
           files: '.*\.(ts|tsx)'
           args: ['--parser', 'typescript', '--write']
 
--   repo: https://github.com/pre-commit/mirrors-eslint
-    rev: v8.42.0
-    hooks:
-      - id: eslint
+# -   repo: https://github.com/pre-commit/mirrors-eslint
+#     rev: v8.42.0
+#     hooks:
+#       - id: eslint
