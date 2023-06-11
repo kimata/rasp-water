@@ -1,34 +1,33 @@
 image: docker:24.0
 
 stages:
-    - build
     - test
     # - deploy
     - renovate
 
 build-angular:
     stage: build
-    image: cypress/browsers:chrome69
+    image: node:20.3
     script:
-        - npm ci
+        - npm ci --cache .npm --prefer-offline
         - npm run build
-    # cache:
-    #     key: npm
-    #     paths:
-    #         - .npm/
+    cache:
+        key: npm
+        paths:
+            - .npm/
 
 test-angular:
     stage: test
-    image: cypress/browsers:chrome69
+    image: node:20.3
     script:
-        - npm ci
+        - npm ci --cache .npm --prefer-offline
         - npm run start &
         - npm run cypress:run
 
-    # cache:
-    #     key: npm
-    #     paths:
-    #         - .npm/
+    cache:
+        key: npm
+        paths:
+            - .npm/
 
 # build-image:
 #   stage: build
