@@ -19,6 +19,27 @@ from flask_util import support_jsonp, remote_host
 import valve
 
 
+# def post_fluentd(start_time, time_delta, measure_list):
+#     fluentd = sender.FluentSender("sensor", host=FLUENTD_HOST)
+
+#     hostname = os.uname()[1]
+#     measure_time = start_time
+#     post_time = int(measure_time)
+#     sec_sum = 0p
+#     for measure in measure_list:
+#         if int(measure_time) != post_time:
+#             # NOTE: 秒単位で積算してから Fluentd に投げる
+#             fluentd.emit_with_time(
+#                 "water", post_time, {"hostname": hostname, "water": sec_sum}
+#             )
+#             post_time = int(measure_time)
+#             sec_sum = 0.0
+#         sec_sum += (measure / 60.0) * time_delta
+#         measure_time += time_delta
+#     fluentd.emit_with_time("water", post_time, {"hostname": hostname, "water": sec_sum})
+#     fluentd.close()
+
+
 blueprint = Blueprint("rasp-water-valve", __name__, url_prefix=APP_URL_PREFIX)
 
 
@@ -56,7 +77,7 @@ def flow_notify_worker(queue):
 
             if stat["type"] == "total":
                 app_log(
-                    "{time_str}間，約 {water:.2f}L の水やりを行いました。".format(
+                    "📈 {time_str}間，約 {water:.2f}L の水やりを行いました。".format(
                         time_str=second_str(stat["period"]), water=stat["total"]
                     )
                 )
@@ -139,7 +160,7 @@ def set_valve_state(state, period, auto, host=""):
         valve.set_state(valve.VALVE_STATE.CLOSE)
 
     app_log(
-        "{auto}で蛇口を{done}ました。{by}".format(
+        "🌻 {auto}で蛇口を{done}ました。{by}".format(
             auto="自動" if auto else "手動",
             done=["閉じ", "開き"][state],
             by="(by {})".format(host) if host != "" else "",

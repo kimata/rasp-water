@@ -40,7 +40,10 @@ def gzipped(f):
             response.headers["Vary"] = "Accept-Encoding"
             response.headers["Content-Length"] = len(response.data)
 
-            if not g.pop("disable_cache", False):
+            if g.pop("disable_cache", False):
+                response.headers["Cache-Control"] = "no-store, must-revalidate"
+                response.headers["Expires"] = "0"
+            else:
                 response.headers["Cache-Control"] = "max-age=31536000"
 
             return response

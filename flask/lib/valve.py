@@ -6,6 +6,7 @@ import threading
 import datetime
 import logging
 import traceback
+import pathlib
 
 from rasp_water_config import STAT_DIR_PATH, should_terminate
 
@@ -188,8 +189,6 @@ def control_worker(queue):
                         datetime.datetime.now() - open_start_time
                     ).total_seconds()
 
-                    logging.info([open_start_time, flow_sum, flow_count])
-
                     queue.put(
                         {
                             "type": "total",
@@ -218,6 +217,11 @@ def init(queue, pin=GPIO_PIN_DEFAULT):
     pin_no = pin
 
     set_state(VALVE_STATE.CLOSE)
+
+    logging.info("Setting scale of ADC")
+    if pathlib.Path(ADC_SCALE_PATH).exists():
+        with open(ADC_SCALE_PATH, "w") as f:
+            f.write(str(ADC_SCALE_VALUE))
 
     threading.Thread(target=control_worker, args=(queue,)).start()
 

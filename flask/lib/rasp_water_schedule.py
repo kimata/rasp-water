@@ -3,10 +3,6 @@
 from flask import (
     request,
     jsonify,
-    current_app,
-    Response,
-    send_from_directory,
-    after_this_request,
     Blueprint,
 )
 import json
@@ -113,7 +109,7 @@ def api_schedule_ctrl():
             # cron_write(schedule)
             host = remote_host(request)
             app_log(
-                "スケジュールを更新しました。\n({schedule} {by})".format(
+                "📅 スケジュールを更新しました。\n({schedule} {by})".format(
                     schedule=schedule_str(schedule),
                     by="by {}".format(host) if host != "" else "",
                 )
