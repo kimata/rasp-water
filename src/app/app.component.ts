@@ -11,9 +11,13 @@ import { HeaderComponent } from './header/header.component';
     templateUrl: './app.component.html',
     styleUrls: ['./app.component.scss'],
     standalone: true,
-    imports: [HeaderComponent, ValveControlComponent, SchedulerControlComponent, LogComponent, FooterComponent, ToastComponent]
+    imports: [
+        HeaderComponent,
+        ValveControlComponent,
+        SchedulerControlComponent,
+        LogComponent,
+        FooterComponent,
+        ToastComponent,
+    ],
 })
-
-export class AppComponent {
-
-}
+export class AppComponent {}

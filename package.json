@@ -7,7 +7,9 @@
         "build": "ng build --base-href /rasp-water/ --configuration production",
         "test": "ng test",
         "lint": "ng lint",
-        "e2e": "ng e2e"
+        "e2e": "ng e2e",
+        "cypress:open": "cypress open",
+        "cypress:run": "cypress run"
     },
     "private": true,
     "dependencies": {
@@ -50,6 +52,7 @@
         "@angular/compiler-cli": "^16.0.4",
         "@angular/language-service": "^16.0.4",
         "@briebug/cypress-schematic": "^5.0.1",
+        "@cypress/schematic": "^2.5.0",
         "@types/jasmine": "4.3.2",
         "@types/jasminewd2": "2.0.10",
         "@types/node": "20.2.5",
@@ -64,6 +67,7 @@
         "jasmine-spec-reporter": "7.0.0",
         "karma": "6.4.2",
         "karma-chrome-launcher": "3.2.0",
+        "karma-coverage": "~2.1.0",
         "karma-coverage-istanbul-reporter": "3.0.3",
         "karma-jasmine": "5.1.0",
         "karma-jasmine-html-reporter": "2.1.0",
