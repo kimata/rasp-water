@@ -10,10 +10,10 @@ import re
 import psutil
 import tracemalloc
 
-from rasp_water_config import APP_PATH
+from rasp_water_config import APP_URL_PREFIX
 from flask_util import support_jsonp
 
-blueprint = Blueprint("rasp-water-util", __name__, url_prefix=APP_PATH)
+blueprint = Blueprint("rasp-water-util", __name__, url_prefix=APP_URL_PREFIX)
 
 snapshot_prev = None
 

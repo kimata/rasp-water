@@ -1,31 +1,38 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-from flask import (
-    jsonify,
-    Blueprint,
-)
+from flask import jsonify, Blueprint, g
 import logging
 import threading
 import sqlite3
 from multiprocessing.pool import ThreadPool
 
-from rasp_water_config import APP_PATH, LOG_DB_PATH
+from rasp_water_config import APP_URL_PREFIX, LOG_DB_PATH
 from rasp_water_event import notify_event, EVENT_TYPE
-from flask_util import support_jsonp
+from flask_util import support_jsonp, gzipped
 
-blueprint = Blueprint("rasp-water-log", __name__, url_prefix=APP_PATH)
+blueprint = Blueprint("rasp-water-log", __name__, url_prefix=APP_URL_PREFIX)
 
-sqlite = sqlite3.connect(LOG_DB_PATH, check_same_thread=False)
-sqlite.execute("CREATE TABLE IF NOT EXISTS log(date INT, message TEXT)")
-sqlite.commit()
-sqlite.row_factory = lambda c, r: dict(zip([col[0] for col in c.description], r))
-
-log_lock = threading.Lock()
-
-thread_pool = ThreadPool(processes=3)
+sqlite = None
+log_lock = None
+thread_pool = None
 
 
-def log_impl(message):
+@blueprint.before_app_first_request
+def init():
+    global sqlite
+    global log_lock
+    global thread_pool
+
+    sqlite = sqlite3.connect(LOG_DB_PATH, check_same_thread=False)
+    sqlite.execute("CREATE TABLE IF NOT EXISTS log(date INT, message TEXT)")
+    sqlite.commit()
+    sqlite.row_factory = lambda c, r: dict(zip([col[0] for col in c.description], r))
+
+    log_lock = threading.Lock()
+    thread_pool = ThreadPool(processes=3)
+
+
+def app_log_impl(message):
     global event_count
 
     with log_lock:
@@ -40,13 +47,13 @@ def log_impl(message):
         notify_event(EVENT_TYPE.LOG)
 
 
-def log(message):
+def app_log(message):
     global thread_pool
 
     logging.info(message)
 
     # NOTE: 実際のログ記録は別スレッドに任せて，すぐにリターンする
-    thread_pool.apply_async(log_impl, (message,))
+    thread_pool.apply_async(app_log_impl, (message,))
 
 
 @blueprint.route("/api/log_clear", methods=["GET"])
@@ -55,14 +62,17 @@ def api_log_clear():
     with log_lock:
         cur = sqlite.cursor()
         cur.execute("DELETE FROM log")
-    log("ログがクリアされました。")
+    app_log("ログがクリアされました。")
 
     return jsonify({"result": "success"})
 
 
 @blueprint.route("/api/log_view", methods=["GET"])
 @support_jsonp
+@gzipped
 def api_log_view():
+    g.disable_cache = True
+
     cur = sqlite.cursor()
     cur.execute("SELECT * FROM log")
     return jsonify({"data": cur.fetchall()[::-1]})
@@ -75,7 +85,7 @@ if __name__ == "__main__":
     logger.init("test", level=logging.INFO)
 
     for i in range(5):
-        log("テスト {i}".format(i=i))
+        app_log("テスト {i}".format(i=i))
 
     time.sleep(1)
 

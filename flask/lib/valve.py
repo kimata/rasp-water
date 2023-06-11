@@ -54,8 +54,11 @@ try:
         return (adc * ADC_SCALE_VALUE * FLOW_SCALE_MAX) / 5000.0
 
     def get_flow():
-        with open(ADC_VALUE_PATH, "r") as f:
-            return conv_rawadc_to_flow(int(f.read()))
+        try:
+            with open(ADC_VALUE_PATH, "r") as f:
+                return {"flow": conv_rawadc_to_flow(int(f.read())), "result": "success"}
+        except:
+            return {"flow": 0, "result": "fail"}
 
 except:
     logging.warning("Using dummy GPIO")
@@ -85,52 +88,138 @@ except:
             return
 
     def get_flow():
-        if STAT_PATH_VALVE_OPEN.exists():
-            return 1 + (random.random() - 0.5)
+        if not STAT_PATH_VALVE_OPEN.exists():
+            if get_flow.prev_flow > 1:
+                get_flow.prev_flow /= 1.3
+            else:
+                get_flow.prev_flow = max(0, get_flow.prev_flow - 0.1)
+
+            return {"flow": get_flow.prev_flow, "result": "success"}
+
+        if get_flow.prev_flow == 0:
+            flow = random.random() * FLOW_SCALE_MAX
         else:
-            return 0
+            flow = max(
+                0,
+                min(
+                    get_flow.prev_flow
+                    + (random.random() - 0.5) * (FLOW_SCALE_MAX / 5.0),
+                    FLOW_SCALE_MAX,
+                ),
+            )
+
+        get_flow.prev_flow = flow
+
+        return {"flow": flow, "result": "success"}
+
+    get_flow.prev_flow = 0
 
 
 pin_no = GPIO_PIN_DEFAULT
-control_lock = threading.Lock()
 
 # NOTE: STAT_PATH_VALVE_CONTROL_COMMAND の内容に基づいて，
 # バルブを一定時間開けます
-def control_worker():
+def control_worker(queue):
     global should_terminate
 
     logging.info("Start valve control worker")
 
+    open_start_time = None
+    flow_sum = 0
+    flow_count = 0
+    zero_count = 0
+
+    notify_last_time = None
+    notify_last_flow_sum = 0
+    notify_last_count = 0
+
+    i = 0
     while True:
         if should_terminate:
             break
 
-        with control_lock:
-            try:
-                if STAT_PATH_VALVE_CONTROL_COMMAND.exists():
-                    with open(STAT_PATH_VALVE_CONTROL_COMMAND, "r") as f:
-                        close_time = datetime.datetime.fromtimestamp(int(f.read()))
-                        if datetime.datetime.now() > close_time:
-                            logging.info("Times is up, close valve")
-                            # NOTE: 下記の関数の中で
-                            # STAT_PATH_VALVE_CONTROL_COMMAND は削除される
-                            set_state(VALVE_STATE.CLOSE)
-            except:
-                logging.warning(traceback.format_exc())
+        if open_start_time is not None:
+            flow = get_flow()["flow"]
+            flow_sum += flow
+            flow_count += 1
 
-        time.sleep(1)
+            if (datetime.datetime.now() - notify_last_time).total_seconds() > 10:
+                # NOTE: 10秒ごとに途中集計を報告する
+                queue.put(
+                    {
+                        "type": "instantaneous",
+                        "flow": float(flow_sum - notify_last_flow_sum)
+                        / (flow_count - notify_last_count),
+                    }
+                )
+
+                notify_last_time = datetime.datetime.now()
+                notify_last_flow_sum = flow_sum
+                nofity_last_count = flow_count
+
+        # NOTE: 以下の処理はファイルシステムへのアクセスが発生するので，実施頻度を落とす
+        if i % 10 == 0:
+            if open_start_time is None:
+                if STAT_PATH_VALVE_OPEN.exists():
+                    # NOTE: バルブが開かれていたら，状態を変更してトータルの水量の集計を開始する
+                    open_start_time = datetime.datetime.now()
+                    notify_last_time = open_start_time
+            else:
+                if STAT_PATH_VALVE_CONTROL_COMMAND.exists():
+                    # NOTE: バルブコマンドが存在したら，閉じる時間をチェックして，必要に応じて閉じる
+                    try:
+                        with open(STAT_PATH_VALVE_CONTROL_COMMAND, "r") as f:
+                            close_time = datetime.datetime.fromtimestamp(int(f.read()))
+                            if datetime.datetime.now() > close_time:
+                                logging.info("Times is up, close valve")
+                                # NOTE: 下記の関数の中で
+                                # STAT_PATH_VALVE_CONTROL_COMMAND は削除される
+                                set_state(VALVE_STATE.CLOSE)
+                    except:
+                        logging.warning(traceback.format_exc())
+
+            if (not STAT_PATH_VALVE_OPEN.exists()) and (open_start_time is not None):
+                # NOTE: バルブが閉じられた後，流量が 0 になっていたらトータル流量を報告する
+                if int(flow) == 0:
+                    zero_count += 1
+
+                if zero_count > 2:
+                    period_sec = (
+                        datetime.datetime.now() - open_start_time
+                    ).total_seconds()
+
+                    logging.info([open_start_time, flow_sum, flow_count])
+
+                    queue.put(
+                        {
+                            "type": "total",
+                            "period": period_sec,
+                            # NOTE: 流量(L/min)の平均を求めてから期間(min)を掛ける
+                            "total": float(flow_sum) / flow_count * period_sec / 60,
+                        }
+                    )
+                    open_start_time = None
+                    flow_sum = 0
+                    flow_count = 0
+
+                    notify_last_time = None
+                    notify_last_flow_sum = 0
+                    notify_last_count = 0
+
+        time.sleep(0.1)
+        i += 1
 
     logging.info("Terminate valve control worker")
 
 
-def init(pin=GPIO_PIN_DEFAULT):
+def init(queue, pin=GPIO_PIN_DEFAULT):
     global pin_no
 
     pin_no = pin
 
     set_state(VALVE_STATE.CLOSE)
 
-    threading.Thread(target=control_worker).start()
+    threading.Thread(target=control_worker, args=(queue,)).start()
 
 
 # NOTE: 実際にバルブを開きます．
@@ -205,38 +294,45 @@ def get_control_mode():
             if close_time > now:
                 return {
                     "mode": CONTROL_MODE.TIMER,
-                    "remain": (close_time - now).seconds,
+                    "remain": int((close_time - now).total_seconds()),
                 }
             else:
                 logging.warn("Timer control of the valve may be broken")
                 return {"mode": CONTROL_MODE.TIMER, "remain": 0}
     else:
-        return {
-            "mode": CONTROL_MODE.IDLE,
-        }
+        return {"mode": CONTROL_MODE.IDLE, "remain": 0}
 
 
 if __name__ == "__main__":
     import logger
+    from multiprocessing import Queue
 
     logger.init("test", level=logging.INFO)
 
-    init()
+    queue = Queue()
+    init(queue)
 
     set_state(VALVE_STATE.OPEN)
     time.sleep(0.5)
-    logging.info("Flow: {flow:.2f}".format(flow=get_flow()))
+    logging.info("Flow: {flow:.2f}".format(flow=get_flow()["flow"]))
     time.sleep(0.5)
-    logging.info("Flow: {flow:.2f}".format(flow=get_flow()))
+    logging.info("Flow: {flow:.2f}".format(flow=get_flow()["flow"]))
     set_state(VALVE_STATE.CLOSE)
-    logging.info("Flow: {flow:.2f}".format(flow=get_flow()))
+    logging.info("Flow: {flow:.2f}".format(flow=get_flow()["flow"]))
 
-    set_control_mode(3)
+    set_control_mode(60)
     time.sleep(1)
     logging.info(get_control_mode())
     time.sleep(1)
     logging.info(get_control_mode())
     time.sleep(2)
     logging.info(get_control_mode())
+
+    while True:
+        info = queue.get()
+        logging.info(info)
+
+        if info["type"] == "total":
+            break
 
     should_terminate = 1

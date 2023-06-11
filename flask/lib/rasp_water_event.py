@@ -4,19 +4,19 @@ from flask import Blueprint, Response
 from enum import Enum
 import time
 
-from rasp_water_config import APP_PATH
+from rasp_water_config import APP_URL_PREFIX
 
-blueprint = Blueprint("rasp-water-event", __name__, url_prefix=APP_PATH)
+blueprint = Blueprint("rasp-water-event", __name__, url_prefix=APP_URL_PREFIX)
 
 
 class EVENT_TYPE(Enum):
-    MANUAL = "manual"
+    VALVE = "valve"
     LOG = "log"
     SCHEDULE = "schedule"
 
 
 event_count = {
-    EVENT_TYPE.MANUAL: 0,
+    EVENT_TYPE.VALVE: 0,
     EVENT_TYPE.LOG: 0,
     EVENT_TYPE.SCHEDULE: 0,
 }
