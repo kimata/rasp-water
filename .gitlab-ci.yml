@@ -1,10 +1,16 @@
 image: docker:24.0
 
 stages:
+    - clean
     - build
     - test
     # - deploy
     - renovate
+
+cleanup:
+    stage: clean
+    script:
+        - rm -rf /home/gitlab/cache/xxx/yyy/${CI_COMMIT_REF_NAME}*
 
 build-angular:
     stage: build
