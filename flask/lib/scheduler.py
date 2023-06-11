@@ -3,19 +3,78 @@
 
 import logging
 import schedule
+import time
+import requests
+import traceback
+import pathlib
+
+from rasp_water_log import app_log
+from config import load_config
+
+RETRY_COUNT = 3
 
 should_terminate = False
+
+
+def valve_auto_control_impl(url, period):
+    try:
+        res = requests.post(
+            url, params={"cmd": 1, "state": 1, "period": period * 60, "auto": True}
+        )
+        return res.status_code == 200
+    except:
+        logging.warning(traceback.format_exc())
+        pass
+
+    return False
+
+
+def valve_auto_control(url, period):
+    logging.info("Starts automatic control of the valve")
+
+    for i in range(RETRY_COUNT):
+        if valve_auto_control_impl(url, period):
+            return True
+
+    app_log("😵 水やりの自動実行に失敗しました。")
+    return False
 
 
 def set_schedule(schedule_setting_list):
     schedule.clear()
 
     for schedule_setting in schedule_setting_list:
-        schedule.every().day.at(schedule_setting["time"]).do(schedule_setting["func"])
+        if not schedule_setting["is_active"]:
+            continue
+
+        func = lambda: valve_auto_control(
+            schedule_setting["endpoint"], schedule_setting["period"]
+        )
+
+        if schedule_setting["wday"][0]:
+            schedule.every().sunday.at(schedule_setting["time"]).do(func)
+        if schedule_setting["wday"][1]:
+            schedule.every().monday.at(schedule_setting["time"]).do(func)
+        if schedule_setting["wday"][2]:
+            schedule.every().monday.at(schedule_setting["time"]).do(func)
+        if schedule_setting["wday"][3]:
+            schedule.every().monday.at(schedule_setting["time"]).do(func)
+        if schedule_setting["wday"][4]:
+            schedule.every().monday.at(schedule_setting["time"]).do(func)
+        if schedule_setting["wday"][5]:
+            schedule.every().monday.at(schedule_setting["time"]).do(func)
+        if schedule_setting["wday"][6]:
+            schedule.every().monday.at(schedule_setting["time"]).do(func)
 
 
-def start_scheduler(queue):
+def schedule_worker(queue):
     sleep_sec = 1
+    config = load_config()
+
+    liveness_file = pathlib.Path(config["liveness"]["file"]["scheduler"])
+    liveness_file.parent.mkdir(parents=True, exist_ok=True)
+
+    logging.info("Start schedule worker")
 
     while True:
         if not queue.empty():
@@ -24,11 +83,14 @@ def start_scheduler(queue):
         schedule.run_pending()
 
         if should_terminate:
-            logging.info("Terminate scheduler")
             break
+
+        liveness_file.touch()
 
         logging.debug("Sleep {sleep_sec} sec...".format(sleep_sec=sleep_sec))
         time.sleep(sleep_sec)
+
+    logging.info("Terminate schedule worker")
 
 
 if __name__ == "__main__":
@@ -49,10 +111,10 @@ if __name__ == "__main__":
     queue = Queue()
 
     pool = ThreadPool(processes=1)
-    result = pool.apply_async(start_scheduler, (queue,))
+    result = pool.apply_async(schedule_worker, (queue,))
 
     exec_time = datetime.datetime.now() + datetime.timedelta(seconds=5)
-    queue.put([{"time": exec_time.strftime("%H:%M:%S"), "func": test_func}])
+    queue.put([{"time": exec_time.strftime("%H:%M"), "func": test_func}])
 
     # NOTE: 終了するのを待つ
     result.get()

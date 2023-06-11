@@ -3,8 +3,6 @@
 
 import pathlib
 
-should_terminate = False
-
 APP_URL_PREFIX = "/rasp-water"
 
 SCHEDULE_DATA_PATH = pathlib.Path(__file__).parent.parent / "data" / "schedule.dat"

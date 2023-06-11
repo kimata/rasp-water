@@ -52,6 +52,10 @@ def app_log(message):
 
     logging.info(message)
 
+    # NOTE: ブラウザからアクセスされる前に再起動される場合．
+    if thread_pool is None:
+        app_log_impl(message)
+
     # NOTE: 実際のログ記録は別スレッドに任せて，すぐにリターンする
     thread_pool.apply_async(app_log_impl, (message,))
 
@@ -83,6 +87,8 @@ if __name__ == "__main__":
     import time
 
     logger.init("test", level=logging.INFO)
+
+    init()
 
     for i in range(5):
         app_log("テスト {i}".format(i=i))

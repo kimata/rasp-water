@@ -8,7 +8,7 @@ import logging
 import traceback
 import pathlib
 
-from rasp_water_config import STAT_DIR_PATH, should_terminate
+from rasp_water_config import STAT_DIR_PATH
 
 
 # バルブを一定期間開く際に作られるファイル．
@@ -117,15 +117,15 @@ except:
 
 
 pin_no = GPIO_PIN_DEFAULT
+should_terminate = False
 
 # NOTE: STAT_PATH_VALVE_CONTROL_COMMAND の内容に基づいて，
 # バルブを一定時間開けます
 def control_worker(queue):
-    global should_terminate
-
     logging.info("Start valve control worker")
 
     open_start_time = None
+    close_time = None
     flow_sum = 0
     flow_count = 0
     zero_count = 0
@@ -156,7 +156,7 @@ def control_worker(queue):
 
                 notify_last_time = datetime.datetime.now()
                 notify_last_flow_sum = flow_sum
-                nofity_last_count = flow_count
+                notify_last_count = flow_count
 
         # NOTE: 以下の処理はファイルシステムへのアクセスが発生するので，実施頻度を落とす
         if i % 10 == 0:
@@ -178,26 +178,40 @@ def control_worker(queue):
                                 set_state(VALVE_STATE.CLOSE)
                     except:
                         logging.warning(traceback.format_exc())
+                if (close_time is None) and STAT_PATH_VALVE_CLOSE.exists():
+                    close_time = datetime.datetime.now()
 
             if (not STAT_PATH_VALVE_OPEN.exists()) and (open_start_time is not None):
+                period_sec = (datetime.datetime.now() - open_start_time).total_seconds()
+
                 # NOTE: バルブが閉じられた後，流量が 0 になっていたらトータル流量を報告する
                 if int(flow) == 0:
                     zero_count += 1
 
+                stop_measure = False
                 if zero_count > 2:
-                    period_sec = (
-                        datetime.datetime.now() - open_start_time
-                    ).total_seconds()
+                    # NOTE: 流量(L/min)の平均を求めてから期間(min)を掛ける
+                    total = float(flow_sum) / flow_count * period_sec / 60
 
                     queue.put(
                         {
                             "type": "total",
                             "period": period_sec,
-                            # NOTE: 流量(L/min)の平均を求めてから期間(min)を掛ける
-                            "total": float(flow_sum) / flow_count * period_sec / 60,
+                            "total": total,
                         }
                     )
+
+                    if (period_sec > 30) and (total < 1):
+                        queue.put({"type": "error", "message": "😵 元栓が閉まっている可能性があります．"})
+
+                    stop_measure = True
+                elif (datetime.datetime.now() - close_time).total_seconds() > 60:
+                    queue.put({"type": "error", "message": "😵 バルブを閉めても水が流れ続けています．"})
+                    stop_measure = True
+
+                if stop_measure:
                     open_start_time = None
+                    close_time = None
                     flow_sum = 0
                     flow_count = 0
 
