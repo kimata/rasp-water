@@ -9,27 +9,51 @@
                 "createDefaultProgram": true
             },
             "extends": [
-                "plugin:@angular-eslint/ng-cli-compat",
-                "plugin:@angular-eslint/ng-cli-compat--formatting-add-on",
                 "plugin:@angular-eslint/template/process-inline-templates"
             ],
             "rules": {
-                "@angular-eslint/component-selector": [
+                "@typescript-eslint/naming-convention": [
                     "error",
                     {
-                        "type": "element",
-                        "prefix": "app",
-                        "style": "kebab-case"
+                        "selector": "default",
+                        "format": ["camelCase"],
+                        "leadingUnderscore": "allow",
+                        "trailingUnderscore": "allow"
+                    },
+                    {
+                        "selector": "classProperty",
+                        "modifiers": ["readonly"],
+                        "format": ["UPPER_CASE"]
+                    },
+                    {
+                        "selector": "parameterProperty",
+                        "modifiers": ["readonly"],
+                        "format": ["UPPER_CASE"]
+                    },
+                    {
+                        "selector": "variable",
+                        "format": ["camelCase", "UPPER_CASE"],
+                        "leadingUnderscore": "allow",
+                        "trailingUnderscore": "allow"
+                    },
+                    {
+                        "selector": "typeLike",
+                        "format": ["PascalCase"]
                     }
                 ],
-                "@angular-eslint/directive-selector": [
-                    "error",
+                "@typescript-eslint/consistent-type-definitions": "error",
+                "@typescript-eslint/dot-notation": "off",
+                "@typescript-eslint/explicit-member-accessibility": [
+                    "off",
                     {
-                        "type": "attribute",
-                        "prefix": "app",
-                        "style": "camelCase"
+                        "accessibility": "explicit"
                     }
-                ]
+                ],
+                "@typescript-eslint/no-use-before-define": "error",
+                "brace-style": ["error", "1tbs"],
+                "id-blacklist": "off",
+                "id-match": "off",
+                "no-underscore-dangle": "off"
             }
         },
         {
