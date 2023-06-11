@@ -7,6 +7,7 @@ import threading
 import logging
 from multiprocessing import Queue
 import time
+import pathlib
 import fluent.sender
 
 from config import load_config
@@ -66,6 +67,11 @@ def second_str(sec):
 def flow_notify_worker(queue):
     global should_terminate
 
+    config = load_config()
+
+    liveness_file = pathlib.Path(config["liveness"]["file"]["flow_notify"])
+    liveness_file.parent.mkdir(parents=True, exist_ok=True)
+
     logging.info("Start flow notify worker")
 
     while True:
@@ -85,6 +91,8 @@ def flow_notify_worker(queue):
                 send_data(stat["flow"])
             elif stat["type"] == "error":
                 app_log(stat["message"])
+
+        liveness_file.touch()
 
         time.sleep(1)
 

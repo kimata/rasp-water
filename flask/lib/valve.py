@@ -9,6 +9,7 @@ import traceback
 import pathlib
 
 from rasp_water_config import STAT_DIR_PATH
+from config import load_config
 
 
 # バルブを一定期間開く際に作られるファイル．
@@ -122,6 +123,12 @@ should_terminate = False
 # NOTE: STAT_PATH_VALVE_CONTROL_COMMAND の内容に基づいて，
 # バルブを一定時間開けます
 def control_worker(queue):
+    global should_terminate
+
+    config = load_config()
+    liveness_file = pathlib.Path(config["liveness"]["file"]["valve_control"])
+    liveness_file.parent.mkdir(parents=True, exist_ok=True)
+
     logging.info("Start valve control worker")
 
     open_start_time = None
@@ -160,6 +167,8 @@ def control_worker(queue):
 
         # NOTE: 以下の処理はファイルシステムへのアクセスが発生するので，実施頻度を落とす
         if i % 10 == 0:
+            liveness_file.touch()
+
             if open_start_time is None:
                 if STAT_PATH_VALVE_OPEN.exists():
                     # NOTE: バルブが開かれていたら，状態を変更してトータルの水量の集計を開始する

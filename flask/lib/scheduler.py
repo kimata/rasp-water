@@ -68,6 +68,8 @@ def set_schedule(schedule_setting_list):
 
 
 def schedule_worker(queue):
+    global should_terminate
+
     sleep_sec = 1
     config = load_config()
 
