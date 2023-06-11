@@ -1,12 +1,12 @@
-import { Subscription } from "rxjs";
+import { Subscription } from 'rxjs';
 
-import { Component, OnInit } from "@angular/core";
-import { Inject } from "@angular/core";
-import { HttpClient, HttpParams } from "@angular/common/http";
+import { Component, OnInit } from '@angular/core';
+import { Inject } from '@angular/core';
+import { HttpClient, HttpParams } from '@angular/common/http';
 
-import { PushService } from "../service/push.service";
-import { FormsModule } from "@angular/forms";
-import { NgIf, DecimalPipe, PercentPipe } from "@angular/common";
+import { PushService } from '../service/push.service';
+import { FormsModule } from '@angular/forms';
+import { NgIf, DecimalPipe, PercentPipe } from '@angular/common';
 
 export interface ControlResponse {
     state: string;
@@ -19,9 +19,9 @@ export interface FlowResponse {
 }
 
 @Component({
-    selector: "app-valve-control",
-    templateUrl: "./valve-control.component.html",
-    styleUrls: ["./valve-control.component.scss"],
+    selector: 'app-valve-control',
+    templateUrl: './valve-control.component.html',
+    styleUrls: ['./valve-control.component.scss'],
     standalone: true,
     imports: [NgIf, FormsModule, DecimalPipe, PercentPipe],
 })
@@ -49,14 +49,14 @@ export class ValveControlComponent implements OnInit {
     constructor(
         private http: HttpClient,
         private pushService: PushService,
-        @Inject("ApiEndpoint") private readonly API_URL: string
+        @Inject('ApiEndpoint') private readonly API_URL: string
     ) {}
 
     ngOnInit() {
         this.updateCtrl(false);
         this.watchFlow();
         this.subscription = this.pushService.dataSource$.subscribe((msg) => {
-            if (msg == "valve") {
+            if (msg == 'valve') {
                 this.updateCtrl(false);
             }
         });
@@ -73,54 +73,54 @@ export class ValveControlComponent implements OnInit {
         // NOTE: state が true の場合は制御
         let param = new HttpParams();
         if (cmd) {
-            param = param.set("cmd", "1");
-            param = param.set("state", state ? 1 : 0);
-            param = param.set("period", String(this.period * 60));
+            param = param.set('cmd', '1');
+            param = param.set('state', state ? 1 : 0);
+            param = param.set('period', String(this.period * 60));
         }
         this.http
             .jsonp<ControlResponse>(
                 `${this.API_URL}/valve_ctrl?${param.toString()}`,
-                "callback"
+                'callback'
             )
             .subscribe(
                 (res: ControlResponse) => {
-                    if (res["state"] == "1") {
+                    if (res['state'] == '1') {
                         this.watchFlow();
                     }
-                    this.state = res["state"] == "1";
-                    this.remain = Number(res["remain"]);
-                    this.error["ctrl"] = false;
+                    this.state = res['state'] == '1';
+                    this.remain = Number(res['remain']);
+                    this.error['ctrl'] = false;
                     this.loading = false;
                 },
                 (error) => {
-                    this.error["ctrl"] = true;
+                    this.error['ctrl'] = true;
                     this.loading = false;
                 }
             );
     }
 
     watchFlow() {
-        if (this.interval["flow"] != 0) {
+        if (this.interval['flow'] != 0) {
             return;
         }
-        this.interval["flow"] = setInterval(() => {
+        this.interval['flow'] = window.setInterval(() => {
             this.updateCtrl(false);
             this.updateFlow();
         }, 500);
     }
 
     unwatchFlow() {
-        clearInterval(this.interval["flow"]);
-        this.interval["flow"] = 0;
+        clearInterval(this.interval['flow']);
+        this.interval['flow'] = 0;
     }
 
     updateFlow() {
         this.http
-            .jsonp<FlowResponse>(`${this.API_URL}/valve_flow`, "callback")
+            .jsonp<FlowResponse>(`${this.API_URL}/valve_flow`, 'callback')
             .subscribe(
                 (res: FlowResponse) => {
-                    this.flow = Math.min(Number(res["flow"]), this.FLOW_MAX);
-                    this.error["flow"] = false;
+                    this.flow = Math.min(Number(res['flow']), this.FLOW_MAX);
+                    this.error['flow'] = false;
                     if (Math.round(this.flow) == 0) {
                         this.flowZeroCount++;
                     } else {
@@ -134,7 +134,7 @@ export class ValveControlComponent implements OnInit {
                     }
                 },
                 (error) => {
-                    this.error["flow"] = true;
+                    this.error['flow'] = true;
                 }
             );
     }
