@@ -1,16 +1,10 @@
 image: docker:24.0
 
 stages:
-    - clean
     - build
     - test
     # - deploy
     - renovate
-
-cleanup:
-    stage: clean
-    script:
-        - rm -rf /home/gitlab/cache/
 
 build-angular:
     stage: build
@@ -18,10 +12,10 @@ build-angular:
     script:
         - npm ci --cache .npm --prefer-offline
         - npm run build
-    cache:
-        key: npm
-        paths:
-            - .npm/
+    # cache:
+    #     key: npm
+    #     paths:
+    #         - .npm/
 
 test-angular:
     stage: test
@@ -31,10 +25,10 @@ test-angular:
         - npm run start &
         - npm run cypress:run
 
-    cache:
-        key: npm
-        paths:
-            - .npm/
+    # cache:
+    #     key: npm
+    #     paths:
+    #         - .npm/
 
 # build-image:
 #   stage: build
