@@ -39,6 +39,7 @@
                                     class="form-control"
                                     [(ngModel)]="period"
                                     (change)="updatePeriod()"
+                                    (click)="$any($event.target).select()"
                                     type="number"
                                     min="1"
                                     max="30"

@@ -1,50 +1,82 @@
 <form class="mb-2">
-  <div class="container">
-    <div class="switchToggle mt-2">
-      <input type="checkbox" id="schedule-entry-{{id}}" name="enabled"
-             [(ngModel)]="state.is_active" (ngModelChange)="update()" />
-      <label for="schedule-entry-{{id}}"></label>
-    </div>
-  </div>
-  <div class="container">
-    <h3>開始時刻</h3>
-    <div class="form-group">
-      <div class="input-group" id="schedule-entry-time-{{id}}">
-        <input type="time" class="form-control" [attr.data-target]="'#schedule-entry-time-' + id"
-               [(ngModel)]="state.time" (ngModelChange)="update()"
-               name="time-{{id}}"
-               [disabled]="!state.is_active" />
-        <div class="input-group-append" [attr.data-target]="'#schedule-entry-time-' + id">
-          <div class="input-group-text time-icon"></div>
+    <div class="container">
+        <div class="switchToggle mt-2">
+            <input
+                type="checkbox"
+                id="schedule-entry-{{ id }}"
+                name="enabled"
+                [(ngModel)]="state.is_active"
+                (ngModelChange)="update()"
+            />
+            <label for="schedule-entry-{{ id }}"></label>
         </div>
-      </div>
     </div>
-  </div>
+    <div class="container">
+        <h3>開始時刻</h3>
+        <div class="form-group">
+            <div class="input-group" id="schedule-entry-time-{{ id }}">
+                <input
+                    type="time"
+                    class="form-control"
+                    [attr.data-target]="'#schedule-entry-time-' + id"
+                    [(ngModel)]="state.time"
+                    (ngModelChange)="update()"
+                    name="time-{{ id }}"
+                    [disabled]="!state.is_active"
+                />
+                <div
+                    class="input-group-append"
+                    [attr.data-target]="'#schedule-entry-time-' + id"
+                >
+                    <div class="input-group-text time-icon"></div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-  <div class="container">
-    <h3>散水時間</h3>
-    <div class="input-group mb-3">
-      <input class="form-control" name="period-{{id}}"
-             [(ngModel)]="state.period" (ngModelChange)="update()"
-             type="number" min="1" max="30" value="42" pattern="\d*"
-             aria-label="散水する期間を分単位で指定します．"
-             id="schedule-period" [disabled]="!state.is_active" />
-      <div class="input-group-append">
-        <span class="input-group-text">min</span>
-      </div>
+    <div class="container">
+        <h3>散水時間</h3>
+        <div class="input-group mb-3">
+            <input
+                class="form-control"
+                name="period-{{ id }}"
+                [(ngModel)]="state.period"
+                (ngModelChange)="update()"
+                (click)="$any($event.target).select()"
+                type="number"
+                min="1"
+                max="30"
+                value="42"
+                pattern="\d*"
+                aria-label="散水する期間を分単位で指定します．"
+                id="schedule-period"
+                [disabled]="!state.is_active"
+            />
+            <div class="input-group-append">
+                <span class="input-group-text">min</span>
+            </div>
+        </div>
     </div>
-  </div>
-  <div class="container">
-    <h3>曜日</h3>
-    <span *ngFor="let wday of ['日', '月', '火', '水', '木', '金', '土']; let i=index"
-          class="me-2">
-      <input type="checkbox" name="wday" id="wday-{{id}}-{{i}}"
-             [(ngModel)]="state.wday[i]" (ngModelChange)="update()"
-             (click)="changeWday($event, i)"
-             [ngModelOptions]="{standalone: true}"
-             [disabled]="!state.is_active" />
-      <label for="wday-{{id}}-{{i}}">{{wday}}</label>
-    </span>
-  </div>
+    <div class="container">
+        <h3>曜日</h3>
+        <span
+            *ngFor="
+                let wday of ['日', '月', '火', '水', '木', '金', '土'];
+                let i = index
+            "
+            class="me-2"
+        >
+            <input
+                type="checkbox"
+                name="wday"
+                id="wday-{{ id }}-{{ i }}"
+                [(ngModel)]="state.wday[i]"
+                (ngModelChange)="update()"
+                (click)="changeWday($event, i)"
+                [ngModelOptions]="{ standalone: true }"
+                [disabled]="!state.is_active"
+            />
+            <label for="wday-{{ id }}-{{ i }}">{{ wday }}</label>
+        </span>
+    </div>
 </form>
-
