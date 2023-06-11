@@ -10,7 +10,7 @@ stages:
 cleanup:
     stage: clean
     script:
-        - rm -rf /home/gitlab/cache/xxx/yyy/${CI_COMMIT_REF_NAME}*
+        - rm -rf /home/gitlab/cache/
 
 build-angular:
     stage: build
