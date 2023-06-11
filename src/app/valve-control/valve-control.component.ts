@@ -89,7 +89,6 @@ export class ValveControlComponent implements OnInit {
                     }
                     this.state = res["state"] == "1";
                     this.remain = Number(res["remain"]);
-                    console.log(this.remain);
                     this.error["ctrl"] = false;
                     this.loading = false;
                 },
