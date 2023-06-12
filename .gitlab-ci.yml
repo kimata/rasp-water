@@ -35,6 +35,7 @@ test-flask:
     image: ubuntu:22.04
     script:
         - apt update
+        - apt install -y tzdata
         - apt install -y git
         - apt install -y python3-flask
         - apt install -y python3-yaml
