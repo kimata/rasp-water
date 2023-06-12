@@ -22,11 +22,20 @@ test-angular:
     script:
         - npm ci --cache .npm --prefer-offline
         - npx start-server-and-test 'ng serve' 4200 'npx cypress run'
-
+    artifacts:
+        paths:
+            - dist/
     cache:
         key: npm
         paths:
             - .npm/
+
+test-flask:
+    image: ubuntu:22.04
+    script:
+        - ls dist
+    dependencies:
+        - build-angular
 
 # build-image:
 #   stage: build
