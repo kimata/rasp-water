@@ -1,2 +1,1 @@
-playwright
-pytest-playwright
+slack_sdk

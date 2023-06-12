@@ -37,6 +37,14 @@ test-flask:
         - export GIT_SSL_NO_VERIFY=1
         - git clone https://gitlab.green-rabbit.net/kimata/hems_config.git
         - mv hems_config/rasp-water.yaml config.yaml
+        - apt install -y python3-flask
+        - apt install -y python3-yaml
+        - apt install -y python3-schedule
+        - apt install -y python3-fluent-logger
+        - apt install -y python3-coloredlogs
+        - apt install -y python3-psutil
+        - apt install -y python3-pip
+        - pip install -r requirements.txt
         - python3 ./flask/app/app.py 2>&1 | tee flask.log &
         - python3 -m pytest test/test_basic.py
     artifacts:
