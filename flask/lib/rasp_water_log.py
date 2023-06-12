@@ -1,17 +1,28 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+from enum import IntEnum
 from flask import jsonify, Blueprint, g
 import logging
 import threading
 import sqlite3
 from multiprocessing.pool import ThreadPool
 
+from config import load_config
 from rasp_water_config import APP_URL_PREFIX, LOG_DB_PATH
 from rasp_water_event import notify_event, EVENT_TYPE
 from flask_util import support_jsonp, gzipped
+import notify_slack
+
+
+class APP_LOG_LEVEL(IntEnum):
+    INFO = 0
+    WARN = 1
+    ERROR = 2
+
 
 blueprint = Blueprint("rasp-water-log", __name__, url_prefix=APP_URL_PREFIX)
 
+config = None
 sqlite = None
 log_lock = None
 thread_pool = None
@@ -19,9 +30,12 @@ thread_pool = None
 
 @blueprint.before_app_first_request
 def init():
+    global config
     global sqlite
     global log_lock
     global thread_pool
+
+    config = load_config()
 
     sqlite = sqlite3.connect(LOG_DB_PATH, check_same_thread=False)
     sqlite.execute("CREATE TABLE IF NOT EXISTS log(date INT, message TEXT)")
@@ -32,7 +46,7 @@ def init():
     thread_pool = ThreadPool(processes=3)
 
 
-def app_log_impl(message):
+def app_log_impl(message, level):
     with log_lock:
         sqlite.execute(
             'INSERT INTO log VALUES (DATETIME("now", "localtime"), ?)', [message]
@@ -44,8 +58,17 @@ def app_log_impl(message):
 
         notify_event(EVENT_TYPE.LOG)
 
+    if (level == APP_LOG_LEVEL.ERROR) and ("slack" in config):
+        notify_slack.error(
+            config["slack"]["bot_token"],
+            config["slack"]["error"]["channel"]["name"],
+            config["slack"]["from"],
+            message,
+            config["slack"]["error"]["interval_min"],
+        )
 
-def app_log(message):
+
+def app_log(message, level=APP_LOG_LEVEL.INFO):
     global thread_pool
 
     logging.info(message)
@@ -55,7 +78,7 @@ def app_log(message):
         app_log_impl(message)
 
     # NOTE: 実際のログ記録は別スレッドに任せて，すぐにリターンする
-    thread_pool.apply_async(app_log_impl, (message,))
+    thread_pool.apply_async(app_log_impl, (message, level))
 
 
 @blueprint.route("/api/log_clear", methods=["GET"])

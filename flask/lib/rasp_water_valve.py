@@ -13,7 +13,7 @@ import fluent.sender
 from config import load_config
 from rasp_water_config import APP_URL_PREFIX
 from rasp_water_event import notify_event, EVENT_TYPE
-from rasp_water_log import app_log
+from rasp_water_log import app_log, APP_LOG_LEVEL
 from flask_util import support_jsonp, remote_host
 import valve
 
@@ -90,7 +90,7 @@ def flow_notify_worker(queue):
             elif stat["type"] == "instantaneous":
                 send_data(stat["flow"])
             elif stat["type"] == "error":
-                app_log(stat["message"])
+                app_log(stat["message"], APP_LOG_LEVEL.ERROR)
 
         liveness_file.touch()
 
