@@ -35,6 +35,10 @@ test-flask:
     image: ubuntu:22.04
     script:
         - ls dist
+        - apt update
+        - apt install -y python3-flask
+        - apt install -y python3-schedule
+        - ./flask/app/app.py
     dependencies:
         - build-angular
 
