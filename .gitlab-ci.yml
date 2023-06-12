@@ -40,6 +40,7 @@ test-flask:
         - apt install -y python3-yaml
         - apt install -y python3-schedule
         - apt install -y python3-fluent-logger
+        - apt install -y python3-psutil
         - apt install -y python3-pip
         - pip install -r requirements.txt
         - ./flask/app/app.py
