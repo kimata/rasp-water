@@ -36,7 +36,7 @@ test-flask:
     script:
         - ls dist
     dependencies:
-        - build-cypress
+        - build-angular
 
 # build-image:
 #   stage: build
