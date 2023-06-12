@@ -11,6 +11,9 @@ build-angular:
     script:
         - npm ci --cache .npm --prefer-offline
         - npm run build
+    artifacts:
+        paths:
+            - dist/
     cache:
         key: npm
         paths:
@@ -21,10 +24,7 @@ test-cypress:
     image: cypress/included:12.13.0
     script:
         - npm ci --cache .npm --prefer-offline
-        - npx start-server-and-test 'ng serve' 4200 'npx cypress run'
-    artifacts:
-        paths:
-            - dist/
+        - npx start-server-and-test 'ng serve' http-get://localhost:4200/ 'npx cypress run'
     cache:
         key: npm
         paths:
