@@ -34,13 +34,12 @@ test-flask:
     stage: test
     image: ubuntu:22.04
     script:
-        - ls dist
         - apt update
         - apt install -y python3-flask
         - apt install -y python3-yaml
         - apt install -y python3-schedule
         - apt install -y python3-fluent-logger
-        - apt install -y python3-coloredlog
+        - apt install -y python3-coloredlogs
         - apt install -y python3-psutil
         - apt install -y python3-pip
         - pip install -r requirements.txt
