@@ -49,7 +49,8 @@ test-flask:
           libcairo2 libasound2
         - pip install -r requirements.txt
         - python3 -m playwright install
-        - python3 ./flask/app/app.py > flask.log 2>&1 &
+        # - python3 ./flask/app/app.py > flask.log 2>&1 &
+        - python3 ./flask/app/app.py &
         - python3 -m pytest test/test_basic.py
     artifacts:
         paths:
