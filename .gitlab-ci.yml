@@ -21,8 +21,7 @@ test-angular:
     image: cypress/included:12.13.0
     script:
         - npm ci --cache .npm --prefer-offline
-        - npm run start &
-        - npm run cypress:run
+        - npx start-server-and-test 'ng serve' 4200 'npx cypress run'
 
     cache:
         key: npm
