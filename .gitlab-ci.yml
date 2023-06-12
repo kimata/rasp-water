@@ -43,9 +43,9 @@ test-flask:
         - apt install -y python3-psutil
         - apt install -y python3-pip
         - pip install -r requirements.txt
-        - python -m playwright install
-        - ./flask/app/app.py > flask.log 2>&1 &
-        - python -m pytest test/test_basic.py
+        - python3 -m playwright install
+        - python3 ./flask/app/app.py > flask.log 2>&1 &
+        - python3 -m pytest test/test_basic.py
     artifacts:
         paths:
             - flask.log
