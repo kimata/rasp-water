@@ -32,21 +32,8 @@ test-cypress:
 
 test-flask:
     stage: test
-    image: ubuntu:22.04
+    image: registry.green-rabbit.net:5000/kimata/local_playwright:latest
     script:
-        - apt update
-        - apt install -y tzdata
-        - apt install -y git
-        - apt install -y python3-flask
-        - apt install -y python3-yaml
-        - apt install -y python3-schedule
-        - apt install -y python3-fluent-logger
-        - apt install -y python3-coloredlogs
-        - apt install -y python3-psutil
-        - apt install -y python3-pip
-        - pip install -r requirements.txt
-        - python3 -m playwright install
-        - python3 -m playwright install-deps
         - export GIT_SSL_NO_VERIFY=1
         - git clone https://gitlab.green-rabbit.net/kimata/hems_config.git
         - mv hems_config/rasp-water.yaml config.yaml
