@@ -38,6 +38,8 @@ test-flask:
         - apt update
         - apt install -y python3-flask
         - apt install -y python3-schedule
+        - apt install -y python3-fluent-logger
+        - pip install -r requirements.txt
         - ./flask/app/app.py
     dependencies:
         - build-angular
