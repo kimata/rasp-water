@@ -318,13 +318,14 @@ def get_control_mode():
             close_time = datetime.datetime.fromtimestamp(int(f.read()))
             now = datetime.datetime.now()
 
-            if close_time > now:
+            if close_time >= now:
                 return {
                     "mode": CONTROL_MODE.TIMER,
                     "remain": int((close_time - now).total_seconds()),
                 }
             else:
-                logging.warn("Timer control of the valve may be broken")
+                if (now - close_time).total_seconds() > 1:
+                    logging.warn("Timer control of the valve may be broken")
                 return {"mode": CONTROL_MODE.TIMER, "remain": 0}
     else:
         return {"mode": CONTROL_MODE.IDLE, "remain": 0}

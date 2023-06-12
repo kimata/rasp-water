@@ -11,6 +11,7 @@ import urllib.parse
 from multiprocessing import Queue
 
 from rasp_water_config import APP_URL_PREFIX, SCHEDULE_DATA_PATH
+from rasp_water_event import notify_event, EVENT_TYPE
 from rasp_water_log import app_log
 from flask_util import support_jsonp, remote_host
 import scheduler
@@ -130,6 +131,7 @@ def api_schedule_ctrl():
                 entry["endpoint"] = endpoint
             schedule_store(schedule)
             schedule_queue.put(schedule)
+            notify_event(EVENT_TYPE.SCHEDULE)
 
             host = remote_host(request)
             app_log(

@@ -50,21 +50,23 @@ def set_schedule(schedule_setting_list):
         func = lambda: valve_auto_control(
             schedule_setting["endpoint"], schedule_setting["period"]
         )
-
         if schedule_setting["wday"][0]:
             schedule.every().sunday.at(schedule_setting["time"]).do(func)
         if schedule_setting["wday"][1]:
             schedule.every().monday.at(schedule_setting["time"]).do(func)
         if schedule_setting["wday"][2]:
-            schedule.every().monday.at(schedule_setting["time"]).do(func)
+            schedule.every().tuesday.at(schedule_setting["time"]).do(func)
         if schedule_setting["wday"][3]:
-            schedule.every().monday.at(schedule_setting["time"]).do(func)
+            schedule.every().wednesday.at(schedule_setting["time"]).do(func)
         if schedule_setting["wday"][4]:
-            schedule.every().monday.at(schedule_setting["time"]).do(func)
+            schedule.every().thursday.at(schedule_setting["time"]).do(func)
         if schedule_setting["wday"][5]:
-            schedule.every().monday.at(schedule_setting["time"]).do(func)
+            schedule.every().friday.at(schedule_setting["time"]).do(func)
         if schedule_setting["wday"][6]:
-            schedule.every().monday.at(schedule_setting["time"]).do(func)
+            schedule.every().saturday.at(schedule_setting["time"]).do(func)
+
+    for job in schedule.get_jobs():
+        logging.info("Next run: {next_run}".format(next_run=job.next_run))
 
 
 def schedule_worker(queue):

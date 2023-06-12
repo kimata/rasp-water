@@ -33,8 +33,6 @@ def init():
 
 
 def app_log_impl(message):
-    global event_count
-
     with log_lock:
         sqlite.execute(
             'INSERT INTO log VALUES (DATETIME("now", "localtime"), ?)', [message]
@@ -66,7 +64,7 @@ def api_log_clear():
     with log_lock:
         cur = sqlite.cursor()
         cur.execute("DELETE FROM log")
-    app_log("ログがクリアされました。")
+    app_log("🧹 ログがクリアされました。")
 
     return jsonify({"result": "success"})
 
