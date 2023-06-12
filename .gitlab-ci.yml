@@ -16,7 +16,7 @@ build-angular:
         paths:
             - .npm/
 
-test-angular:
+test-cypress:
     stage: test
     image: cypress/included:12.13.0
     script:
@@ -31,11 +31,12 @@ test-angular:
             - .npm/
 
 test-flask:
+    stage: test
     image: ubuntu:22.04
     script:
         - ls dist
     dependencies:
-        - build-angular
+        - build-cypress
 
 # build-image:
 #   stage: build
