@@ -37,7 +37,7 @@ test-flask:
         - export GIT_SSL_NO_VERIFY=1
         - git clone https://gitlab.green-rabbit.net/kimata/hems_config.git
         - mv hems_config/rasp-water.yaml config.yaml
-        - python3 ./flask/app/app.py > flask.log 2>&1 &
+        - python3 ./flask/app/app.py 2>&1 | tee flask.log &
         - python3 -m pytest test/test_basic.py
     artifacts:
         paths:
