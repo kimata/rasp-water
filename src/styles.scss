@@ -96,7 +96,7 @@ input[type="checkbox"] {
 .switchToggle input + input + label:before {
     content: "OFF";
     position: absolute;
-    top: 2px;
+    top: 3px;
     left: 35px;
     width: 26px;
     height: 26px;
@@ -109,7 +109,7 @@ input[type="checkbox"] {
 .switchToggle input:checked + input + label:before {
     content: "ON";
     position: absolute;
-    top: 2px;
+    top: 3px;
     left: 10px;
     width: 26px;
     height: 26px;
