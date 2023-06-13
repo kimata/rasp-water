@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+import os
 from enum import IntEnum
 from flask import jsonify, Blueprint, g, current_app
 import logging
@@ -57,20 +58,30 @@ def app_log_impl(message, level):
 
         notify_event(EVENT_TYPE.LOG)
 
-    if (level == APP_LOG_LEVEL.ERROR) and ("slack" in config):
-        notify_slack.error(
-            config["slack"]["bot_token"],
-            config["slack"]["error"]["channel"]["name"],
-            config["slack"]["from"],
-            message,
-            config["slack"]["error"]["interval_min"],
-        )
+    if level == APP_LOG_LEVEL.ERROR:
+        if "slack" in config:
+            notify_slack.error(
+                config["slack"]["bot_token"],
+                config["slack"]["error"]["channel"]["name"],
+                config["slack"]["from"],
+                message,
+                config["slack"]["error"]["interval_min"],
+            )
+
+        if current_app.config["DUMMY_MODE"]:
+            logging.error("This application is terminated because it is in dummy mode.")
+            os._exit(-1)
 
 
 def app_log(message, level=APP_LOG_LEVEL.INFO):
     global thread_pool
 
-    logging.info(message)
+    if level == APP_LOG_LEVEL.ERROR:
+        logging.error(message)
+    elif level == APP_LOG_LEVEL.WARN:
+        logging.warning(message)
+    else:
+        logging.info(message)
 
     # NOTE: ブラウザからアクセスされる前に再起動される場合．
     if thread_pool is None:
