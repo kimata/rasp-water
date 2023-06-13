@@ -1,0 +1,34 @@
+fluent:
+    host: proxy.green-rabbit.net
+
+    data:
+        hostname: rasp-water-1
+        tag: hems
+
+weather:
+    yahoo:
+        id: XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+    point:
+        lat: 35.68
+        lon: 139.73
+    rain_fall:
+        # NOTE: 4時間前から 3mm 以上の降雨があったら，雨降りと判定
+        before_hour: 6
+        threshold: 3
+
+slack:
+    bot_token: xoxb-XXXXXXXXXXXX-XXXXXXXXXXXXX-XXXXXXXXXXXXXXXXXXXXXXXX
+
+    from: Watering
+
+    error:
+        channel:
+            name: "#error"
+            id: XXXXXXXXXXX
+        interval_min: 180
+
+liveness:
+    file:
+        scheduler: /dev/shm/rasp-water/liveness/scheduler
+        valve_control: /dev/shm/rasp-water/liveness/valve_control
+        flow_notify: /dev/shm/rasp-water/liveness/flow_notify
