@@ -8,7 +8,7 @@ import requests
 import traceback
 import pathlib
 
-from rasp_water_log import app_log
+from webapp_log import app_log
 
 RETRY_COUNT = 3
 

@@ -8,8 +8,8 @@ import threading
 import sqlite3
 from multiprocessing.pool import ThreadPool
 
-from rasp_water_config import APP_URL_PREFIX, LOG_DB_PATH
-from rasp_water_event import notify_event, EVENT_TYPE
+from webapp_config import APP_URL_PREFIX, LOG_DB_PATH
+from webapp_event import notify_event, EVENT_TYPE
 from flask_util import support_jsonp, gzipped
 import notify_slack
 
@@ -20,7 +20,7 @@ class APP_LOG_LEVEL(IntEnum):
     ERROR = 2
 
 
-blueprint = Blueprint("rasp-water-log", __name__, url_prefix=APP_URL_PREFIX)
+blueprint = Blueprint("webapp-log", __name__, url_prefix=APP_URL_PREFIX)
 
 config = None
 sqlite = None

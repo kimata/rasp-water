@@ -8,7 +8,7 @@ import logging
 import traceback
 import pathlib
 
-from rasp_water_config import STAT_DIR_PATH
+from webapp_config import STAT_DIR_PATH
 
 
 # バルブを一定期間開く際に作られるファイル．

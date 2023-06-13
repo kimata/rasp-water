@@ -10,9 +10,9 @@ import traceback
 import urllib.parse
 from multiprocessing import Queue
 
-from rasp_water_config import APP_URL_PREFIX, SCHEDULE_DATA_PATH
-from rasp_water_event import notify_event, EVENT_TYPE
-from rasp_water_log import app_log
+from webapp_config import APP_URL_PREFIX, SCHEDULE_DATA_PATH
+from webapp_event import notify_event, EVENT_TYPE
+from webapp_log import app_log
 from flask_util import support_jsonp, remote_host
 import scheduler
 

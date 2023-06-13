@@ -56,7 +56,7 @@ export class ValveControlComponent implements OnInit {
         this.updateCtrl(false);
         this.watchFlow();
         this.subscription = this.pushService.dataSource$.subscribe((msg) => {
-            if (msg == 'valve') {
+            if (msg == 'control') {
                 this.updateCtrl(false);
             }
         });

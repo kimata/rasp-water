@@ -22,20 +22,20 @@ import atexit
 
 sys.path.append(str(pathlib.Path(__file__).parent.parent / "lib"))
 
-import rasp_water_config
-import rasp_water
 import rasp_water_valve
 import rasp_water_schedule
-import rasp_water_util
-import rasp_water_log
-import rasp_water_event
+
+import webapp_base
+import webapp_util
+import webapp_log
+import webapp_event
 
 import valve
 
 
 def notify_terminate():
     valve.set_state(valve.VALVE_STATE.CLOSE)
-    rasp_water_log.app_log("🏃 アプリを再起動します．")
+    webapp_log.app_log("🏃 アプリを再起動します．")
     # NOTE: ログを送信できるまでの時間待つ
     time.sleep(1)
 
@@ -67,12 +67,12 @@ if __name__ == "__main__":
 
     app.config["JSONIFY_PRETTYPRINT_REGULAR"] = True
 
-    app.register_blueprint(rasp_water.blueprint)
     app.register_blueprint(rasp_water_valve.blueprint)
     app.register_blueprint(rasp_water_schedule.blueprint)
-    app.register_blueprint(rasp_water_event.blueprint)
-    app.register_blueprint(rasp_water_log.blueprint)
-    app.register_blueprint(rasp_water_util.blueprint)
+    app.register_blueprint(webapp_base.blueprint)
+    app.register_blueprint(webapp_event.blueprint)
+    app.register_blueprint(webapp_log.blueprint)
+    app.register_blueprint(webapp_util.blueprint)
 
     # app.debug = True
     # NOTE: スクリプトの自動リロード停止したい場合は use_reloader=False にする
