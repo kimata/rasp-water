@@ -159,7 +159,7 @@ def api_valve_ctrl():
 
     if cmd == 1:
         result = set_valve_state(state, period, auto, remote_host(request))
-        notify_event(EVENT_TYPE.VALVE)
+        notify_event(EVENT_TYPE.CONTROL)
 
         return jsonify(dict({"cmd": "set"}, **result))
     else:
