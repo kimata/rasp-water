@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+# NOTE: 現時点で使われていない
+
 import os
 import pprint
 from influxdb import InfluxDBClient

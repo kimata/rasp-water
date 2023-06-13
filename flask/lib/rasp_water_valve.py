@@ -15,6 +15,7 @@ from rasp_water_config import APP_URL_PREFIX
 from rasp_water_event import notify_event, EVENT_TYPE
 from rasp_water_log import app_log, APP_LOG_LEVEL
 from flask_util import support_jsonp, remote_host
+import weather_forecast
 import valve
 
 
@@ -115,10 +116,20 @@ def get_valve_state():
 
 
 def set_valve_state(state, period, auto, host=""):
+    is_execute = False
     if state == 1:
-        valve.set_control_mode(period)
+        if auto:
+            if weather_forecast.get_rain_fall(config):
+                app_log("☂ 前後で雨が降る予報があるため、自動での水やりを見合わせます。")
+            else:
+                is_execute = True
+        else:
+            is_execute = True
     else:
-        valve.set_state(valve.VALVE_STATE.CLOSE)
+        is_execute = True
+
+    if not is_execute:
+        return get_valve_state()
 
     if state == 1:
         app_log(
@@ -128,6 +139,7 @@ def set_valve_state(state, period, auto, host=""):
                 by="(by {})".format(host) if host != "" else "",
             )
         )
+        valve.set_control_mode(period)
     else:
         app_log(
             "{auto}で水やりを終了します。{by}".format(
@@ -135,13 +147,7 @@ def set_valve_state(state, period, auto, host=""):
                 by="(by {})".format(host) if host != "" else "",
             )
         )
-
-    #             if is_soil_wet():
-    #                 log("雨が降ったため、自動での水やりを見合わせました。")
-    #                 return get_valve_state(True)
-    #             elif is_rain_forecast():
-    #                 log("雨が降る予報があるため、自動での水やりを見合わせました。")
-    #                 return get_valve_state(True)
+        valve.set_state(valve.VALVE_STATE.CLOSE)
 
     return get_valve_state()
 

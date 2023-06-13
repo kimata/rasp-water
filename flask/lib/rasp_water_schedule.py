@@ -143,11 +143,3 @@ def api_schedule_ctrl():
             )
 
     return jsonify(schedule_load())
-
-
-if __name__ == "__main__":
-    import logger
-
-    logger.init("test", level=logging.INFO)
-
-    valve_auto_control("http://127.0.0.1:5000/rasp-water/api/valve_ctrl", 60)
