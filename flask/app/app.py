@@ -1,5 +1,17 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+"""
+水やりを自動化するアプリのサーバーです
+
+Usage:
+  app.py [-c CONFIG] [-D]
+
+Options:
+  -c CONFIG         : CONFIG を設定ファイルとして読み込んで実行します．[default: config.yaml]
+  -D                : ダミーモードで実行します．CI テストで利用することを想定しています．
+"""
+
+from docopt import docopt
 
 from flask import Flask
 import sys
@@ -9,7 +21,6 @@ import logging
 import atexit
 
 sys.path.append(str(pathlib.Path(__file__).parent.parent / "lib"))
-
 
 import rasp_water_config
 import rasp_water

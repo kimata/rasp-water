@@ -45,12 +45,12 @@ test-flask:
         - apt install -y python3-psutil
         - apt install -y python3-pip
         - pip install -r requirements.txt
-        - python3 ./flask/app/app.py > flask.log 2>&1 &
+        - python3 ./flask/app/app.py -D > flask_log.txt 2>&1 &
         - python3 -m pytest test/test_basic.py
     artifacts:
         when: always
         paths:
-            - flask.log
+            - flask_log.txt
     dependencies:
         - build-angular
 
