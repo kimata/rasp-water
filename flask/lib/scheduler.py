@@ -9,7 +9,6 @@ import traceback
 import pathlib
 
 from rasp_water_log import app_log
-from config import load_config
 
 RETRY_COUNT = 3
 
@@ -69,11 +68,10 @@ def set_schedule(schedule_setting_list):
         logging.info("Next run: {next_run}".format(next_run=job.next_run))
 
 
-def schedule_worker(queue):
+def schedule_worker(config, queue):
     global should_terminate
 
     sleep_sec = 1
-    config = load_config()
 
     liveness_file = pathlib.Path(config["liveness"]["file"]["scheduler"])
     liveness_file.parent.mkdir(parents=True, exist_ok=True)

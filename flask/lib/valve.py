@@ -9,7 +9,6 @@ import traceback
 import pathlib
 
 from rasp_water_config import STAT_DIR_PATH
-from config import load_config
 
 
 # バルブを一定期間開く際に作られるファイル．
@@ -122,10 +121,9 @@ should_terminate = False
 
 # NOTE: STAT_PATH_VALVE_CONTROL_COMMAND の内容に基づいて，
 # バルブを一定時間開けます
-def control_worker(queue):
+def control_worker(config, queue):
     global should_terminate
 
-    config = load_config()
     liveness_file = pathlib.Path(config["liveness"]["file"]["valve_control"])
     liveness_file.parent.mkdir(parents=True, exist_ok=True)
 
@@ -234,7 +232,7 @@ def control_worker(queue):
     logging.info("Terminate valve control worker")
 
 
-def init(queue, pin=GPIO_PIN_DEFAULT):
+def init(config, queue, pin=GPIO_PIN_DEFAULT):
     global pin_no
 
     pin_no = pin
@@ -246,7 +244,13 @@ def init(queue, pin=GPIO_PIN_DEFAULT):
         with open(ADC_SCALE_PATH, "w") as f:
             f.write(str(ADC_SCALE_VALUE))
 
-    threading.Thread(target=control_worker, args=(queue,)).start()
+    threading.Thread(
+        target=control_worker,
+        args=(
+            config,
+            queue,
+        ),
+    ).start()
 
 
 # NOTE: 実際にバルブを開きます．

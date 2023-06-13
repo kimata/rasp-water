@@ -1,8 +1,4 @@
-from flask import (
-    request,
-    jsonify,
-    Blueprint,
-)
+from flask import request, jsonify, Blueprint, current_app
 import threading
 import logging
 from multiprocessing import Queue
@@ -10,7 +6,6 @@ import time
 import pathlib
 import fluent.sender
 
-from config import load_config
 from rasp_water_config import APP_URL_PREFIX
 from rasp_water_event import notify_event, EVENT_TYPE
 from rasp_water_log import app_log, APP_LOG_LEVEL
@@ -29,10 +24,10 @@ should_terminate = False
 def init():
     global config
 
-    config = load_config()
+    config = current_app.config["CONFIG"]
 
     flow_stat_queue = Queue()
-    valve.init(flow_stat_queue)
+    valve.init(config, flow_stat_queue)
     threading.Thread(target=flow_notify_worker, args=(flow_stat_queue,)).start()
 
 
@@ -67,8 +62,6 @@ def second_str(sec):
 
 def flow_notify_worker(queue):
     global should_terminate
-
-    config = load_config()
 
     liveness_file = pathlib.Path(config["liveness"]["file"]["flow_notify"])
     liveness_file.parent.mkdir(parents=True, exist_ok=True)

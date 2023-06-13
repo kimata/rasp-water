@@ -1,13 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 from enum import IntEnum
-from flask import jsonify, Blueprint, g
+from flask import jsonify, Blueprint, g, current_app
 import logging
 import threading
 import sqlite3
 from multiprocessing.pool import ThreadPool
 
-from config import load_config
 from rasp_water_config import APP_URL_PREFIX, LOG_DB_PATH
 from rasp_water_event import notify_event, EVENT_TYPE
 from flask_util import support_jsonp, gzipped
@@ -35,7 +34,7 @@ def init():
     global log_lock
     global thread_pool
 
-    config = load_config()
+    config = current_app.config["CONFIG"]
 
     sqlite = sqlite3.connect(LOG_DB_PATH, check_same_thread=False)
     sqlite.execute("CREATE TABLE IF NOT EXISTS log(date INT, message TEXT)")

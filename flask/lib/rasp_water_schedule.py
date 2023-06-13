@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-from flask import request, jsonify, Blueprint, url_for
+from flask import request, jsonify, Blueprint, url_for, current_app
 import json
 import pickle
 import threading
@@ -10,7 +10,6 @@ import traceback
 import urllib.parse
 from multiprocessing import Queue
 
-from config import load_config
 from rasp_water_config import APP_URL_PREFIX, SCHEDULE_DATA_PATH
 from rasp_water_event import notify_event, EVENT_TYPE
 from rasp_water_log import app_log
@@ -30,8 +29,15 @@ WDAY_STR_JA = ["日", "月", "火", "水", "木", "金", "土"]
 def init():
     global schedule_queue
 
+    config = current_app.config["CONFIG"]
     schedule_queue = Queue()
-    threading.Thread(target=scheduler.schedule_worker, args=(schedule_queue,)).start()
+    threading.Thread(
+        target=scheduler.schedule_worker,
+        args=(
+            config,
+            schedule_queue,
+        ),
+    ).start()
 
 
 def schedule_validate(schedule):
