@@ -7,8 +7,6 @@ import logging
 import requests
 from datetime import datetime
 
-from config import load_config
-
 YAHOO_API_ENDPOINT = "https://map.yahooapis.jp/weather/V1/place"
 
 
@@ -46,7 +44,7 @@ def get_weather_info_yahoo(config):
 def get_rain_fall(config):
     weather_info = get_weather_info_yahoo(config)
 
-    if json is None:
+    if weather_info is None:
         return False
 
     # NOTE: YAhoo の場合，1 時間後までしか情報がとれないので，4 時間前以降を参考にする
@@ -82,6 +80,7 @@ def get_rain_fall(config):
 
 if __name__ == "__main__":
     import logger
+    from config import load_config
 
     logger.init("test", level=logging.INFO)
 
