@@ -54,7 +54,7 @@ test-cypress:
 
 test-flask:
     stage: test
-    image: registry.green-rabbit.net:5000/kimata/local_playwright:latest
+    image: registry.green-rabbit.net:5000/kimata/local_playwright:230616
     script:
         - docker pull ${CI_REGISTRY_IMAGE}
         - docker run -t --label job=${CI_JOB_NAME} ${CI_REGISTRY_IMAGE} ./flask/app/app.py -D
