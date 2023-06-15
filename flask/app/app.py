@@ -45,17 +45,19 @@ atexit.register(notify_terminate)
 
 if __name__ == "__main__":
     import logger
+    import os
     from config import load_config
 
     args = docopt(__doc__)
 
     config_file = args["-c"]
-    dummy_mode = args["-D"]
+    dummy_mode = os.environ.get("DUMMY_MODE", args["-D"])
 
     logger.init("hems.rasp-water", level=logging.INFO)
 
     if dummy_mode:
         logging.warning("Set dummy mode")
+        os.environ["DUMMY_MODE"] = "true"
 
     # NOTE: アクセスログは無効にする
     logging.getLogger("werkzeug").setLevel(logging.ERROR)

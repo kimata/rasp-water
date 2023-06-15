@@ -31,7 +31,7 @@ build-image:
         # - docker rm $(docker ps -a --filter "status=exited" -q) || true
         - export GIT_SSL_NO_VERIFY=1
         - git clone https://gitlab.green-rabbit.net/kimata/hems_config.git
-        - mv hems_config/unit_cooler.yaml config.yaml
+        - mv hems_config/rasp-water.yaml config.yaml
         - docker buildx create --name ${BUILDER} --config script/buildkitd.toml --use
         - docker buildx use ${BUILDER}
         - docker buildx build --platform linux/amd64,linux/arm64/v8
@@ -56,14 +56,8 @@ test-flask:
     stage: test
     image: registry.green-rabbit.net:5000/kimata/local_playwright:latest
     script:
-        - export GIT_SSL_NO_VERIFY=1
-        - git clone https://gitlab.green-rabbit.net/kimata/hems_config.git
-        - mv hems_config/rasp-water.yaml config.yaml
-        - apt-get install -y python3-flask python3-yaml python3-schedule
-          python3-fluent-logger python3-coloredlogs python3-docopt
-          python3-psutil python3-pip
-        - pip install -r requirements.txt
-        - python3 ./flask/app/app.py -D > flask_log.txt 2>&1 &
+        - docker pull ${CI_REGISTRY_IMAGE}
+        - docker run -t --label job=${CI_JOB_NAME} ${CI_REGISTRY_IMAGE} ./flask/app/app.py -D
         - python3 -m pytest test/test_basic.py
     artifacts:
         when: always

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 from enum import IntEnum
+import os
 import time
 import threading
 import datetime
@@ -49,6 +50,9 @@ class CONTROL_MODE(IntEnum):
 
 
 try:
+    if os.environ.get("DUMMY_MODE", None) is not None:
+        raise "dummy mode"
+
     import RPi.GPIO as GPIO
 
     def conv_rawadc_to_flow(adc):
