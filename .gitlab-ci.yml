@@ -1,12 +1,13 @@
 image: docker:24.0
 
 stages:
-    - build
+    - build-webapp
+    - build-image
     - test
     - renovate
 
 build-angular:
-    stage: build
+    stage: build-webapp
     image: node:20.3
     script:
         - npm ci --cache .npm --prefer-offline
