@@ -69,6 +69,7 @@ if __name__ == "__main__":
 
     app.register_blueprint(rasp_water_valve.blueprint)
     app.register_blueprint(rasp_water_schedule.blueprint)
+
     app.register_blueprint(webapp_base.blueprint)
     app.register_blueprint(webapp_event.blueprint)
     app.register_blueprint(webapp_log.blueprint)
