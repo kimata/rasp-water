@@ -28,7 +28,6 @@ build-image:
         BUILDER: arm_builder
 
     script:
-        # - docker rm $(docker ps -a --filter "status=exited" -q) || true
         - export GIT_SSL_NO_VERIFY=1
         - git clone https://gitlab.green-rabbit.net/kimata/hems_config.git
         - mv hems_config/rasp-water.yaml config.yaml
@@ -56,6 +55,8 @@ test-flask:
     stage: test
     image: registry.green-rabbit.net:5000/kimata/local_playwright:230616A
     script:
+        # NOTE: お掃除する
+        - docker rm $(docker ps -a --filter "status=exited" -q) || true
         - docker pull ${CI_REGISTRY_IMAGE}
         - docker run -t --rm --name ${CI_JOB_NAME} --label job=${CI_JOB_ID} -p 5000:5000 ${CI_REGISTRY_IMAGE} ./flask/app/app.py -D &
         - python3 -m pytest test/test_basic.py
