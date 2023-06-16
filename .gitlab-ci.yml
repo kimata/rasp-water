@@ -80,10 +80,7 @@ test-flask-docker:
           command: ["./flask/app/app.py", "-d"]
 
     script:
-        # NOTE: お掃除する
-        - docker rm $(docker ps -a --filter "status=exited" -q) || true
-        - docker pull ${CI_REGISTRY_IMAGE}
-        - docker stop ${CI_JOB_NAME} || true
+        - sleep 100000
         - python3 -m pytest test/test_basic.py --server web-server
         # - docker stop ${CI_JOB_NAME} || true
     # artifacts:
