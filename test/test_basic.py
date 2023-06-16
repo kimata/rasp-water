@@ -7,7 +7,7 @@ import random
 import datetime
 import time
 
-APP_URL = "http://127.0.0.1:5000/rasp-water/"
+APP_URL_TMPL = "http://{server_host}:5000/rasp-water/"
 
 
 def check_log(page, message, timeout_sec=1):
@@ -56,9 +56,13 @@ def check_schedule(page, schedule_time, enable_schedule_index, enable_wday_index
                     expect(wday_checkbox.nth(i * 7 + j)).not_to_be_checked()
 
 
+def app_url(server):
+    return APP_URL_TMPL.format(server_host=server)
+
+
 ######################################################################
-def test_valve(page):
-    page.goto(APP_URL)
+def test_valve(page, server):
+    page.goto(app_url(server))
 
     page.locator('button:text("クリア")').click()
     time.sleep(1)
@@ -74,8 +78,8 @@ def test_valve(page):
     check_log(page, "水やりを行いました", period * 60 + 10)
 
 
-def test_schedule(page):
-    page.goto(APP_URL)
+def test_schedule(page, server):
+    page.goto(app_url(server))
 
     page.locator('button:text("クリア")').click()
     time.sleep(1)
@@ -114,10 +118,10 @@ def test_schedule(page):
     check_schedule(page, schedule_time, enable_schedule_index, enable_wday_index)
 
 
-def test_schedule_run(page):
+def test_schedule_run(page, server):
     SCHEDULE_AFTER_MIN = 2
 
-    page.goto(APP_URL)
+    page.goto(app_url(server))
 
     page.locator('button:text("クリア")').click()
     time.sleep(1)
