@@ -55,6 +55,7 @@ if __name__ == "__main__":
 
     logger.init("hems.rasp-water", level=logging.INFO)
 
+    # NOTE: オプションでダミーモードが指定された場合，環境変数もそれに揃えておく
     if dummy_mode:
         logging.warning("Set dummy mode")
         os.environ["DUMMY_MODE"] = "true"
