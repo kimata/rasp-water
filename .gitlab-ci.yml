@@ -4,6 +4,7 @@ stages:
     - build-webapp
     - build-image
     - test
+    - deploy
     - renovate
 
 build-angular:
@@ -91,6 +92,20 @@ test-flask-docker:
         paths:
             - flask_log.txt
 
+deploy-webapp:
+    stage: deploy
+    image:
+        name: bitnami/kubectl:latest
+        entrypoint: [""]
+    script:
+        - kubectl config get-contexts
+        - kubectl config use-context kimata/rasp-water:pod-rollout
+        - kubectl --insecure-skip-tls-verify=true rollout restart -n hems deployment rasp-water
+    rules:
+        # NOTE: 自動実行ではデプロイしない
+        - if: $CI_PIPELINE_SOURCE == "schedule"
+          when: never
+
 renovate:
     stage: renovate
     image:
@@ -100,6 +115,7 @@ renovate:
     script:
         - renovate --platform gitlab --token ${RENOVATE_TOKEN} --endpoint ${CI_SERVER_URL}/api/v4 ${CI_PROJECT_PATH}
     rules:
-        - if: '$CI_PIPELINE_SOURCE == "schedule"'
+        - if: $CI_PIPELINE_SOURCE == "schedule"
+          when: always
         - changes:
               - renovate.json
