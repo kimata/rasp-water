@@ -37,6 +37,7 @@ build-image:
           --cache-from type=registry,ref=${CI_REGISTRY_IMAGE}:cache
           --cache-to type=registry,ref=${CI_REGISTRY_IMAGE}:cache
           --push --tag ${CI_REGISTRY_IMAGE} .
+        - docker buildx stop ${BUILDER}
     dependencies:
         - build-angular
 
@@ -77,8 +78,6 @@ test-flask-docker:
     services:
         - name: ${CI_REGISTRY_IMAGE}
           alias: web-server
-          ports:
-              - "5000:5000"
           command: ["./flask/app/app.py", "-d"]
 
     script:
