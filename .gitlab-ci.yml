@@ -31,6 +31,7 @@ build-image:
         - export GIT_SSL_NO_VERIFY=1
         - git clone https://gitlab.green-rabbit.net/kimata/hems_config.git
         - mv hems_config/rasp-water.yaml config.yaml
+        - git config --global --add safe.directory ${PWD}
         - docker buildx create --name ${BUILDER} --config script/buildkitd.toml --use
         - docker buildx use ${BUILDER}
         - docker buildx build --platform linux/amd64,linux/arm64/v8
