@@ -60,8 +60,8 @@ if __name__ == "__main__":
         logging.warning("Set dummy mode")
         os.environ["DUMMY_MODE"] = "true"
 
-    # # NOTE: アクセスログは無効にする
-    # logging.getLogger("werkzeug").setLevel(logging.ERROR)
+    # NOTE: アクセスログは無効にする
+    logging.getLogger("werkzeug").setLevel(logging.ERROR)
 
     app = Flask(__name__)
 
