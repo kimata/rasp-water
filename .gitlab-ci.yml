@@ -86,7 +86,6 @@ test-flask-docker:
         - docker logs test-flask-docker > flask_log.txt
         - docker stop ${CI_JOB_NAME}
     artifacts:
-        when: always
         paths:
             - flask_log.txt
     dependencies:
