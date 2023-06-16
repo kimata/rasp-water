@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from playwright.sync_api import Page, expect
-import pytest
+from playwright.sync_api import expect
 import random
 import datetime
 import time
