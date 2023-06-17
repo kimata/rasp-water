@@ -21,32 +21,11 @@ import time
 import logging
 import atexit
 
-sys.path.append(str(pathlib.Path(__file__).parent.parent / "lib"))
-
-import rasp_water_valve
-import rasp_water_schedule
-
-import webapp_base
-import webapp_util
-import webapp_log
-import webapp_event
-
-import valve
-
-
-def notify_terminate():
-    valve.set_state(valve.VALVE_STATE.CLOSE)
-    webapp_log.app_log("🏃 アプリを再起動します．")
-    # NOTE: ログを送信できるまでの時間待つ
-    time.sleep(1)
-
-
-atexit.register(notify_terminate)
-
-
 if __name__ == "__main__":
-    import logger
     import os
+
+    sys.path.append(str(pathlib.Path(__file__).parent.parent / "lib"))
+    import logger
     from config import load_config
 
     args = docopt(__doc__)
@@ -70,6 +49,15 @@ if __name__ == "__main__":
     # NOTE: アクセスログは無効にする
     logging.getLogger("werkzeug").setLevel(logging.ERROR)
 
+    import rasp_water_valve
+    import rasp_water_schedule
+
+    import webapp_base
+    import webapp_util
+    import webapp_log
+    import webapp_event
+    import valve
+
     app = Flask(__name__)
 
     app.config["CONFIG"] = load_config(config_file)
@@ -85,6 +73,14 @@ if __name__ == "__main__":
     app.register_blueprint(webapp_event.blueprint)
     app.register_blueprint(webapp_log.blueprint)
     app.register_blueprint(webapp_util.blueprint)
+
+    def notify_terminate():
+        valve.set_state(valve.VALVE_STATE.CLOSE)
+        webapp_log.app_log("🏃 アプリを再起動します．")
+        # NOTE: ログを送信できるまでの時間待つ
+        time.sleep(1)
+
+    atexit.register(notify_terminate)
 
     # app.debug = True
     # NOTE: スクリプトの自動リロード停止したい場合は use_reloader=False にする
