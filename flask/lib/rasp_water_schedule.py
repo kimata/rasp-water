@@ -131,7 +131,9 @@ def api_schedule_ctrl():
             schedule = json.loads(data)
 
             endpoint = urllib.parse.urljoin(
-                request.url_root, url_for("rasp-water-valve.api_valve_ctrl")
+                # NOTE: request.url_root だと，認証をつけている場合に困る
+                "{address}:{port}/{prefix}".format("127.0.0.1", 5000, APP_URL_PREFIX),
+                url_for("rasp-water-valve.api_valve_ctrl"),
             )
 
             for entry in schedule:
