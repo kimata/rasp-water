@@ -9,6 +9,7 @@ Usage:
 Options:
   -c CONFIG         : CONFIG を設定ファイルとして読み込んで実行します．[default: config.yaml]
   -D                : ダミーモードで実行します．CI テストで利用することを想定しています．
+  -d                : デバッグモードで動作します．
 """
 
 from docopt import docopt
@@ -52,8 +53,14 @@ if __name__ == "__main__":
 
     config_file = args["-c"]
     dummy_mode = os.environ.get("DUMMY_MODE", args["-D"])
+    debug_mode = args["-d"]
 
-    logger.init("hems.rasp-water", level=logging.DEBUG)
+    if debug_mode:
+        log_level = logging.DEBUG
+    else:
+        log_level = logging.INFO
+
+    logger.init("hems.rasp-water", level=log_level)
 
     # NOTE: オプションでダミーモードが指定された場合，環境変数もそれに揃えておく
     if dummy_mode:
