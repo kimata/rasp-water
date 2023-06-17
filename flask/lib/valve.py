@@ -49,10 +49,7 @@ class CONTROL_MODE(IntEnum):
     IDLE = 0
 
 
-try:
-    if os.environ.get("DUMMY_MODE", None) is not None:
-        raise "dummy mode"
-
+if os.environ.get("DUMMY_MODE", None) is None:
     import RPi.GPIO as GPIO
 
     def conv_rawadc_to_flow(adc):
@@ -65,7 +62,7 @@ try:
         except:
             return {"flow": 0, "result": "fail"}
 
-except:
+else:
     logging.warning("Using dummy GPIO")
     import random
 
@@ -342,11 +339,13 @@ def get_control_mode():
 if __name__ == "__main__":
     import logger
     from multiprocessing import Queue
+    from config import load_config
 
     logger.init("test", level=logging.INFO)
 
+    config = load_config()
     queue = Queue()
-    init(queue)
+    init(config, queue)
 
     set_state(VALVE_STATE.OPEN)
     time.sleep(0.5)
