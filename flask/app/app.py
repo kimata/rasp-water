@@ -53,7 +53,7 @@ if __name__ == "__main__":
     config_file = args["-c"]
     dummy_mode = os.environ.get("DUMMY_MODE", args["-D"])
 
-    logger.init("hems.rasp-water", level=logging.INFO)
+    logger.init("hems.rasp-water", level=logging.DEBUG)
 
     # NOTE: オプションでダミーモードが指定された場合，環境変数もそれに揃えておく
     if dummy_mode:

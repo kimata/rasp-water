@@ -17,6 +17,7 @@ should_terminate = False
 
 def valve_auto_control_impl(url, period):
     try:
+        logging.debug("Request scheduled execution to {url}".format(url=url))
         res = requests.post(
             url, params={"cmd": 1, "state": 1, "period": period * 60, "auto": True}
         )
