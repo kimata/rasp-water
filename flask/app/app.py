@@ -4,7 +4,7 @@
 水やりを自動化するアプリのサーバーです
 
 Usage:
-  app.py [-c CONFIG] [-D]
+  app.py [-c CONFIG] [-D] [-d]
 
 Options:
   -c CONFIG         : CONFIG を設定ファイルとして読み込んで実行します．[default: config.yaml]
