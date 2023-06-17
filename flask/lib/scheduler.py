@@ -9,6 +9,7 @@ import traceback
 import pathlib
 
 from webapp_log import app_log
+import rasp_water_valve
 
 RETRY_COUNT = 3
 
@@ -17,12 +18,16 @@ should_terminate = False
 
 def valve_auto_control_impl(url, period):
     try:
-        logging.debug("Request scheduled execution to {url}".format(url=url))
-        res = requests.post(
-            url, params={"cmd": 1, "state": 1, "period": period * 60, "auto": True}
-        )
-        logging.debug(res.text)
-        return res.status_code == 200
+        # NOTE: Web 経由だと認証つけた場合に困るので，直接関数を呼ぶ
+        rasp_water_valve.set_valve_state(1, period * 60, True, "scueduler")
+        return True
+
+        # logging.debug("Request scheduled execution to {url}".format(url=url))
+        # res = requests.post(
+        #     url, params={"cmd": 1, "state": 1, "period": period * 60, "auto": True}
+        # )
+        # logging.debug(res.text)
+        # return res.status_code == 200
     except:
         logging.warning(traceback.format_exc())
         pass

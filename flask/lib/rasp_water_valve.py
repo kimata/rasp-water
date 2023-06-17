@@ -126,6 +126,7 @@ def set_valve_state(state, period, auto, host=""):
         is_execute = True
 
     if not is_execute:
+        notify_event(EVENT_TYPE.CONTROL)
         return get_valve_state()
 
     if state == 1:
@@ -146,6 +147,7 @@ def set_valve_state(state, period, auto, host=""):
         )
         valve.set_state(valve.VALVE_STATE.CLOSE)
 
+    notify_event(EVENT_TYPE.CONTROL)
     return get_valve_state()
 
 
@@ -159,7 +161,6 @@ def api_valve_ctrl():
 
     if cmd == 1:
         result = set_valve_state(state, period, auto, remote_host(request))
-        notify_event(EVENT_TYPE.CONTROL)
 
         return jsonify(dict({"cmd": "set"}, **result))
     else:
