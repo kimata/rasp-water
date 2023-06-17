@@ -10,7 +10,7 @@ from webapp_config import APP_URL_PREFIX
 from webapp_event import notify_event, EVENT_TYPE
 from webapp_log import app_log
 from flask_util import support_jsonp, remote_host
-from scheduler import schedule_worker, schedule_store, schedule_load
+import scheduler
 
 blueprint = Blueprint("rasp-water-schedule", __name__, url_prefix=APP_URL_PREFIX)
 
@@ -27,8 +27,9 @@ def init():
 
     config = current_app.config["CONFIG"]
     schedule_queue = Queue()
+    scheduler.init()
     threading.Thread(
-        target=schedule_worker,
+        target=scheduler.schedule_worker,
         args=(
             config,
             schedule_queue,
@@ -69,24 +70,29 @@ def api_schedule_ctrl():
     data = request.args.get("data", None)
     if cmd == "set":
         with schedule_lock:
-            schedule = json.loads(data)
+            schedule_data = json.loads(data)
 
             endpoint = urllib.parse.urljoin(
                 request.url_root,
                 url_for("rasp-water-valve.api_valve_ctrl"),
             )
 
-            for entry in schedule:
+            for entry in schedule_data:
                 entry["endpoint"] = endpoint
-            schedule_queue.put(schedule)
+            schedule_queue.put(schedule_data)
+
+            # NOTE: 本来は schedule_worker の中だけで呼んでるので不要だけど，
+            # レスポンスを schedule_load() で返したいので，ここでも呼ぶ．
+            scheduler.schedule_store(schedule_data)
+
             notify_event(EVENT_TYPE.SCHEDULE)
 
             host = remote_host(request)
             app_log(
                 "📅 スケジュールを更新しました。\n{schedule}\n{by}".format(
-                    schedule=schedule_str(schedule),
+                    schedule=schedule_str(schedule_data),
                     by="by {}".format(host) if host != "" else "",
                 )
             )
 
-    return jsonify(schedule_load())
+    return jsonify(scheduler.schedule_load())

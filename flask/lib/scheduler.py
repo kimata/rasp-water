@@ -6,6 +6,7 @@ import schedule
 import time
 import pickle
 import traceback
+import threading
 import pathlib
 import re
 
@@ -15,7 +16,13 @@ import rasp_water_valve
 
 RETRY_COUNT = 3
 
+schedule_lock = None
 should_terminate = False
+
+
+def init():
+    global schedule_lock
+    schedule_lock = threading.Lock()
 
 
 def valve_auto_control_impl(url, period):
@@ -48,11 +55,11 @@ def valve_auto_control(url, period):
     return False
 
 
-def schedule_validate(schedule):
-    if len(schedule) != 2:
+def schedule_validate(schedule_data):
+    if len(schedule_data) != 2:
         return False
 
-    for entry in schedule:
+    for entry in schedule_data:
         for key in ["is_active", "time", "period", "wday"]:
             if key not in entry:
                 return False
@@ -70,11 +77,13 @@ def schedule_validate(schedule):
     return True
 
 
-def schedule_store(schedule):
+def schedule_store(schedule_data):
+    global schedule_lock
     try:
-        SCHEDULE_DATA_PATH.parent.mkdir(parents=True, exist_ok=True)
-        with open(SCHEDULE_DATA_PATH, "wb") as f:
-            pickle.dump(schedule, f)
+        with schedule_lock:
+            SCHEDULE_DATA_PATH.parent.mkdir(parents=True, exist_ok=True)
+            with open(SCHEDULE_DATA_PATH, "wb") as f:
+                pickle.dump(schedule_data, f)
     except:
         logging.error(traceback.format_exc())
         app_log("😵 スケジュール設定の保存に失敗しました。")
@@ -85,9 +94,9 @@ def schedule_load():
     if SCHEDULE_DATA_PATH.exists():
         try:
             with open(SCHEDULE_DATA_PATH, "rb") as f:
-                schedule = pickle.load(f)
-                if schedule_validate(schedule):
-                    return schedule
+                schedule_data = pickle.load(f)
+                if schedule_validate(schedule_data):
+                    return schedule_data
         except:
             logging.error(traceback.format_exc())
             app_log("😵 スケジュール設定の読み出しに失敗しました。")
@@ -103,30 +112,28 @@ def schedule_load():
     ] * 2
 
 
-def set_schedule(schedule_setting_list):
+def set_schedule(schedule_data):
     schedule.clear()
 
-    for schedule_setting in schedule_setting_list:
-        if not schedule_setting["is_active"]:
+    for entry in schedule_data:
+        if not entry["is_active"]:
             continue
 
-        func = lambda: valve_auto_control(
-            schedule_setting["endpoint"], schedule_setting["period"]
-        )
-        if schedule_setting["wday"][0]:
-            schedule.every().sunday.at(schedule_setting["time"]).do(func)
-        if schedule_setting["wday"][1]:
-            schedule.every().monday.at(schedule_setting["time"]).do(func)
-        if schedule_setting["wday"][2]:
-            schedule.every().tuesday.at(schedule_setting["time"]).do(func)
-        if schedule_setting["wday"][3]:
-            schedule.every().wednesday.at(schedule_setting["time"]).do(func)
-        if schedule_setting["wday"][4]:
-            schedule.every().thursday.at(schedule_setting["time"]).do(func)
-        if schedule_setting["wday"][5]:
-            schedule.every().friday.at(schedule_setting["time"]).do(func)
-        if schedule_setting["wday"][6]:
-            schedule.every().saturday.at(schedule_setting["time"]).do(func)
+        func = lambda: valve_auto_control(entry["endpoint"], entry["period"])
+        if entry["wday"][0]:
+            schedule.every().sunday.at(entry["time"]).do(func)
+        if entry["wday"][1]:
+            schedule.every().monday.at(entry["time"]).do(func)
+        if entry["wday"][2]:
+            schedule.every().tuesday.at(entry["time"]).do(func)
+        if entry["wday"][3]:
+            schedule.every().wednesday.at(entry["time"]).do(func)
+        if entry["wday"][4]:
+            schedule.every().thursday.at(entry["time"]).do(func)
+        if entry["wday"][5]:
+            schedule.every().friday.at(entry["time"]).do(func)
+        if entry["wday"][6]:
+            schedule.every().saturday.at(entry["time"]).do(func)
 
     for job in schedule.get_jobs():
         logging.info("Next run: {next_run}".format(next_run=job.next_run))
@@ -147,9 +154,9 @@ def schedule_worker(config, queue):
 
     while True:
         if not queue.empty():
-            schedule = queue.get()
-            set_schedule(schedule)
-            schedule_store(schedule)
+            schedule_data = queue.get()
+            set_schedule(schedule_data)
+            schedule_store(schedule_data)
 
         schedule.run_pending()
 
