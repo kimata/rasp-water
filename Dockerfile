@@ -1,7 +1,11 @@
 FROM ubuntu:22.04
 
+ARG TARGETPLATFORM
+
 ENV TZ=Asia/Tokyo
 ENV DEBIAN_FRONTEND=noninteractive
+
+RUN if [ "$TARGETPLATFORM" = "arm" ]; then GPIO_LIB="python3-rpi.gpio"; fi;
 
 RUN apt-get update && apt-get install -y \
     language-pack-ja \
@@ -13,6 +17,7 @@ RUN apt-get update && apt-get install -y \
     python3-schedule \
     python3-flask \
     python3-psutil \
+    ${GPIO_LIB} \
  && apt-get clean \
  && rm -rf /va/rlib/apt/lists/*
 
