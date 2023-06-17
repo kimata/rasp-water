@@ -21,6 +21,7 @@ def valve_auto_control_impl(url, period):
         res = requests.post(
             url, params={"cmd": 1, "state": 1, "period": period * 60, "auto": True}
         )
+        logging.debug(res.text)
         return res.status_code == 200
     except:
         logging.warning(traceback.format_exc())
