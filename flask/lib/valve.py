@@ -66,7 +66,7 @@ else:
     logging.warning("Using dummy GPIO")
     import random
 
-    # NOTE: Raspbeery Pi 以外で動かした時は，ダミーにする
+    # NOTE: 本物の GPIO のように振る舞うダミーのライブラリ
     class GPIO:
         IS_DUMMY = True
         BCM = 0
