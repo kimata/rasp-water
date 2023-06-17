@@ -4,10 +4,12 @@
 import logging
 import schedule
 import time
-import requests
+import pickle
 import traceback
 import pathlib
+import re
 
+from webapp_config import SCHEDULE_DATA_PATH
 from webapp_log import app_log
 import rasp_water_valve
 
@@ -44,6 +46,61 @@ def valve_auto_control(url, period):
 
     app_log("😵 水やりの自動実行に失敗しました。")
     return False
+
+
+def schedule_validate(schedule):
+    if len(schedule) != 2:
+        return False
+
+    for entry in schedule:
+        for key in ["is_active", "time", "period", "wday"]:
+            if key not in entry:
+                return False
+            if type(entry["is_active"]) != bool:
+                return False
+            if not re.compile(r"\d{2}:\d{2}").search(entry["time"]):
+                return False
+            if type(entry["period"]) != int:
+                return False
+            if len(entry["wday"]) != 7:
+                return False
+            for wday_flag in entry["wday"]:
+                if type(wday_flag) != bool:
+                    return False
+    return True
+
+
+def schedule_store(schedule):
+    try:
+        SCHEDULE_DATA_PATH.parent.mkdir(parents=True, exist_ok=True)
+        with open(SCHEDULE_DATA_PATH, "wb") as f:
+            pickle.dump(schedule, f)
+    except:
+        logging.error(traceback.format_exc())
+        app_log("😵 スケジュール設定の保存に失敗しました。")
+        pass
+
+
+def schedule_load():
+    if SCHEDULE_DATA_PATH.exists():
+        try:
+            with open(SCHEDULE_DATA_PATH, "rb") as f:
+                schedule = pickle.load(f)
+                if schedule_validate(schedule):
+                    return schedule
+        except:
+            logging.error(traceback.format_exc())
+            app_log("😵 スケジュール設定の読み出しに失敗しました。")
+            pass
+
+    return [
+        {
+            "is_active": False,
+            "time": "00:00",
+            "period": 1,
+            "wday": [True] * 7,
+        }
+    ] * 2
 
 
 def set_schedule(schedule_setting_list):
@@ -83,11 +140,16 @@ def schedule_worker(config, queue):
     liveness_file = pathlib.Path(config["liveness"]["file"]["scheduler"])
     liveness_file.parent.mkdir(parents=True, exist_ok=True)
 
+    logging.info("Load schedule")
+    set_schedule(schedule_load())
+
     logging.info("Start schedule worker")
 
     while True:
         if not queue.empty():
-            set_schedule(queue.get())
+            schedule = queue.get()
+            set_schedule(schedule)
+            schedule_store(schedule)
 
         schedule.run_pending()
 
@@ -106,7 +168,6 @@ if __name__ == "__main__":
     from multiprocessing.pool import ThreadPool
     from multiprocessing import Queue
     import logger
-    import time
     import datetime
 
     logger.init("test", level=logging.DEBUG)

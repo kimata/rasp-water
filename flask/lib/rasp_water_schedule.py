@@ -2,19 +2,15 @@
 # -*- coding: utf-8 -*-
 from flask import request, jsonify, Blueprint, url_for, current_app
 import json
-import pickle
 import threading
-import re
-import logging
-import traceback
 import urllib.parse
 from multiprocessing import Queue
 
-from webapp_config import APP_URL_PREFIX, SCHEDULE_DATA_PATH
+from webapp_config import APP_URL_PREFIX
 from webapp_event import notify_event, EVENT_TYPE
 from webapp_log import app_log
 from flask_util import support_jsonp, remote_host
-import scheduler
+from scheduler import schedule_worker, schedule_store, schedule_load
 
 blueprint = Blueprint("rasp-water-schedule", __name__, url_prefix=APP_URL_PREFIX)
 
@@ -32,67 +28,12 @@ def init():
     config = current_app.config["CONFIG"]
     schedule_queue = Queue()
     threading.Thread(
-        target=scheduler.schedule_worker,
+        target=schedule_worker,
         args=(
             config,
             schedule_queue,
         ),
     ).start()
-
-
-def schedule_validate(schedule):
-    if len(schedule) != 2:
-        return False
-
-    for entry in schedule:
-        for key in ["is_active", "time", "period", "wday"]:
-            if key not in entry:
-                return False
-            if type(entry["is_active"]) != bool:
-                return False
-            if not re.compile(r"\d{2}:\d{2}").search(entry["time"]):
-                return False
-            if type(entry["period"]) != int:
-                return False
-            if len(entry["wday"]) != 7:
-                return False
-            for wday_flag in entry["wday"]:
-                if type(wday_flag) != bool:
-                    return False
-    return True
-
-
-def schedule_store(schedule):
-    try:
-        SCHEDULE_DATA_PATH.parent.mkdir(parents=True, exist_ok=True)
-        with open(SCHEDULE_DATA_PATH, "wb") as f:
-            pickle.dump(schedule, f)
-    except:
-        logging.error(traceback.format_exc())
-        app_log("😵 スケジュール設定の保存に失敗しました。")
-        pass
-
-
-def schedule_load():
-    if SCHEDULE_DATA_PATH.exists():
-        try:
-            with open(SCHEDULE_DATA_PATH, "rb") as f:
-                schedule = pickle.load(f)
-                if schedule_validate(schedule):
-                    return schedule
-        except:
-            logging.error(traceback.format_exc())
-            app_log("😵 スケジュール設定の読み出しに失敗しました。")
-            pass
-
-    return [
-        {
-            "is_active": False,
-            "time": "00:00",
-            "period": 1,
-            "wday": [True] * 7,
-        }
-    ] * 2
 
 
 def wday_str_list(wday_list, lang="en"):
@@ -137,7 +78,6 @@ def api_schedule_ctrl():
 
             for entry in schedule:
                 entry["endpoint"] = endpoint
-            schedule_store(schedule)
             schedule_queue.put(schedule)
             notify_event(EVENT_TYPE.SCHEDULE)
 
