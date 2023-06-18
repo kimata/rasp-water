@@ -148,6 +148,7 @@ def test_schedule_run(page, server):
     period = int(period_input.nth(1).input_value())
 
     page.locator('button:text("保存")').click()
+
     check_log(page, "スケジュールを更新")
 
     check_log(page, "水やりを開始します", SCHEDULE_AFTER_MIN * 60 + 10)
