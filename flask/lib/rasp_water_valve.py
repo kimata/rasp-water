@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from flask import request, jsonify, Blueprint, current_app
 import threading
 import logging

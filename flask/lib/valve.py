@@ -120,6 +120,7 @@ else:
 pin_no = GPIO_PIN_DEFAULT
 should_terminate = False
 
+
 # NOTE: STAT_PATH_VALVE_CONTROL_COMMAND の内容に基づいて，
 # バルブを一定時間開けます
 def control_worker(config, queue):
