@@ -119,7 +119,9 @@ def set_schedule(schedule_data):
         if not entry["is_active"]:
             continue
 
-        func = lambda: valve_auto_control(entry["endpoint"], entry["period"])
+        def func():
+            valve_auto_control(entry["endpoint"], entry["period"])
+
         if entry["wday"][0]:
             schedule.every().sunday.at(entry["time"]).do(func)
         if entry["wday"][1]:

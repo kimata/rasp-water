@@ -14,7 +14,6 @@ from flask_util import support_jsonp, remote_host
 import weather_forecast
 import valve
 
-
 blueprint = Blueprint("rasp-water-valve", __name__, url_prefix=APP_URL_PREFIX)
 
 config = None
@@ -161,21 +160,14 @@ def api_valve_ctrl():
     auto = request.args.get("auto", False, type=bool)
 
     if cmd == 1:
-        result = set_valve_state(state, period, auto, remote_host(request))
-
-        return jsonify(dict({"cmd": "set"}, **result))
+        return jsonify(
+            dict(
+                {"cmd": "set"},
+                **set_valve_state(state, period, auto, remote_host(request))
+            )
+        )
     else:
         return jsonify(dict({"cmd": "get"}, **get_valve_state()))
-
-    return jsonify(
-        {
-            "cmd": "set",
-            "state": 1,
-            "period": period,
-            "pending": 0,
-            "result": "success",
-        }
-    )
 
 
 @blueprint.route("/api/valve_flow", methods=["GET"])
