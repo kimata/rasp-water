@@ -4,10 +4,11 @@
 水やりを自動化するアプリのサーバーです
 
 Usage:
-  app.py [-c CONFIG] [-D] [-d]
+  app.py [-c CONFIG] [-p PORT] [-D] [-d]
 
 Options:
   -c CONFIG         : CONFIG を設定ファイルとして読み込んで実行します．[default: config.yaml]
+  -p PORT           : WEB サーバのポートを指定します．[default: 5000]
   -D                : ダミーモードで実行します．CI テストで利用することを想定しています．
   -d                : デバッグモードで動作します．
 """
@@ -31,6 +32,7 @@ if __name__ == "__main__":
     args = docopt(__doc__)
 
     config_file = args["-c"]
+    port = args["-p"]
     dummy_mode = os.environ.get("DUMMY_MODE", args["-D"])
     debug_mode = args["-d"]
 
@@ -84,4 +86,4 @@ if __name__ == "__main__":
 
     # app.debug = True
     # NOTE: スクリプトの自動リロード停止したい場合は use_reloader=False にする
-    app.run(host="0.0.0.0", threaded=True, use_reloader=True)
+    app.run(host="0.0.0.0", port=port, threaded=True, use_reloader=True)
