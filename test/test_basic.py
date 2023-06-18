@@ -151,4 +151,5 @@ def test_schedule_run(page, server):
     check_log(page, "スケジュールを更新")
 
     check_log(page, "水やりを開始します", SCHEDULE_AFTER_MIN * 60 + 10)
+
     check_log(page, "水やりを行いました", period * 60 + 10)
