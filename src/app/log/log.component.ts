@@ -79,22 +79,19 @@ export class LogComponent implements OnInit {
     }
 
     updateLog() {
-        this.http
-            .jsonp<LogResponse>(`${this.API_URL}/log_view`, 'callback')
-            .subscribe(
-                (res: LogResponse) => {
-                    this.log = res['data'];
-                    for (const entry in this.log) {
-                        const date = moment(this.log[entry]['date']);
-                        this.log[entry]['date'] =
-                            date.format('M月D日(ddd) HH:mm');
-                        this.log[entry]['fromNow'] = date.fromNow();
-                    }
-                    this.error = false;
-                },
-                (error) => {
-                    this.error = true;
+        this.http.jsonp<LogResponse>(`${this.API_URL}/log_view`, 'callback').subscribe(
+            (res: LogResponse) => {
+                this.log = res['data'];
+                for (const entry in this.log) {
+                    const date = moment(this.log[entry]['date']);
+                    this.log[entry]['date'] = date.format('M月D日(ddd) HH:mm');
+                    this.log[entry]['fromNow'] = date.fromNow();
                 }
-            );
+                this.error = false;
+            },
+            (error) => {
+                this.error = true;
+            }
+        );
     }
 }

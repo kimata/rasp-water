@@ -11,9 +11,7 @@
                 "project": ["tsconfig.json", "e2e/tsconfig.json"],
                 "createDefaultProgram": true
             },
-            "extends": [
-                "plugin:@angular-eslint/template/process-inline-templates"
-            ],
+            "extends": ["plugin:@angular-eslint/template/process-inline-templates"],
             "rules": {
                 "@typescript-eslint/naming-convention": [
                     "error",

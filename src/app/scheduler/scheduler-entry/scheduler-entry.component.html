@@ -24,10 +24,7 @@
                     name="time-{{ id }}"
                     [disabled]="!state.is_active"
                 />
-                <div
-                    class="input-group-append"
-                    [attr.data-target]="'#schedule-entry-time-' + id"
-                >
+                <div class="input-group-append" [attr.data-target]="'#schedule-entry-time-' + id">
                     <div class="input-group-text time-icon"></div>
                 </div>
             </div>
@@ -59,13 +56,7 @@
     </div>
     <div class="container">
         <h3>曜日</h3>
-        <span
-            *ngFor="
-                let wday of ['日', '月', '火', '水', '木', '金', '土'];
-                let i = index
-            "
-            class="me-2"
-        >
+        <span *ngFor="let wday of ['日', '月', '火', '水', '木', '金', '土']; let i = index" class="me-2">
             <input
                 type="checkbox"
                 name="wday"

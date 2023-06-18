@@ -23,10 +23,7 @@ export class FooterComponent implements OnInit {
     loadAverage = '';
     interval = 0;
 
-    constructor(
-        private http: HttpClient,
-        @Inject('ApiEndpoint') private readonly API_URL: string
-    ) {}
+    constructor(private http: HttpClient, @Inject('ApiEndpoint') private readonly API_URL: string) {}
 
     ngOnInit() {
         this.updateSysinfo();
@@ -36,20 +33,18 @@ export class FooterComponent implements OnInit {
     }
 
     updateSysinfo() {
-        this.http
-            .jsonp<SysinfoResponse>(`${this.API_URL}/sysinfo`, 'callback')
-            .subscribe(
-                (res: SysinfoResponse) => {
-                    const date = moment(res['date']);
-                    const uptime = moment(res['uptime']);
-                    this.date = date.format('llll');
-                    this.uptime = uptime.format('llll');
-                    this.uptime_from = uptime.from(date);
-                    this.loadAverage = res['loadAverage'];
-                },
-                (error) => {
-                    // ignore
-                }
-            );
+        this.http.jsonp<SysinfoResponse>(`${this.API_URL}/sysinfo`, 'callback').subscribe(
+            (res: SysinfoResponse) => {
+                const date = moment(res['date']);
+                const uptime = moment(res['uptime']);
+                this.date = date.format('llll');
+                this.uptime = uptime.format('llll');
+                this.uptime_from = uptime.from(date);
+                this.loadAverage = res['loadAverage'];
+            },
+            (error) => {
+                // ignore
+            }
+        );
     }
 }

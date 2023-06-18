@@ -1,34 +1,21 @@
 <div class="row mb-3">
-    <div
-        class="col-xl-6 offset-xl-3 col-lg-8 offset-lg-2 col-md-10 offset-md-1"
-    >
+    <div class="col-xl-6 offset-xl-3 col-lg-8 offset-lg-2 col-md-10 offset-md-1">
         <h2>スケジュール</h2>
         <div class="container" *ngIf="error; else elseContent">
-            <div class="alert alert-danger mt-3" role="alert">
-                スケジュールを取得できませんでした。
-            </div>
+            <div class="alert alert-danger mt-3" role="alert">スケジュールを取得できませんでした。</div>
         </div>
         <ng-template #elseContent>
             <div class="row">
                 <div class="col-lg-6 col-md-12">
-                    <app-scheduler-entry
-                        [(state)]="state[0]"
-                    ></app-scheduler-entry>
+                    <app-scheduler-entry [(state)]="state[0]"></app-scheduler-entry>
                 </div>
                 <div class="col-lg-6 col-md-12">
-                    <app-scheduler-entry
-                        [(state)]="state[1]"
-                    ></app-scheduler-entry>
+                    <app-scheduler-entry [(state)]="state[1]"></app-scheduler-entry>
                 </div>
             </div>
             <div class="row">
                 <div class="container">
-                    <button
-                        type="button"
-                        class="btn btn-primary col-12"
-                        (click)="save()"
-                        [disabled]="!changed"
-                    >
+                    <button type="button" class="btn btn-primary col-12" (click)="save()" [disabled]="!changed">
                         保存
                     </button>
                 </div>
