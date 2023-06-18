@@ -1,18 +1,29 @@
 <ngb-toast
-  *ngFor="let toast of toastService.toasts"
-  [class]="toast.classname"
-  [autohide]="toast.autohide"
-  [delay]="toast.delay || 3000"
-  (hide)="toastService.remove(toast)"
-  >
-  <ng-template ngbToastHeader>
-    <div class="me-auto">
-      <svg class="bd-placeholder-img rounded me-2" width="20" height="20" xmlns="http://www.w3.org/2000/svg"
-           aria-hidden="true" preserveAspectRatio="xMidYMid slice" focusable="false">
-        <rect width="100%" height="100%" [style.fill]="toast.icon_color" />
-      </svg>
-      <strong class="mx-1">{{ toast.title }}</strong>
-    </div>
-  </ng-template>
-  {{ toast.text }}
+    *ngFor="let toast of toastService.toasts"
+    [class]="toast.classname"
+    [autohide]="toast.autohide"
+    [delay]="toast.delay || 3000"
+    (hide)="toastService.remove(toast)"
+>
+    <ng-template ngbToastHeader>
+        <div class="me-auto">
+            <svg
+                class="bd-placeholder-img rounded me-2"
+                width="20"
+                height="20"
+                xmlns="http://www.w3.org/2000/svg"
+                aria-hidden="true"
+                preserveAspectRatio="xMidYMid slice"
+                focusable="false"
+            >
+                <rect
+                    width="100%"
+                    height="100%"
+                    [style.fill]="toast.icon_color"
+                />
+            </svg>
+            <strong class="mx-1">{{ toast.title }}</strong>
+        </div>
+    </ng-template>
+    {{ toast.text }}
 </ngb-toast>

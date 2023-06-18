@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import {ToastService} from '../service/toast.service';
+import { ToastService } from '../service/toast.service';
 import { NgbToast, NgbToastHeader } from '@ng-bootstrap/ng-bootstrap';
 import { NgFor } from '@angular/common';
 
@@ -8,11 +8,10 @@ import { NgFor } from '@angular/common';
     templateUrl: './toast.component.html',
     styleUrls: ['./toast.component.scss'],
     standalone: true,
-    imports: [NgFor, NgbToast, NgbToastHeader]
+    imports: [NgFor, NgbToast, NgbToastHeader],
 })
 export class ToastComponent implements OnInit {
     constructor(public toastService: ToastService) {}
 
-    ngOnInit() {
-    }
+    ngOnInit() {}
 }

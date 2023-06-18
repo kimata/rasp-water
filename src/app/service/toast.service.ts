@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 
 @Injectable({
-    providedIn: 'root'
+    providedIn: 'root',
 })
 export class ToastService {
     toasts: any[] = [];
@@ -10,7 +10,8 @@ export class ToastService {
         this.toasts.push({
             icon_color: '#198754',
             autohide: true,
-            text, ...options
+            text,
+            ...options,
         });
     }
 
@@ -18,11 +19,12 @@ export class ToastService {
         this.toasts.push({
             icon_color: '#0dcaf0',
             autohide: true,
-            text, ...options
+            text,
+            ...options,
         });
     }
 
-    remove (toast: any) {
+    remove(toast: any) {
         // NOTE: ひとまず，何もしない
     }
 }

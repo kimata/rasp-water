@@ -6,13 +6,10 @@ import { NgStyle } from '@angular/common';
     templateUrl: './header.component.html',
     styleUrls: ['./header.component.scss'],
     standalone: true,
-    imports: [NgStyle]
+    imports: [NgStyle],
 })
 export class HeaderComponent implements OnInit {
+    constructor() {}
 
-  constructor() { }
-
-  ngOnInit() {
-  }
-
+    ngOnInit() {}
 }
