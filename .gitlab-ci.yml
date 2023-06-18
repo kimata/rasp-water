@@ -109,6 +109,23 @@ deploy-webapp:
               - flask/**/*
               - src/**/*
 
+deploy-webapp-demo:
+    stage: deploy
+    image:
+        name: bitnami/kubectl:latest
+        entrypoint: [""]
+    script:
+        - kubectl config get-contexts
+        - kubectl config use-context kimata/rasp-water:pod-rollout
+        - kubectl --insecure-skip-tls-verify=true rollout restart -n hems deployment rasp-water-demo
+    rules:
+        # NOTE: 自動実行ではデプロイしない
+        - if: $CI_PIPELINE_SOURCE == "schedule"
+          when: never
+        - changes:
+              - flask/**/*
+              - src/**/*
+
 renovate:
     stage: renovate
     image:
