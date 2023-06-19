@@ -25,7 +25,7 @@ def init():
     schedule_lock = threading.Lock()
 
 
-def valve_auto_control_impl(url, period):
+def valve_auto_control_impl(period):
     try:
         # NOTE: Web 経由だと認証つけた場合に困るので，直接関数を呼ぶ
         rasp_water_valve.set_valve_state(1, period * 60, True, "scueduler")
@@ -44,11 +44,11 @@ def valve_auto_control_impl(url, period):
     return False
 
 
-def valve_auto_control(url, period):
+def valve_auto_control(period):
     logging.info("Starts automatic control of the valve")
 
     for i in range(RETRY_COUNT):
-        if valve_auto_control_impl(url, period):
+        if valve_auto_control_impl(period):
             return True
 
     app_log("😵 水やりの自動実行に失敗しました。")
@@ -63,17 +63,17 @@ def schedule_validate(schedule_data):
         for key in ["is_active", "time", "period", "wday"]:
             if key not in entry:
                 return False
-            if type(entry["is_active"]) != bool:
+        if type(entry["is_active"]) != bool:
+            return False
+        if not re.compile(r"\d{2}:\d{2}").search(entry["time"]):
+            return False
+        if type(entry["period"]) != int:
+            return False
+        if len(entry["wday"]) != 7:
+            return False
+        for wday_flag in entry["wday"]:
+            if type(wday_flag) != bool:
                 return False
-            if not re.compile(r"\d{2}:\d{2}").search(entry["time"]):
-                return False
-            if type(entry["period"]) != int:
-                return False
-            if len(entry["wday"]) != 7:
-                return False
-            for wday_flag in entry["wday"]:
-                if type(wday_flag) != bool:
-                    return False
     return True
 
 
@@ -119,23 +119,34 @@ def set_schedule(schedule_data):
         if not entry["is_active"]:
             continue
 
-        def func():
-            valve_auto_control(entry["endpoint"], entry["period"])
-
         if entry["wday"][0]:
-            schedule.every().sunday.at(entry["time"]).do(func)
+            schedule.every().sunday.at(entry["time"]).do(
+                valve_auto_control, entry["period"]
+            )
         if entry["wday"][1]:
-            schedule.every().monday.at(entry["time"]).do(func)
+            schedule.every().monday.at(entry["time"]).do(
+                valve_auto_control, entry["period"]
+            )
         if entry["wday"][2]:
-            schedule.every().tuesday.at(entry["time"]).do(func)
+            schedule.every().tuesday.at(entry["time"]).do(
+                valve_auto_control, entry["period"]
+            )
         if entry["wday"][3]:
-            schedule.every().wednesday.at(entry["time"]).do(func)
+            schedule.every().wednesday.at(entry["time"]).do(
+                valve_auto_control, entry["period"]
+            )
         if entry["wday"][4]:
-            schedule.every().thursday.at(entry["time"]).do(func)
+            schedule.every().thursday.at(entry["time"]).do(
+                valve_auto_control, entry["period"]
+            )
         if entry["wday"][5]:
-            schedule.every().friday.at(entry["time"]).do(func)
+            schedule.every().friday.at(entry["time"]).do(
+                valve_auto_control, entry["period"]
+            )
         if entry["wday"][6]:
-            schedule.every().saturday.at(entry["time"]).do(func)
+            schedule.every().saturday.at(entry["time"]).do(
+                valve_auto_control, entry["period"]
+            )
 
     for job in schedule.get_jobs():
         logging.info("Next run: {next_run}".format(next_run=job.next_run))

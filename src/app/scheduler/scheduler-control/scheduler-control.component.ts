@@ -108,16 +108,16 @@ export class SchedulerControlComponent implements OnInit {
 
     isStateDiffer(a: ScheduleEntry[], b: ScheduleEntry[]) {
         for (let i = 0; i < 2; i++) {
-            if (this.convertTime(a[i]['time']) != this.convertTime(b[i]['time'])) {
+            if (this.convertTime(a[i]['time']) !== this.convertTime(b[i]['time'])) {
                 return true;
             }
-            if (a[i]['is_active'] != b[i]['is_active']) {
+            if (a[i]['is_active'] !== b[i]['is_active']) {
                 return true;
             }
-            if (a[i]['period'] != b[i]['period']) {
+            if (a[i]['period'] !== b[i]['period']) {
                 return true;
             }
-            if (JSON.stringify(a[i]['wday']) != JSON.stringify(b[i]['wday'])) {
+            if (JSON.stringify(a[i]['wday']) !== JSON.stringify(b[i]['wday'])) {
                 return true;
             }
         }
