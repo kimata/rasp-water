@@ -29,4 +29,7 @@ COPY . .
 
 EXPOSE 5000
 
+USER ubuntu
+COPY --chown=ubuntu . .
+
 CMD ["./flask/app/app.py"]
