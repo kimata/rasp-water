@@ -11,7 +11,7 @@ import pathlib
 import re
 
 from webapp_config import SCHEDULE_DATA_PATH
-from webapp_log import app_log
+from webapp_log import app_log, APP_LOG_LEVEL
 import rasp_water_valve
 
 RETRY_COUNT = 3
@@ -86,7 +86,7 @@ def schedule_store(schedule_data):
                 pickle.dump(schedule_data, f)
     except:
         logging.error(traceback.format_exc())
-        app_log("😵 スケジュール設定の保存に失敗しました。")
+        app_log("😵 スケジュール設定の保存に失敗しました。", APP_LOG_LEVEL.ERROR)
         pass
 
 
@@ -99,7 +99,7 @@ def schedule_load():
                     return schedule_data
         except:
             logging.error(traceback.format_exc())
-            app_log("😵 スケジュール設定の読み出しに失敗しました。")
+            app_log("😵 スケジュール設定の読み出しに失敗しました。", APP_LOG_LEVEL.ERROR)
             pass
 
     return [

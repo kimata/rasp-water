@@ -60,6 +60,9 @@ def schedule_str(schedule):
             continue
         str.append(schedule_entry_str(entry))
 
+    if len(str) == 0:
+        return "∅ 全て無効"
+
     return "、\n".join(str)
 
 
