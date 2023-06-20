@@ -25,11 +25,11 @@ WORKDIR /opt/rasp-water
 COPY requirements.txt .
 RUN pip3 install -r requirements.txt
 
-COPY . .
-
-EXPOSE 5000
+RUN useradd -m ubuntu
 
 USER ubuntu
 COPY --chown=ubuntu . .
+
+EXPOSE 5000
 
 CMD ["./flask/app/app.py"]
