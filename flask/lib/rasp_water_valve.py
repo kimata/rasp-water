@@ -77,7 +77,7 @@ def flow_notify_worker(queue):
 
             if stat["type"] == "total":
                 app_log(
-                    "💧 {time_str}間，約 {water:.2f}L の水やりを行いました。".format(
+                    "🚿 {time_str}間，約 {water:.2f}L の水やりを行いました。".format(
                         time_str=second_str(stat["period"]), water=stat["total"]
                     )
                 )
