@@ -105,11 +105,11 @@ def set_valve_state(config, state, period, auto, host=""):
     if state == 1:
         if auto:
             if weather_forecast.get_rain_fall(config):
-                app_log("☂ 前後で雨が降る予報があるため、自動での水やりを見合わせます。")
-
                 # NOTE: ダミーモードの場合，とにかく水やりする (CI テストの為)
                 if current_app.config["DUMMY_MODE"]:
                     is_execute = True
+                else:
+                    app_log("☂ 前後で雨が降る予報があるため、自動での水やりを見合わせます。")
             else:
                 is_execute = True
         else:
