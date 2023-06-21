@@ -61,6 +61,7 @@ def app_url(server, port):
 
 ######################################################################
 def test_valve(page, server, port):
+    page.set_viewport_size({"width": 800, "height": 1600})
     page.goto(app_url(server, port))
 
     page.locator('button:text("クリア")').click()
@@ -78,6 +79,7 @@ def test_valve(page, server, port):
 
 
 def test_schedule(page, server, port):
+    page.set_viewport_size({"width": 800, "height": 1600})
     page.goto(app_url(server, port))
 
     page.locator('button:text("クリア")').click()
@@ -120,6 +122,7 @@ def test_schedule(page, server, port):
 def test_schedule_run(page, server, port):
     SCHEDULE_AFTER_MIN = 2
 
+    page.set_viewport_size({"width": 800, "height": 1600})
     page.goto(app_url(server, port))
 
     page.locator('button:text("クリア")').click()

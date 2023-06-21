@@ -72,6 +72,7 @@ test-flask:
         when: always
         paths:
             - flask_log.txt
+            - test/evidence/**
     dependencies:
         - build-angular
 
@@ -91,6 +92,7 @@ test-flask-docker:
     artifacts:
         paths:
             - flask_log.txt
+            - test/evidence/**
 
 deploy-webapp:
     stage: deploy
