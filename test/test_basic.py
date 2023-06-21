@@ -35,7 +35,7 @@ def bool_random():
     return random.random() >= 0.5
 
 
-def check_schedule(page, schedule_time, enable_schedule_index, enable_wday_index):
+def check_schedule(page, enable_schedule_index, schedule_time, enable_wday_index):
     enable_checkbox = page.locator('//input[contains(@id,"schedule-entry-")]')
     wday_checkbox = page.locator('//input[@name="wday"]')
     time_input = page.locator('//input[@type="time"]')
@@ -95,6 +95,7 @@ def test_schedule(page, server, port):
     wday_checkbox = page.locator('//input[@name="wday"]')
     time_input = page.locator('//input[@type="time"]')
     for i in range(enable_checkbox.count()):
+        # NTE: 最初に強制的に有効にしておく
         enable_checkbox.nth(i).evaluate("node => node.checked = false")
         enable_checkbox.nth(i).evaluate("node => node.click()")
 
@@ -112,7 +113,7 @@ def test_schedule(page, server, port):
     page.locator('button:text("保存")').click()
     check_log(page, "スケジュールを更新")
 
-    check_schedule(page, schedule_time, enable_schedule_index, enable_wday_index)
+    check_schedule(page, enable_schedule_index, schedule_time, enable_wday_index)
 
     page.reload()
 

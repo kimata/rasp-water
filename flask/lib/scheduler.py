@@ -25,10 +25,10 @@ def init():
     schedule_lock = threading.Lock()
 
 
-def valve_auto_control_impl(period):
+def valve_auto_control_impl(config, period):
     try:
         # NOTE: Web 経由だと認証つけた場合に困るので，直接関数を呼ぶ
-        rasp_water_valve.set_valve_state(1, period * 60, True, "scueduler")
+        rasp_water_valve.set_valve_state(config, 1, period * 60, True, "scueduler")
         return True
 
         # logging.debug("Request scheduled execution to {url}".format(url=url))
@@ -44,11 +44,11 @@ def valve_auto_control_impl(period):
     return False
 
 
-def valve_auto_control(period):
+def valve_auto_control(config, period):
     logging.info("Starts automatic control of the valve")
 
     for i in range(RETRY_COUNT):
-        if valve_auto_control_impl(period):
+        if valve_auto_control_impl(config, period):
             return True
 
     app_log("😵 水やりの自動実行に失敗しました。")
@@ -112,7 +112,7 @@ def schedule_load():
     ] * 2
 
 
-def set_schedule(schedule_data):
+def set_schedule(config, schedule_data):
     schedule.clear()
 
     for entry in schedule_data:
@@ -121,31 +121,31 @@ def set_schedule(schedule_data):
 
         if entry["wday"][0]:
             schedule.every().sunday.at(entry["time"]).do(
-                valve_auto_control, entry["period"]
+                valve_auto_control, config, entry["period"]
             )
         if entry["wday"][1]:
             schedule.every().monday.at(entry["time"]).do(
-                valve_auto_control, entry["period"]
+                valve_auto_control, config, entry["period"]
             )
         if entry["wday"][2]:
             schedule.every().tuesday.at(entry["time"]).do(
-                valve_auto_control, entry["period"]
+                valve_auto_control, config, entry["period"]
             )
         if entry["wday"][3]:
             schedule.every().wednesday.at(entry["time"]).do(
-                valve_auto_control, entry["period"]
+                valve_auto_control, config, entry["period"]
             )
         if entry["wday"][4]:
             schedule.every().thursday.at(entry["time"]).do(
-                valve_auto_control, entry["period"]
+                valve_auto_control, config, entry["period"]
             )
         if entry["wday"][5]:
             schedule.every().friday.at(entry["time"]).do(
-                valve_auto_control, entry["period"]
+                valve_auto_control, config, entry["period"]
             )
         if entry["wday"][6]:
             schedule.every().saturday.at(entry["time"]).do(
-                valve_auto_control, entry["period"]
+                valve_auto_control, config, entry["period"]
             )
 
     for job in schedule.get_jobs():
@@ -161,14 +161,14 @@ def schedule_worker(config, queue):
     liveness_file.parent.mkdir(parents=True, exist_ok=True)
 
     logging.info("Load schedule")
-    set_schedule(schedule_load())
+    set_schedule(config, schedule_load())
 
     logging.info("Start schedule worker")
 
     while True:
         if not queue.empty():
             schedule_data = queue.get()
-            set_schedule(schedule_data)
+            set_schedule(config, schedule_data)
             schedule_store(schedule_data)
 
         schedule.run_pending()

@@ -16,24 +16,16 @@ import valve
 
 blueprint = Blueprint("rasp-water-valve", __name__, url_prefix=APP_URL_PREFIX)
 
-config = None
 should_terminate = False
 
 
-@blueprint.before_app_first_request
-def init():
-    global config
-
-    config = current_app.config["CONFIG"]
-
+def init(config):
     flow_stat_queue = Queue()
     valve.init(config, flow_stat_queue)
-    threading.Thread(target=flow_notify_worker, args=(flow_stat_queue,)).start()
+    threading.Thread(target=flow_notify_worker, args=(config, flow_stat_queue)).start()
 
 
-def send_data(flow):
-    global config
-
+def send_data(config, flow):
     logging.info("Send fluentd: flow = {flow:.1f}".format(flow=flow))
     sender = fluent.sender.FluentSender(
         config["fluent"]["data"]["tag"], host=config["fluent"]["host"]
@@ -60,7 +52,7 @@ def second_str(sec):
         return "{sec}秒".format(sec=sec)
 
 
-def flow_notify_worker(queue):
+def flow_notify_worker(config, queue):
     global should_terminate
 
     liveness_file = pathlib.Path(config["liveness"]["file"]["flow_notify"])
@@ -108,7 +100,7 @@ def get_valve_state():
         return {"state": 0, "remain": 0, "result": "fail"}
 
 
-def set_valve_state(state, period, auto, host=""):
+def set_valve_state(config, state, period, auto, host=""):
     is_execute = False
     if state == 1:
         if auto:
@@ -159,11 +151,13 @@ def api_valve_ctrl():
     period = request.args.get("period", 0, type=int)
     auto = request.args.get("auto", False, type=bool)
 
+    config = current_app.config["CONFIG"]
+
     if cmd == 1:
         return jsonify(
             dict(
                 {"cmd": "set"},
-                **set_valve_state(state, period, auto, remote_host(request))
+                **set_valve_state(config, state, period, auto, remote_host(request))
             )
         )
     else:

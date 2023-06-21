@@ -22,20 +22,19 @@ class APP_LOG_LEVEL(IntEnum):
 
 blueprint = Blueprint("webapp-log", __name__, url_prefix=APP_URL_PREFIX)
 
-config = None
 sqlite = None
 log_lock = None
 thread_pool = None
+config = None
 
 
-@blueprint.before_app_first_request
-def init():
+def init(config_):
     global config
     global sqlite
     global log_lock
     global thread_pool
 
-    config = current_app.config["CONFIG"]
+    config = config_
 
     sqlite = sqlite3.connect(LOG_DB_PATH, check_same_thread=False)
     sqlite.execute("CREATE TABLE IF NOT EXISTS log(date INT, message TEXT)")
@@ -47,6 +46,7 @@ def init():
 
 
 def app_log_impl(message, level):
+    global config
     with log_lock:
         sqlite.execute(
             'INSERT INTO log VALUES (DATETIME("now", "localtime"), ?)', [message]
@@ -120,11 +120,7 @@ if __name__ == "__main__":
 
     logger.init("test", level=logging.INFO)
 
-    # NOTE: テスト用に強制的に書き換える
-    class current_app:  # noqa: F811
-        config = {"CONFIG": load_config()}
-
-    init()
+    init(load_config())
 
     for i in range(5):
         app_log("テスト {i}".format(i=i))

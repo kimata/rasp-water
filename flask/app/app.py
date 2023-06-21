@@ -22,6 +22,7 @@ import time
 import logging
 import atexit
 
+
 if __name__ == "__main__":
     import os
 
@@ -43,6 +44,8 @@ if __name__ == "__main__":
 
     logger.init("hems.rasp-water", level=log_level)
 
+    config = load_config(config_file)
+
     # NOTE: オプションでダミーモードが指定された場合，環境変数もそれに揃えておく
     if dummy_mode:
         logging.warning("Set dummy mode")
@@ -60,9 +63,14 @@ if __name__ == "__main__":
     import webapp_event
     import valve
 
+    if os.environ.get("WERKZEUG_RUN_MAIN") == "true":
+        rasp_water_schedule.init(config)
+        rasp_water_valve.init(config)
+        webapp_log.init(config)
+
     app = Flask(__name__)
 
-    app.config["CONFIG"] = load_config(config_file)
+    app.config["CONFIG"] = config
     app.config["DUMMY_MODE"] = dummy_mode
 
     app.config["JSONIFY_PRETTYPRINT_REGULAR"] = True

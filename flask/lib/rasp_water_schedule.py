@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-from flask import request, jsonify, Blueprint, url_for, current_app
+from flask import request, jsonify, Blueprint, url_for
 import json
 import threading
 import urllib.parse
@@ -21,11 +21,9 @@ WDAY_STR = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"]
 WDAY_STR_JA = ["日", "月", "火", "水", "木", "金", "土"]
 
 
-@blueprint.before_app_first_request
-def init():
+def init(config):
     global schedule_queue
 
-    config = current_app.config["CONFIG"]
     schedule_queue = Queue()
     scheduler.init()
     threading.Thread(
