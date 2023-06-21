@@ -79,14 +79,16 @@ test-flask:
 test-flask-docker:
     stage: test
     image: registry.green-rabbit.net:5000/kimata/local_playwright:230616A
+    variables:
+        PORT: 5001
 
     script:
         # # NOTE: お掃除する
         # - docker rm $(docker ps -a --filter "status=exited" -q) || true
         - docker stop ${CI_JOB_NAME} || true
         - docker pull ${CI_REGISTRY_IMAGE}
-        - docker run --rm --detach=true --tty=true --name ${CI_JOB_NAME} --label job=${CI_JOB_ID} --publish 5001:5001 ${CI_REGISTRY_IMAGE} ./flask/app/app.py -D -p 5001
-        - python3 -m pytest test/test_basic.py --server $(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${CI_JOB_NAME}) --port 5001
+        - docker run --rm --detach=true --tty=true --name ${CI_JOB_NAME} --label job=${CI_JOB_ID} --publish ${PORT}:${PORT} ${CI_REGISTRY_IMAGE} ./flask/app/app.py -D -p ${PORT}
+        - python3 -m pytest test/test_basic.py --server $(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${CI_JOB_NAME}) --port ${PORT}
         - docker logs ${CI_JOB_NAME} > flask_log.txt
         - docker stop ${CI_JOB_NAME}
     artifacts:
