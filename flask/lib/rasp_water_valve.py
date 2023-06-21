@@ -4,6 +4,7 @@ import threading
 import logging
 from multiprocessing import Queue
 import time
+import os
 import pathlib
 import fluent.sender
 
@@ -106,7 +107,7 @@ def set_valve_state(config, state, period, auto, host=""):
         if auto:
             if weather_forecast.get_rain_fall(config):
                 # NOTE: ダミーモードの場合，とにかく水やりする (CI テストの為)
-                if current_app.config["DUMMY_MODE"]:
+                if os.environ["DUMMY_MODE"] == "true":
                     is_execute = True
                 else:
                     app_log("☂ 前後で雨が降る予報があるため、自動での水やりを見合わせます。")
