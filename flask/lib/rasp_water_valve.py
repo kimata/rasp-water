@@ -74,7 +74,7 @@ def flow_notify_worker(config, queue):
                     )
                 )
             elif stat["type"] == "instantaneous":
-                send_data(stat["flow"])
+                send_data(config, stat["flow"])
             elif stat["type"] == "error":
                 app_log(stat["message"], APP_LOG_LEVEL.ERROR)
 
