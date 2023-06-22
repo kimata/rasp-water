@@ -117,7 +117,7 @@ def test_schedule(page, server, port):
 
     page.reload()
 
-    check_schedule(page, schedule_time, enable_schedule_index, enable_wday_index)
+    check_schedule(page, enable_schedule_index, schedule_time, enable_wday_index)
 
 
 def test_schedule_run(page, server, port):
