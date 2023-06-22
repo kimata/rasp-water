@@ -4,15 +4,17 @@
 Liveness のチェックを行います
 
 Usage:
-  healthz.py [-c CONFIG] [-d]
+  healthz.py [-c CONFIG] [-p PORT] [-d]
 
 Options:
   -c CONFIG         : CONFIG を設定ファイルとして読み込んで実行します．[default: config.yaml]
+  -p PORT           : WEB サーバのポートを指定します．[default: 5000]
   -d                : デバッグモードで動作します．
 """
 
 from docopt import docopt
 
+import requests
 import logging
 import pathlib
 import datetime
@@ -45,12 +47,31 @@ def check_liveness_impl(name, liveness_file, interval):
     return True
 
 
-def check_liveness(target_list):
+def check_port(port):
+    try:
+        if (
+            requests.get(
+                "http://{address}:{port}/".format(address="127.0.0.1", port=port)
+            ).status_code
+            == 200
+        ):
+            return True
+    except:
+        pass
+
+    logging.warning("Failed to access Flask web server")
+
+    return False
+
+
+def check_liveness(target_list, port):
     for target in target_list:
         if not check_liveness_impl(
             target["name"], target["liveness_file"], target["interval"]
         ):
             return False
+    if not check_port(port):
+        return False
 
     return True
 
@@ -59,6 +80,7 @@ def check_liveness(target_list):
 args = docopt(__doc__)
 
 config_file = args["-c"]
+port = args["-p"]
 debug_mode = args["-d"]
 
 if debug_mode:
@@ -84,7 +106,7 @@ for name in ["scheduler", "valve_control", "flow_notify"]:
         }
     )
 
-if check_liveness(target_list):
+if check_liveness(target_list, port):
     logging.info("OK.")
     sys.exit(0)
 else:
