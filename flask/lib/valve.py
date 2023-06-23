@@ -49,7 +49,7 @@ class CONTROL_MODE(IntEnum):
     IDLE = 0
 
 
-if os.environ.get("DUMMY_MODE", None) is None:
+if os.environ["DUMMY_MODE"] != "true":
     import RPi.GPIO as GPIO
 
     def conv_rawadc_to_flow(adc):

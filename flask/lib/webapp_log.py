@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 import os
 from enum import IntEnum
-from flask import jsonify, Blueprint, g, current_app
+from flask import jsonify, Blueprint, g
 import logging
 import threading
 import sqlite3
@@ -68,7 +68,7 @@ def app_log_impl(message, level):
                 config["slack"]["error"]["interval_min"],
             )
 
-        if current_app.config["DUMMY_MODE"]:
+        if os.environ["DUMMY_MODE"] == "true":
             logging.error("This application is terminated because it is in dummy mode.")
             os._exit(-1)
 

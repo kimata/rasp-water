@@ -50,6 +50,8 @@ if __name__ == "__main__":
     if dummy_mode:
         logging.warning("Set dummy mode")
         os.environ["DUMMY_MODE"] = "true"
+    else:
+        os.environ["DUMMY_MODE"] = "false"
 
     # NOTE: アクセスログは無効にする
     logging.getLogger("werkzeug").setLevel(logging.ERROR)
