@@ -34,7 +34,7 @@ if __name__ == "__main__":
 
     config_file = args["-c"]
     port = args["-p"]
-    dummy_mode = os.environ.get("DUMMY_MODE", args["-D"])
+    dummy_mode = args["-D"]
     debug_mode = args["-d"]
 
     if debug_mode:
@@ -48,7 +48,6 @@ if __name__ == "__main__":
 
     # NOTE: オプションでダミーモードが指定された場合，環境変数もそれに揃えておく
     if dummy_mode:
-        logging.warning("Set dummy mode")
         os.environ["DUMMY_MODE"] = "true"
     else:
         os.environ["DUMMY_MODE"] = "false"
@@ -66,6 +65,9 @@ if __name__ == "__main__":
     import valve
 
     if os.environ.get("WERKZEUG_RUN_MAIN") == "true":
+        if dummy_mode:
+            logging.warning("Set dummy mode")
+
         rasp_water_schedule.init(config)
         rasp_water_valve.init(config)
         webapp_log.init(config)
@@ -88,7 +90,7 @@ if __name__ == "__main__":
 
     def notify_terminate():
         valve.set_state(valve.VALVE_STATE.CLOSE)
-        webapp_log.app_log("🏃 アプリを再起動します．")
+        webapp_log.app_log("🏃 アプリを再起動します．", eixt=True)
         # NOTE: ログを送信できるまでの時間待つ
         time.sleep(1)
 
