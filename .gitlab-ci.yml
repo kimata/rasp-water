@@ -57,7 +57,7 @@ test-cypress:
 
 test-flask:
     stage: test
-    image: registry.green-rabbit.net:5000/kimata/local_playwright:latest
+    image: registry.green-rabbit.net:5000/kimata/local_playwright:230623A
     script:
         - export GIT_SSL_NO_VERIFY=1
         - git clone https://gitlab.green-rabbit.net/kimata/hems_config.git
@@ -78,7 +78,7 @@ test-flask:
 
 test-flask-docker:
     stage: test
-    image: registry.green-rabbit.net:5000/kimata/local_playwright:230616A
+    image: registry.green-rabbit.net:5000/kimata/local_playwright:230623A
     variables:
         PORT: 5001
 
@@ -98,7 +98,7 @@ test-flask-docker:
 
 test-flask-docker-demo:
     stage: test
-    image: registry.green-rabbit.net:5000/kimata/local_playwright:230616A
+    image: registry.green-rabbit.net:5000/kimata/local_playwright:230623A
     variables:
         PORT: 5002
 
