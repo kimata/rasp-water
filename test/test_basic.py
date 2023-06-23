@@ -158,3 +158,38 @@ def test_schedule_run(page, server, port):
     check_log(page, "水やりを開始します", SCHEDULE_AFTER_MIN * 60 + 10)
 
     check_log(page, "水やりを行いました", period * 60 + 10)
+
+
+def test_schedule_disable(page, server, port):
+    page.set_viewport_size({"width": 800, "height": 1600})
+    page.goto(app_url(server, port))
+
+    page.locator('button:text("クリア")').click()
+    time.sleep(1)
+    check_log(page, "ログがクリアされました")
+
+    # NOTE: スケジュールは両方とも有効化
+    enable_checkbox = page.locator('//input[contains(@id,"schedule-entry-")]')
+    for i in range(enable_checkbox.count()):
+        # NOTE: checkbox 自体は hidden にして，CSS で表示しているので，
+        # 通常の locator では操作できない
+        enable_checkbox.nth(i).evaluate("node => node.checked = false")
+        enable_checkbox.nth(i).evaluate("node => node.click()")
+
+    # NOTE: 曜日は全てチェック
+    wday_checkbox = page.locator('//input[@name="wday"]')
+    for i in range(wday_checkbox.count()):
+        wday_checkbox.nth(i).check()
+
+    # NOET: 1分後にスケジュール設定
+    time_input = page.locator('//input[@type="time"]')
+    time_input.nth(0).fill(time_str_after(1))
+    time_input.nth(1).fill(time_str_after(1))
+
+    page.locator('button:text("保存")').click()
+
+    check_log(page, "スケジュールを更新")
+
+    # NOET: 何も実行されていないことを確認
+    time.sleep(60)
+    check_log(page, "スケジュールを更新")
