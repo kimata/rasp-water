@@ -114,7 +114,7 @@ export class ValveControlComponent implements OnInit {
             (res: FlowResponse) => {
                 this.flow = Math.min(Number(res['flow']), this.FLOW_MAX);
                 this.error['flow'] = false;
-                if (Math.round(this.flow) == 0) {
+                if (this.flow < 0.03) {
                     this.flowZeroCount++;
                 } else {
                     this.flowZeroCount = 0;
