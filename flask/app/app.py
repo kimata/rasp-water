@@ -64,6 +64,9 @@ if __name__ == "__main__":
     import webapp_event
     import valve
 
+    # NOTE: アクセスログは無効にする
+    logging.getLogger("werkzeug").setLevel(logging.ERROR)
+
     if os.environ.get("WERKZEUG_RUN_MAIN") == "true":
         if dummy_mode:
             logging.warning("Set dummy mode")
