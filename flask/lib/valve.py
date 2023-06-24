@@ -194,7 +194,7 @@ def control_worker(config, queue):
                 period_sec = (datetime.datetime.now() - open_start_time).total_seconds()
 
                 # NOTE: バルブが閉じられた後，流量が 0 になっていたらトータル流量を報告する
-                if int(flow) == 0:
+                if flow < 0.1:
                     zero_count += 1
 
                 stop_measure = False
