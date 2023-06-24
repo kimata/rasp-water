@@ -53,7 +53,11 @@ if os.environ["DUMMY_MODE"] != "true":
     import RPi.GPIO as GPIO
 
     def conv_rawadc_to_flow(adc):
-        return (adc * ADC_SCALE_VALUE * FLOW_SCALE_MAX) / 5000.0
+        flow = (adc * ADC_SCALE_VALUE * FLOW_SCALE_MAX) / 5000.0
+        if flow < 0.008:
+            flow = 0
+
+        return flow
 
     def get_flow():
         try:
