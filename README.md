@@ -54,7 +54,7 @@ Kubernetes 用の設定ファイルが `kubernetes/outdoor_unit_cooler.yml` に�
 
 <dl>
   <dt>namespace</dt>
-  <dd>`hems` というネームスペースを作っていますので，環境に合わせて変更します．</dd>
+  <dd> `hems` というネームスペースを作っていますので，環境に合わせて変更します．</dd>
 
   <dt>PersistentVolume</dt>
   <dd>スケジュールデータを格納する場所を確保します．</dd>
