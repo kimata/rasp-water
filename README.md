@@ -1,6 +1,6 @@
 # rasp-water
 
-Raspberry Pi Zero W を使って自動的に水やりをするシステムです．
+Raspberry Pi を使って自動的に水やりをするシステムです．
 
 ## 機能
 
@@ -15,10 +15,6 @@ Angular で作られた UI と，Flask で作られたアプリケーション�
 されます．raspi-gpio を使って GPIO を制御し，その先につながった電磁弁
 で蛇口の開閉を行います．
 
-スケジュール機能は cron ファイルを読み書きして実現しています．
-
-ログ機能は SQLite を使っています．
-
 ハード関係は[ブログ](https://rabbit-note.com/2018/12/31/raspberry-pi-watering-system-hard/)で紹介しています．
 
 ## カスタマイズ
@@ -32,20 +28,6 @@ Angular で作られた UI と，Flask で作られたアプリケーション�
 
 ## 準備
 
-### ライブラリのインストール
-
-```bash:bash
-sudo apt install npm
-sudo apt install python3-pip
-sudo apt install python3-flask
-sudo apt install python3-psutil
-sudo apt install python3-fluent-logger
-sudo pip3 install python-crontab
-```
-
-Ubuntu 18.04 の場合，apt install python3-crontab でインストールした
-ライブラリだとバージョンが古いのでエラーが出ます．
-
 ### ADS1015 のドライバの有効化
 
 /boot/config.txt に次の行を追加．
@@ -54,15 +36,35 @@ Ubuntu 18.04 の場合，apt install python3-crontab でインストールした
 dtoverlay=ads1015,cha_gain=0
 ```
 
-## ビルド方法
+## 設定
 
-```bash:bash
-npm ci
-npm run build
-```
+`src/config.example.yml` を `src/config.yml` に名前変更します．
+環境に合わせて適宜書き換えてください．
 
-## 実行方法
+Slack を使っていない場合は，Slack の設定をコメントアウトしてください．
 
-```bash:bash
-python3 flask/app.py
-```
+## 実行
+
+`docker build` でイメージを構築し，`flask/app/app.py` を動かします．
+
+Kubernetes 用の設定ファイルが `kubernetes/outdoor_unit_cooler.yml` に入っていますので，
+これを参考にしていただくと良いと思います．
+
+カスタマイズが必要になりそうなのは下記の項目になります．
+
+<dl>
+  <dt>namespace</dt>
+  <dd>`hems` というネームスペースを作っていますので，環境に合わせて変更します．</dd>
+
+  <dt>PersistentVolume</dt>
+  <dd>スケジュールデータを格納する場所を確保します．</dd>
+
+  <dt>external-dns.alpha.kubernetes.io/hostname</dt>
+  <dd>ExternalDNS で設定するホスト名を指定します．環境に合わせて変更いただくか，不要であれば削除します．</dd>
+
+  <dt>image</dt>
+  <dd>ビルドしたイメージを登録してあるコンテナリポジトリに書き換えます．</dd>
+
+  <dt>nodeSelector</dt>
+  <dd>Pod を配置したいノード名に変更します．</dd>
+</dl>

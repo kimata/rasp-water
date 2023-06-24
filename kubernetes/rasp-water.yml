@@ -1,0 +1,127 @@
+---
+kind: Namespace
+apiVersion: v1
+metadata:
+    name: hems
+    labels:
+        name: hems
+---
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+    name: pv-rasp-water
+    namespace: hems
+spec:
+    storageClassName: manual
+    capacity:
+        storage: 100Mi
+    accessModes:
+        - ReadWriteOnce
+    local:
+        path: /home/ubuntu/rasp-water/flask/data
+    nodeAffinity:
+        required:
+            nodeSelectorTerms:
+                - matchExpressions:
+                      - key: kubernetes.io/hostname
+                        operator: In
+                        values:
+                            - rasp-water-1
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+    name: pvc-rasp-water
+    namespace: hems
+spec:
+    storageClassName: manual
+    accessModes:
+        - ReadWriteOnce
+    resources:
+        requests:
+            storage: 10Mi
+---
+kind: Service
+apiVersion: v1
+metadata:
+    name: rasp-water
+    namespace: hems
+    annotations:
+        metallb.universe.tf/address-pool: default
+        external-dns.alpha.kubernetes.io/hostname: rasp-water.kubernetes.green-rabbit.net
+spec:
+    selector:
+        app: rasp-water
+    ports:
+        - port: 5000
+          targetPort: 5000
+    type: LoadBalancer
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: rasp-water
+    namespace: hems
+    labels:
+        app: rasp-water
+spec:
+    replicas: 1
+    selector:
+        matchLabels:
+            app: rasp-water
+    template:
+        metadata:
+            labels:
+                app: rasp-water
+        spec:
+            containers:
+                - name: rasp-water
+                  image: registry.green-rabbit.net:5000/kimata/rasp-water:latest
+                  imagePullPolicy: Always
+                  ports:
+                      - containerPort: 5000
+
+                  volumeMounts:
+                      - name: data
+                        mountPath: /opt/rasp-water/flask/data
+
+                      - name: dev-gpio
+                        mountPath: /dev/gpiomem
+
+                      - name: dev-adc
+                        mountPath: /sys/bus/iio/devices/iio:device0
+
+                  securityContext:
+                      privileged: true
+
+                  resources:
+                      requests:
+                          memory: 128Mi
+                      limits:
+                          memory: 256Mi
+
+                  livenessProbe:
+                      exec:
+                          command:
+                              - /opt/rasp-water/flask/src/healthz.py
+                      initialDelaySeconds: 120
+                      periodSeconds: 120
+                      timeoutSeconds: 30
+                      successThreshold: 1
+                      failureThreshold: 3
+
+            volumes:
+                - name: data
+                  persistentVolumeClaim:
+                      claimName: pvc-rasp-water
+                - name: dev-gpio
+                  hostPath:
+                      path: /dev/gpiomem
+                - name: dev-adc
+                  hostPath:
+                      path: /sys/bus/iio/devices/iio:device0
+
+            dnsPolicy: ClusterFirst
+
+            nodeSelector:
+                kubernetes.io/hostname: rasp-water-1
