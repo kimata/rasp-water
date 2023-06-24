@@ -194,11 +194,11 @@ def control_worker(config, queue):
                 period_sec = (datetime.datetime.now() - open_start_time).total_seconds()
 
                 # NOTE: バルブが閉じられた後，流量が 0 になっていたらトータル流量を報告する
-                if flow < 0.1:
+                if flow < 0.03:
                     zero_count += 1
 
                 stop_measure = False
-                if zero_count > 2:
+                if zero_count > 5:
                     # NOTE: 流量(L/min)の平均を求めてから期間(min)を掛ける
                     total = float(flow_sum) / flow_count * period_sec / 60
 
