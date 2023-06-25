@@ -54,7 +54,7 @@ if os.environ["DUMMY_MODE"] != "true":
 
     def conv_rawadc_to_flow(adc):
         flow = (adc * ADC_SCALE_VALUE * FLOW_SCALE_MAX) / 5000.0
-        if flow < 0.008:
+        if flow < 0.01:
             flow = 0
 
         return flow
