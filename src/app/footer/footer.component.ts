@@ -18,10 +18,11 @@ export interface SysinfoResponse {
     standalone: true,
 })
 export class FooterComponent implements OnInit {
-    buildInfo = build;
+    buildDate = moment(build.timestamp).format('llll');
+    buildDateFrom = moment(build.timestamp).fromNow();
     date = '';
     uptime = '';
-    uptime_from = '';
+    uptimeFrom = '';
     loadAverage = '';
     interval = 0;
 
@@ -41,7 +42,7 @@ export class FooterComponent implements OnInit {
                 const uptime = moment(res['uptime']);
                 this.date = date.format('llll');
                 this.uptime = uptime.format('llll');
-                this.uptime_from = uptime.from(date);
+                this.uptimeFrom = uptime.fromNow();
                 this.loadAverage = res['loadAverage'];
             },
             (error) => {

@@ -2,13 +2,13 @@
     <div class="p-1">
         <small>
             <p class="text-muted m-0">
-                <small>ビルド日時: {{ buildInfo.timestamp }}</small>
+                <small>ビルド日時: {{ buildData }} [{{ buildDateFrom }}]</small>
             </p>
             <p class="text-muted m-0">
                 <small>サーバ時刻: {{ date }}</small>
             </p>
             <p class="text-muted m-0">
-                <small>起動時刻: {{ uptime }} [{{ uptime_from }}]</small>
+                <small>起動時刻: {{ uptime }} [{{ uptimeFrom }}]</small>
             </p>
             <p class="text-muted m-0">
                 <small>load average: {{ loadAverage }}</small>
