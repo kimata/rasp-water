@@ -1,0 +1,6 @@
+// NOTE: よくわからないけれど，Bootstrap にあるべき下記が読み込まれないので，
+// 書いておく．
+.input-group > .input-group-append > .input-group-text {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}

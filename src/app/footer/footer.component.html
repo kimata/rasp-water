@@ -1,10 +1,18 @@
 <footer>
     <div class="p-1">
         <small>
-            <p class="text-muted m-0">ビルド日時: {{ buildInfo.timestamp }}</p>
-            <p class="text-muted m-0">サーバ時刻: {{ date }}</p>
-            <p class="text-muted m-0">起動時刻: {{ uptime }} [{{ uptime_from }}]</p>
-            <p class="text-muted m-0">load average: {{ loadAverage }}</p>
+            <p class="text-muted m-0">
+                <small>ビルド日時: {{ buildInfo.timestamp }}</small>
+            </p>
+            <p class="text-muted m-0">
+                <small>サーバ時刻: {{ date }}</small>
+            </p>
+            <p class="text-muted m-0">
+                <small>起動時刻: {{ uptime }} [{{ uptime_from }}]</small>
+            </p>
+            <p class="text-muted m-0">
+                <small>load average: {{ loadAverage }}</small>
+            </p>
         </small>
     </div>
 </footer>
