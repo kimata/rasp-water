@@ -3,8 +3,8 @@
     "version": "0.0.0",
     "scripts": {
         "ng": "ng",
-        "start": "ng serve --host=0.0.0.0",
-        "build": "ng build --base-href /rasp-water/ --configuration production",
+        "start": "npx angular-build-info && ng serve --host=0.0.0.0",
+        "build": "npx angular-build-info && ng build --base-href /rasp-water/ --configuration production",
         "test": "ng test",
         "lint": "ng lint",
         "e2e": "ng e2e",
@@ -29,6 +29,7 @@
         "@ng-bootstrap/ng-bootstrap": "15.0.1",
         "@popperjs/core": "2.11.8",
         "@types/uuid": "9.0.1",
+        "angular-build-info": "^2.0.1",
         "bootstrap": "5.3.0",
         "bootstrap-icons": "^1.10.5",
         "core-js": "3.30.2",

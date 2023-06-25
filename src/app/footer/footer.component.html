@@ -1,6 +1,7 @@
 <footer>
     <div class="p-1">
         <small>
+            <p class="text-muted m-0">ビルド日時: {{ buildInfo.timestamp }}</p>
             <p class="text-muted m-0">サーバ時刻: {{ date }}</p>
             <p class="text-muted m-0">起動時刻: {{ uptime }} [{{ uptime_from }}]</p>
             <p class="text-muted m-0">load average: {{ loadAverage }}</p>

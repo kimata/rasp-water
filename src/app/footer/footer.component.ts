@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import build from '../../build';
 
 import * as moment from 'moment';
 
@@ -17,6 +18,7 @@ export interface SysinfoResponse {
     standalone: true,
 })
 export class FooterComponent implements OnInit {
+    buildInfo = build;
     date = '';
     uptime = '';
     uptime_from = '';
