@@ -23,6 +23,10 @@ build-angular:
 
 build-image:
     stage: build-image
+    needs: ["build-angular"]
+    dependencies:
+        - build-angular
+
     image: registry.green-rabbit.net:5000/kimata/ubuntu-docker-build:d386d462
 
     variables:
@@ -41,8 +45,6 @@ build-image:
           --cache-to type=registry,ref=${CI_REGISTRY_IMAGE}:cache
           --push --tag ${CI_REGISTRY_IMAGE} .
         # - docker buildx stop ${BUILDER}
-    dependencies:
-        - build-angular
 
 # NOTE: Playwright を使うようになったので削除
 # test-cypress:
@@ -58,6 +60,10 @@ build-image:
 
 test-flask:
     stage: test
+    needs: ["build-angular"]
+    dependencies:
+        - build-angular
+
     image: registry.green-rabbit.net:5000/kimata/local_playwright:230623A
     script:
         - export GIT_SSL_NO_VERIFY=1
@@ -74,11 +80,11 @@ test-flask:
         paths:
             - flask_log.txt
             - test/evidence/**
-    dependencies:
-        - build-angular
 
 test-flask-docker:
     stage: test
+    needs: ["build-image"]
+
     image: registry.green-rabbit.net:5000/kimata/local_playwright:230623A
 
     script:
@@ -98,6 +104,8 @@ test-flask-docker:
 
 test-flask-docker-demo:
     stage: test
+    needs: ["build-image"]
+
     image: registry.green-rabbit.net:5000/kimata/local_playwright:230623A
 
     script:
@@ -118,6 +126,7 @@ test-flask-docker-demo:
 
 test-healthz-docker:
     stage: test
+    needs: ["build-image"]
 
     script:
         # NOTE: テストに失敗するとテスト用のコンテナが残るので削除する
@@ -138,6 +147,8 @@ test-healthz-docker:
 
 deploy-webapp:
     stage: deploy
+    needs: ["test-flask-docker", "test-healthz-docker"]
+
     image:
         name: bitnami/kubectl:latest
         entrypoint: [""]
@@ -155,6 +166,8 @@ deploy-webapp:
 
 deploy-webapp-demo:
     stage: deploy
+    needs: ["test-flask-docker-demo", "test-healthz-docker"]
+
     image:
         name: bitnami/kubectl:latest
         entrypoint: [""]
