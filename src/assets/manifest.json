@@ -1,6 +1,6 @@
 {
-    "short_name": "Pi Watering",
-    "name": "自動水やりシステム",
+    "short_name": "水やり",
+    "name": "自動水やりアプリ",
     "icons": [
         {
             "src": "img/favicon.ico",
