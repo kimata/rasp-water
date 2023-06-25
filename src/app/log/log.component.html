@@ -14,6 +14,7 @@
                             <small class="text-muted">({{ entry.fromNow }})</small>
                         </div>
                         <div class="col-12 log-message" [innerHTML]="entry.message | nl2br"></div>
+                        <hr class="dashed" />
                     </div>
                     <ngb-pagination
                         [collectionSize]="log.length"
