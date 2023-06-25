@@ -105,9 +105,9 @@ test-flask-docker-demo:
         - docker stop ${CI_JOB_NAME} || true
         - docker pull ${CI_REGISTRY_IMAGE}
         - docker run --rm --detach=true --tty=true --name ${CI_JOB_NAME}-${CI_JOB_ID} --label job=${CI_JOB_NAME} ${CI_REGISTRY_IMAGE} ./flask/app/app.py -D -c config.example.yaml
-        - python3 -m pytest test/test_basic.py --host $(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${CI_JOB_NAME})
-        - docker logs ${CI_JOB_NAME} > flask_log.txt
-        - docker stop ${CI_JOB_NAME}
+        - python3 -m pytest test/test_basic.py --host $(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${CI_JOB_NAME}-${CI_JOB_ID})
+        - docker logs ${CI_JOB_NAME}-${CI_JOB_ID} > flask_log.txt
+        - docker stop ${CI_JOB_NAME}-${CI_JOB_ID}
     artifacts:
         paths:
             - flask_log.txt
