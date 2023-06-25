@@ -79,16 +79,15 @@ test-flask:
 test-flask-docker:
     stage: test
     image: registry.green-rabbit.net:5000/kimata/local_playwright:230623A
-    variables:
-        PORT: 5001
 
     script:
-        # # NOTE: お掃除する
-        # - docker rm $(docker ps -a --filter "status=exited" -q) || true
+        # NOTE: テストに失敗するとテスト用のコンテナが残るので削除する
+        - docker ps  --filter "label=job=${CI_JOB_NAME}" | grep hours | cut -d " " -f1 | while read id; do docker stop -t 5 $id; done || true
+
         - docker pull ${CI_REGISTRY_IMAGE}
-        - docker run --rm --detach=true --tty=true --name ${CI_JOB_NAME}-${CI_JOB_ID} --label job=${CI_JOB_ID} --publish ${PORT}:${PORT} ${CI_REGISTRY_IMAGE} ./flask/app/app.py -D -p ${PORT}
-        - ln -s $(docker inspect --format='{{.LogPath}}' ${CI_JOB_NAME}-${CI_JOB_ID}) flask_log.txt
-        - python3 -m pytest test/test_basic.py --server $(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${CI_JOB_NAME}-${CI_JOB_ID}) --port ${PORT}
+        - docker run --rm --detach=true --tty=true --name ${CI_JOB_NAME}-${CI_JOB_ID} --label job=${CI_JOB_NAME} ${CI_REGISTRY_IMAGE} ./flask/app/app.py -D
+        - python3 -m pytest test/test_basic.py --host $(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${CI_JOB_NAME}-${CI_JOB_ID})
+        - docker logs ${CI_JOB_NAME}-${CI_JOB_ID} > flask_log.txt
         - docker stop ${CI_JOB_NAME}-${CI_JOB_ID}
     artifacts:
         paths:
@@ -98,16 +97,15 @@ test-flask-docker:
 test-flask-docker-demo:
     stage: test
     image: registry.green-rabbit.net:5000/kimata/local_playwright:230623A
-    variables:
-        PORT: 5002
 
     script:
-        # # NOTE: お掃除する
-        # - docker rm $(docker ps -a --filter "status=exited" -q) || true
+        # NOTE: テストに失敗するとテスト用のコンテナが残るので削除する
+        - docker ps  --filter "label=job=${CI_JOB_NAME}" | grep hours | cut -d " " -f1 | while read id; do docker stop -t 5 $id; done || true
+
         - docker stop ${CI_JOB_NAME} || true
         - docker pull ${CI_REGISTRY_IMAGE}
-        - docker run --rm --detach=true --tty=true --name ${CI_JOB_NAME} --label job=${CI_JOB_ID} --publish ${PORT}:${PORT} ${CI_REGISTRY_IMAGE} ./flask/app/app.py -D -c config.example.yaml -p ${PORT}
-        - python3 -m pytest test/test_basic.py --server $(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${CI_JOB_NAME}) --port ${PORT}
+        - docker run --rm --detach=true --tty=true --name ${CI_JOB_NAME}-${CI_JOB_ID} --label job=${CI_JOB_NAME} ${CI_REGISTRY_IMAGE} ./flask/app/app.py -D -c config.example.yaml
+        - python3 -m pytest test/test_basic.py --host $(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${CI_JOB_NAME})
         - docker logs ${CI_JOB_NAME} > flask_log.txt
         - docker stop ${CI_JOB_NAME}
     artifacts:

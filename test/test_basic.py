@@ -62,9 +62,9 @@ def app_url(server, port):
 
 ######################################################################
 @flaky(max_runs=5)
-def test_valve(page, server, port):
+def test_valve(page, host, port):
     page.set_viewport_size({"width": 800, "height": 1600})
-    page.goto(app_url(server, port))
+    page.goto(app_url(host, port))
 
     page.locator('button:text("クリア")').click()
     time.sleep(1)
@@ -81,9 +81,9 @@ def test_valve(page, server, port):
 
 
 @flaky(max_runs=5)
-def test_schedule(page, server, port):
+def test_schedule(page, host, port):
     page.set_viewport_size({"width": 800, "height": 1600})
-    page.goto(app_url(server, port))
+    page.goto(app_url(host, port))
 
     page.locator('button:text("クリア")').click()
     time.sleep(1)
@@ -124,11 +124,11 @@ def test_schedule(page, server, port):
 
 
 @flaky(max_runs=5)
-def test_schedule_run(page, server, port):
+def test_schedule_run(page, host, port):
     SCHEDULE_AFTER_MIN = 2
 
     page.set_viewport_size({"width": 800, "height": 1600})
-    page.goto(app_url(server, port))
+    page.goto(app_url(host, port))
 
     page.locator('button:text("クリア")').click()
     time.sleep(1)
@@ -165,9 +165,9 @@ def test_schedule_run(page, server, port):
 
 
 @flaky(max_runs=5)
-def test_schedule_disable(page, server, port):
+def test_schedule_disable(page, host, port):
     page.set_viewport_size({"width": 800, "height": 1600})
-    page.goto(app_url(server, port))
+    page.goto(app_url(host, port))
 
     page.locator('button:text("クリア")').click()
     time.sleep(1)
