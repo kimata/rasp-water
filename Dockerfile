@@ -14,7 +14,7 @@ RUN if [ "$TARGETPLATFORM" = "linux/arm64" ]; then GPIO_LIB="python3-rpi.gpio"; 
     python3-fluent-logger \
     python3-requests \
     python3-schedule \
-    python3-flask \
+    python3-flask python3-flask-cors \
     python3-psutil \
     ${GPIO_LIB} \
  && apt-get clean \
