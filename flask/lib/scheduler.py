@@ -91,12 +91,14 @@ def schedule_store(schedule_data):
 
 
 def schedule_load():
+    global schedule_lock
     if SCHEDULE_DATA_PATH.exists():
         try:
-            with open(SCHEDULE_DATA_PATH, "rb") as f:
-                schedule_data = pickle.load(f)
-                if schedule_validate(schedule_data):
-                    return schedule_data
+            with schedule_lock:
+                with open(SCHEDULE_DATA_PATH, "rb") as f:
+                    schedule_data = pickle.load(f)
+                    if schedule_validate(schedule_data):
+                        return schedule_data
         except:
             logging.error(traceback.format_exc())
             app_log("😵 スケジュール設定の読み出しに失敗しました。", APP_LOG_LEVEL.ERROR)
