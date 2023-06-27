@@ -60,9 +60,33 @@ build-image:
 
 test-flask:
     stage: test
+
     needs: ["build-angular"]
     dependencies:
         - build-angular
+
+    image: registry.green-rabbit.net:5000/kimata/local_playwright:230623A
+    script:
+        - export GIT_SSL_NO_VERIFY=1
+        - git clone https://gitlab.green-rabbit.net/kimata/hems_config.git
+        - mv hems_config/rasp-water.yaml config.yaml
+        - apt-get install -y python3-flask python3-yaml python3-schedule
+          python3-fluent-logger python3-coloredlogs python3-docopt
+          python3-psutil python3-pip
+        - pip install -r requirements.txt
+        # NOTE: 単純に起動することだけをチェック
+        - python3 ./flask/app/app.py -D 2>&1 | tee flask_log.txt &
+        - sleep 10
+    artifacts:
+        when: always
+        paths:
+            - flask_log.txt
+
+test-playwright:
+    stage: test
+    needs: ["build-angular"]
+    dependencies:
+        - test-flask
 
     image: registry.green-rabbit.net:5000/kimata/local_playwright:230623A
     script:
@@ -81,7 +105,7 @@ test-flask:
             - flask_log.txt
             - test/evidence/**
 
-test-flask-docker:
+test-playwright-docker:
     stage: test
     needs: ["build-image"]
 
@@ -102,7 +126,7 @@ test-flask-docker:
             - flask_log.txt
             - test/evidence/**
 
-test-flask-docker-demo:
+test-playwright-docker-demo:
     stage: test
     needs: ["build-image"]
 
