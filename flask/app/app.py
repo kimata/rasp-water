@@ -16,6 +16,7 @@ Options:
 from docopt import docopt
 
 from flask import Flask
+from flask_cors import CORS
 import sys
 import pathlib
 import time
@@ -76,6 +77,8 @@ if __name__ == "__main__":
         webapp_log.init(config)
 
     app = Flask(__name__)
+
+    CORS(app)
 
     app.config["CONFIG"] = config
     app.config["DUMMY_MODE"] = dummy_mode

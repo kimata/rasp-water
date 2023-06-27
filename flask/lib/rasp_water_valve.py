@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from flask import request, jsonify, Blueprint, current_app
+from flask_cors import cross_origin
 import threading
 import logging
 from multiprocessing import Queue
@@ -146,6 +147,7 @@ def set_valve_state(config, state, period, auto, host=""):
 
 @blueprint.route("/api/valve_ctrl", methods=["GET", "POST"])
 @support_jsonp
+@cross_origin()
 def api_valve_ctrl():
     cmd = request.args.get("cmd", 0, type=int)
     state = request.args.get("state", 0, type=int)
@@ -167,5 +169,6 @@ def api_valve_ctrl():
 
 @blueprint.route("/api/valve_flow", methods=["GET"])
 @support_jsonp
+@cross_origin()
 def api_valve_flow():
     return jsonify({"cmd": "get", "flow": valve.get_flow()["flow"]})

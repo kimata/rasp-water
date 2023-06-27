@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 from flask import request, jsonify, Blueprint, url_for
+from flask_cors import cross_origin
 import json
 import threading
 import urllib.parse
@@ -66,6 +67,7 @@ def schedule_str(schedule):
 
 @blueprint.route("/api/schedule_ctrl", methods=["GET", "POST"])
 @support_jsonp
+@cross_origin()
 def api_schedule_ctrl():
     cmd = request.args.get("cmd", None)
     data = request.args.get("data", None)
