@@ -66,8 +66,10 @@ if os.environ["DUMMY_MODE"] != "true":
         except:
             return {"flow": 0, "result": "fail"}
 
-elif os.environ.get("WERKZEUG_RUN_MAIN") == "true":
-    logging.warning("Using dummy GPIO")
+else:
+    if os.environ.get("WERKZEUG_RUN_MAIN") == "true":
+        logging.warning("Using dummy GPIO")
+
     import random
 
     # NOTE: 本物の GPIO のように振る舞うダミーのライブラリ
