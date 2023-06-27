@@ -70,8 +70,8 @@ test-flask:
         - export GIT_SSL_NO_VERIFY=1
         - git clone https://gitlab.green-rabbit.net/kimata/hems_config.git
         - mv hems_config/rasp-water.yaml config.yaml
-        - apt-get install -y python3-flask python3-yaml python3-schedule
-          python3-fluent-logger python3-coloredlogs python3-docopt
+        - apt-get install -y python3-flask python3-flask-cors python3-yaml
+          python3-schedule python3-fluent-logger python3-coloredlogs python3-docopt
           python3-psutil python3-pip
         - pip install -r requirements.txt
         # NOTE: 単純に起動することだけをチェック
@@ -93,8 +93,8 @@ test-playwright:
         - export GIT_SSL_NO_VERIFY=1
         - git clone https://gitlab.green-rabbit.net/kimata/hems_config.git
         - mv hems_config/rasp-water.yaml config.yaml
-        - apt-get install -y python3-flask python3-yaml python3-schedule
-          python3-fluent-logger python3-coloredlogs python3-docopt
+        - apt-get install -y python3-flask python3-flask-cors python3-yaml
+          python3-schedule python3-fluent-logger python3-coloredlogs python3-docopt
           python3-psutil python3-pip
         - pip install -r requirements.txt
         - python3 ./flask/app/app.py -D > flask_log.txt 2>&1 &
