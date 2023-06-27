@@ -6,6 +6,7 @@ import random
 import datetime
 import time
 from flaky import flaky
+import logging
 
 APP_URL_TMPL = "http://{host}:{port}/rasp-water/"
 
@@ -63,8 +64,11 @@ def app_url(server, port):
 ######################################################################
 @flaky(max_runs=5)
 def test_valve(page, host, port):
+    url = app_url(host, port)
+    logging.info("Go to {url}".format(url=url))
+
     page.set_viewport_size({"width": 800, "height": 1600})
-    page.goto(app_url(host, port))
+    page.goto(url)
 
     page.locator('button:text("クリア")').click()
     time.sleep(1)

@@ -15,7 +15,6 @@ blueprint = Blueprint("webapp-base", __name__, url_prefix=APP_URL_PREFIX)
 @cross_origin()
 @gzipped
 def webapp(filename):
-
     return send_from_directory(STATIC_FILE_PATH, filename)
 
 

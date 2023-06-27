@@ -53,9 +53,6 @@ if __name__ == "__main__":
     else:
         os.environ["DUMMY_MODE"] = "false"
 
-    # NOTE: アクセスログは無効にする
-    logging.getLogger("werkzeug").setLevel(logging.ERROR)
-
     import rasp_water_valve
     import rasp_water_schedule
 
@@ -84,7 +81,7 @@ if __name__ == "__main__":
 
         atexit.register(notify_terminate)
 
-    app = Flask(__name__)
+    app = Flask("rasp-water")
 
     CORS(app)
 

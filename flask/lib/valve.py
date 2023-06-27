@@ -66,7 +66,7 @@ if os.environ["DUMMY_MODE"] != "true":
         except:
             return {"flow": 0, "result": "fail"}
 
-else:
+elif os.environ.get("WERKZEUG_RUN_MAIN") == "true":
     logging.warning("Using dummy GPIO")
     import random
 

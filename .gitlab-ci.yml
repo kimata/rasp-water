@@ -84,7 +84,7 @@ test-flask:
 
 test-playwright:
     stage: test
-    needs: ["build-angular", "test-flask"]
+    needs: ["test-flask"]
     dependencies:
         - test-flask
 
