@@ -44,7 +44,7 @@ def gzipped(f):
                 response.headers["Cache-Control"] = "no-store, must-revalidate"
                 response.headers["Expires"] = "0"
             else:
-                response.headers["Cache-Control"] = "max-age=31536000"
+                response.headers["Cache-Control"] = "max-age=86400"
 
             return response
 
@@ -59,7 +59,7 @@ def support_jsonp(f):
         callback = request.args.get("callback", False)
         if callback:
             content = callback + "(" + f().data.decode() + ")"
-            return current_app.response_class(content, mimetype="application/json")
+            return current_app.response_class(content, mimetype="text/javascript")
         else:
             return f(*args, **kwargs)
 
