@@ -153,7 +153,7 @@ def test_schedule_run(page, host, port):
 
     # NOTE: 片方はランダム，他方はテスト用に 2 分後に設定
     time_input = page.locator('//input[@type="time"]')
-    time_input.first.fill(time_str_random())
+    time_input.nth(0).fill(time_str_random())
     time_input.nth(1).fill(time_str_after(SCHEDULE_AFTER_MIN))
 
     period_input = page.locator('//input[contains(@id,"schedule-period-")]')
