@@ -138,23 +138,26 @@ def test_schedule_run(page, host, port):
     time.sleep(1)
     check_log(page, "ログがクリアされました")
 
-    # NOTE: スケジュールは両方とも有効化
     enable_checkbox = page.locator('//input[contains(@id,"schedule-entry-")]')
+    enable_wday_index = [bool_random() for _ in range(14)]
+    wday_checkbox = page.locator('//input[@name="wday"]')
+    time_input = page.locator('//input[@type="time"]')
     for i in range(enable_checkbox.count()):
         # NOTE: checkbox 自体は hidden にして，CSS で表示しているので，
         # 通常の locator では操作できない
         enable_checkbox.nth(i).evaluate("node => node.checked = false")
         enable_checkbox.nth(i).evaluate("node => node.click()")
 
-    # NOTE: 曜日は全てチェック
-    wday_checkbox = page.locator('//input[@name="wday"]')
-    for i in range(wday_checkbox.count()):
-        wday_checkbox.nth(i).check()
+        # NOTE: 曜日は全てチェック
+        for j in range(7):
+            if enable_wday_index[i * 7 + j]:
+                wday_checkbox.nth(i * 7 + j).check()
 
-    # NOTE: 片方はランダム，他方はテスト用に 2 分後に設定
-    time_input = page.locator('//input[@type="time"]')
-    time_input.nth(0).fill(time_str_random())
-    time_input.nth(1).fill(time_str_after(SCHEDULE_AFTER_MIN))
+        # NOTE: 片方はランダム，他方はテスト用に 2 分後に設定
+        if i == 0:
+            time_input.nth(i).fill(time_str_random())
+        else:
+            time_input.nth(i).fill(time_str_after(SCHEDULE_AFTER_MIN))
 
     period_input = page.locator('//input[contains(@id,"schedule-period-")]')
     period = int(period_input.nth(1).input_value())
@@ -177,23 +180,23 @@ def test_schedule_disable(page, host, port):
     time.sleep(1)
     check_log(page, "ログがクリアされました")
 
-    # NOTE: スケジュールは両方とも有効化
     enable_checkbox = page.locator('//input[contains(@id,"schedule-entry-")]')
+    enable_wday_index = [bool_random() for _ in range(14)]
+    wday_checkbox = page.locator('//input[@name="wday"]')
+    time_input = page.locator('//input[@type="time"]')
     for i in range(enable_checkbox.count()):
         # NOTE: checkbox 自体は hidden にして，CSS で表示しているので，
         # 通常の locator では操作できない
         enable_checkbox.nth(i).evaluate("node => node.checked = false")
         enable_checkbox.nth(i).evaluate("node => node.click()")
 
-    # NOTE: 曜日は全てチェック
-    wday_checkbox = page.locator('//input[@name="wday"]')
-    for i in range(wday_checkbox.count()):
-        wday_checkbox.nth(i).check()
+        # NOTE: 曜日は全てチェック
+        for j in range(7):
+            if enable_wday_index[i * 7 + j]:
+                wday_checkbox.nth(i * 7 + j).check()
 
-    # NOET: 1分後にスケジュール設定
-    time_input = page.locator('//input[@type="time"]')
-    time_input.nth(0).fill(time_str_after(1))
-    time_input.nth(1).fill(time_str_after(1))
+        # NOET: 1分後にスケジュール設定
+        time_input.nth(i).fill(time_str_after(i))
 
     page.locator('button:text("保存")').click()
 
