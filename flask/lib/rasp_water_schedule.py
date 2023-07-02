@@ -10,7 +10,7 @@ from multiprocessing import Queue
 from webapp_config import APP_URL_PREFIX
 from webapp_event import notify_event, EVENT_TYPE
 from webapp_log import app_log
-from flask_util import support_jsonp, remote_host
+from flask_util import support_jsonp, auth_user
 import scheduler
 
 blueprint = Blueprint("rasp-water-schedule", __name__, url_prefix=APP_URL_PREFIX)
@@ -90,11 +90,11 @@ def api_schedule_ctrl():
 
             notify_event(EVENT_TYPE.SCHEDULE)
 
-            host = remote_host(request)
+            user = auth_user(request)
             app_log(
                 "📅 スケジュールを更新しました。\n{schedule}\n{by}".format(
                     schedule=schedule_str(schedule_data),
-                    by="by {}".format(host) if host != "" else "",
+                    by="by {}".format(user) if user != "" else "",
                 )
             )
 
