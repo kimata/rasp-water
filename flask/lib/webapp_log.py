@@ -47,6 +47,15 @@ def init(config_):
     thread_pool = ThreadPool(processes=3)
 
 
+def term():
+    global thread_pool
+    global sqlite
+
+    thread_pool.close()
+    time.sleep(0.5)
+    sqlite.close()
+
+
 def app_log_impl(message, level):
     global config
     with log_lock:
