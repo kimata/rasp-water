@@ -74,7 +74,7 @@ if __name__ == "__main__":
 
         def notify_terminate():
             valve.set_state(valve.VALVE_STATE.CLOSE)
-            webapp_log.app_log("🏃 アプリを再起動します．", exit=True)
+            webapp_log.app_log("🏃 アプリを再起動します．")
             webapp_log.term()
 
         atexit.register(notify_terminate)
