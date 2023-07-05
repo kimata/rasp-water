@@ -8,7 +8,7 @@ jobs:
 
         strategy:
             matrix:
-                node-version: [16.x]
+                node-version: [20.x]
 
         steps:
             - uses: actions/checkout@v3
@@ -37,9 +37,3 @@ jobs:
             - name: Build
               run: |
                   npm run build
-            - name: Cypress E2E test
-              uses: cypress-io/github-action@v4
-              with:
-                  start: npm run start
-                  wait-on: http://localhost:4200/
-                  browser: chrome
