@@ -6,7 +6,6 @@ import random
 import datetime
 import time
 from flaky import flaky
-import logging
 
 APP_URL_TMPL = "http://{host}:{port}/rasp-water/"
 
@@ -61,14 +60,16 @@ def app_url(server, port):
     return APP_URL_TMPL.format(host=server, port=port)
 
 
+def init(page):
+    page.on("console", lambda msg: print(msg.text))
+    page.set_viewport_size({"width": 2400, "height": 1600})
+
+
 ######################################################################
 @flaky(max_runs=5)
 def test_valve(page, host, port):
-    url = app_url(host, port)
-    logging.info("Go to {url}".format(url=url))
-
-    page.set_viewport_size({"width": 2400, "height": 1600})
-    page.goto(url)
+    init(page)
+    page.goto(app_url(host, port))
 
     page.locator('button:text("クリア")').click()
     time.sleep(1)
@@ -86,7 +87,7 @@ def test_valve(page, host, port):
 
 @flaky(max_runs=5)
 def test_schedule(page, host, port):
-    page.set_viewport_size({"width": 2400, "height": 1600})
+    init(page)
     page.goto(app_url(host, port))
 
     page.locator('button:text("クリア")').click()
@@ -131,7 +132,7 @@ def test_schedule(page, host, port):
 def test_schedule_run(page, host, port):
     SCHEDULE_AFTER_MIN = 2
 
-    page.set_viewport_size({"width": 2400, "height": 1600})
+    init(page)
     page.goto(app_url(host, port))
 
     page.locator('button:text("クリア")').click()
@@ -173,7 +174,7 @@ def test_schedule_run(page, host, port):
 
 @flaky(max_runs=5)
 def test_schedule_disable(page, host, port):
-    page.set_viewport_size({"width": 2400, "height": 1600})
+    init(page)
     page.goto(app_url(host, port))
 
     page.locator('button:text("クリア")').click()
