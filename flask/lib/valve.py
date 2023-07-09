@@ -124,6 +124,7 @@ else:
 
 
 pin_no = GPIO_PIN_DEFAULT
+worker = None
 should_terminate = False
 
 
@@ -241,7 +242,11 @@ def control_worker(config, queue):
 
 
 def init(config, queue, pin=GPIO_PIN_DEFAULT):
+    global worker
     global pin_no
+
+    if worker is not None:
+        term()
 
     pin_no = pin
 
@@ -252,13 +257,22 @@ def init(config, queue, pin=GPIO_PIN_DEFAULT):
         with open(ADC_SCALE_PATH, "w") as f:
             f.write(str(ADC_SCALE_VALUE))
 
-    threading.Thread(
+    worker = threading.Thread(
         target=control_worker,
         args=(
             config,
             queue,
         ),
-    ).start()
+    )
+    worker.start()
+
+
+def term():
+    global worker
+    global should_terminate
+
+    should_terminate = True
+    worker = None
 
 
 # NOTE: 実際にバルブを開きます．
@@ -377,4 +391,4 @@ if __name__ == "__main__":
         if info["type"] == "total":
             break
 
-    should_terminate = 1
+    should_terminate = True

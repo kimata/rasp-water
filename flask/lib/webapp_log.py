@@ -42,6 +42,9 @@ def init(config_):
 
     config = config_
 
+    if sqlite is not None:
+        term()
+
     sqlite = sqlite3.connect(LOG_DB_PATH, check_same_thread=False)
     sqlite.execute(
         "CREATE TABLE IF NOT EXISTS log(id INTEGER primary key autoincrement, date INTEGER, message TEXT)"
@@ -63,8 +66,13 @@ def term():
     global should_terminate
 
     should_terminate = True
-    log_thread.join()
-    sqlite.close()
+
+    if log_thread is not None:
+        log_thread.join()
+        log_thread = None
+    if sqlite is not None:
+        sqlite.close()
+        sqlite = None
 
 
 def app_log_impl(message, level):

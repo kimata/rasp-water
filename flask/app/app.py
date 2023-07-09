@@ -21,22 +21,14 @@ import sys
 import pathlib
 import logging
 import atexit
+import os
+
+sys.path.append(str(pathlib.Path(__file__).parent.parent / "lib"))
+import logger
+from config import load_config
 
 
-if __name__ == "__main__":
-    import os
-
-    sys.path.append(str(pathlib.Path(__file__).parent.parent / "lib"))
-    import logger
-    from config import load_config
-
-    args = docopt(__doc__)
-
-    config_file = args["-c"]
-    port = args["-p"]
-    dummy_mode = args["-D"]
-    debug_mode = args["-d"]
-
+def create_app(config_file, port=5000, dummy_mode=False, debug_mode=False):
     if debug_mode:
         log_level = logging.DEBUG
     else:
@@ -61,6 +53,8 @@ if __name__ == "__main__":
     import webapp_event
     import valve
 
+    app = Flask("rasp-water")
+
     # NOTE: アクセスログは無効にする
     logging.getLogger("werkzeug").setLevel(logging.ERROR)
 
@@ -79,8 +73,6 @@ if __name__ == "__main__":
 
         atexit.register(notify_terminate)
 
-    app = Flask("rasp-water")
-
     CORS(app)
 
     app.config["CONFIG"] = config
@@ -98,5 +90,19 @@ if __name__ == "__main__":
     app.register_blueprint(webapp_util.blueprint)
 
     # app.debug = True
+
+    return app
+
+
+if __name__ == "__main__":
+    args = docopt(__doc__)
+
+    config_file = args["-c"]
+    port = args["-p"]
+    dummy_mode = args["-D"]
+    debug_mode = args["-d"]
+
+    app = create_app(config_file, port, dummy_mode, debug_mode)
+
     # NOTE: スクリプトの自動リロード停止したい場合は use_reloader=False にする
     app.run(host="0.0.0.0", port=port, threaded=True, use_reloader=True)

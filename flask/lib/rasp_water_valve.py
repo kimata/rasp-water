@@ -18,13 +18,30 @@ import valve
 
 blueprint = Blueprint("rasp-water-valve", __name__, url_prefix=APP_URL_PREFIX)
 
+worker = None
 should_terminate = False
 
 
 def init(config):
+    global worker
+
+    if worker is not None:
+        term()
+
     flow_stat_queue = Queue()
     valve.init(config, flow_stat_queue)
-    threading.Thread(target=flow_notify_worker, args=(config, flow_stat_queue)).start()
+    worker = threading.Thread(target=flow_notify_worker, args=(config, flow_stat_queue))
+    worker.start()
+
+
+def term():
+    global should_terminate
+    global worker
+
+    should_terminate = True
+    worker = None
+
+    valve.term()
 
 
 def send_data(config, flow):
@@ -102,22 +119,23 @@ def get_valve_state():
         return {"state": 0, "remain": 0, "result": "fail"}
 
 
-def set_valve_state(config, state, period, auto, host=""):
-    is_execute = False
-    if state == 1:
-        if auto:
-            if weather_forecast.get_rain_fall(config):
-                # NOTE: ダミーモードの場合，とにかく水やりする (CI テストの為)
-                if os.environ["DUMMY_MODE"] == "true":
-                    is_execute = True
-                else:
-                    app_log("☂ 前後で雨が降る予報があるため、自動での水やりを見合わせます。")
-            else:
-                is_execute = True
+def judge_execute(config, state, auto):
+    if (state != 1) or (not auto):
+        return True
+
+    if weather_forecast.get_rain_fall(config):
+        # NOTE: ダミーモードの場合，とにかく水やりする (CI テストの為)
+        if os.environ["DUMMY_MODE"] == "true":
+            return True
         else:
-            is_execute = True
-    else:
-        is_execute = True
+            app_log("☂ 前後で雨が降る予報があるため、自動での水やりを見合わせます。")
+            return False
+
+    return True
+
+
+def set_valve_state(config, state, period, auto, host=""):
+    is_execute = judge_execute(config, state, auto)
 
     if not is_execute:
         notify_event(EVENT_TYPE.CONTROL)

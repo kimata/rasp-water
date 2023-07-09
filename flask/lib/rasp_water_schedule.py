@@ -17,23 +17,35 @@ blueprint = Blueprint("rasp-water-schedule", __name__, url_prefix=APP_URL_PREFIX
 
 schedule_lock = threading.Lock()
 schedule_queue = None
+worker = None
 
 WDAY_STR = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"]
 WDAY_STR_JA = ["日", "月", "火", "水", "木", "金", "土"]
 
 
 def init(config):
+    global worker
     global schedule_queue
+
+    if worker is not None:
+        term()
 
     schedule_queue = Queue()
     scheduler.init()
-    threading.Thread(
+    worker = threading.Thread(
         target=scheduler.schedule_worker,
         args=(
             config,
             schedule_queue,
         ),
-    ).start()
+    )
+    worker.start()
+
+
+def term():
+    global worker
+    scheduler.should_terminate = True
+    worker = None
 
 
 def wday_str_list(wday_list, lang="en"):

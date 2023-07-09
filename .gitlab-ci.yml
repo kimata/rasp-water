@@ -72,15 +72,10 @@ test-flask:
         - mv hems_config/rasp-water.yaml config.yaml
         - apt-get install -y python3-flask python3-flask-cors python3-yaml
           python3-schedule python3-fluent-logger python3-coloredlogs python3-docopt
-          python3-psutil python3-pip
+          python3-psutil python3-pytest-cov python3-pip
         - pip install -r requirements.txt
         # NOTE: 単純に起動することだけをチェック
-        - python3 ./flask/app/app.py -D 2>&1 | tee flask_log.txt &
-        - sleep 10
-    artifacts:
-        when: always
-        paths:
-            - flask_log.txt
+        - python3 -m pytest --cov=flask --cov-branch --capture=no test/test_flask.py
 
 test-playwright:
     stage: test
