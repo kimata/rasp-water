@@ -102,7 +102,7 @@ test-playwright:
 
 test-playwright-docker:
     stage: test
-    needs: ["build-image"]
+    needs: ["build-image", "test-flask"]
 
     image: registry.green-rabbit.net:5000/kimata/local_playwright:230623A
 
@@ -123,7 +123,7 @@ test-playwright-docker:
 
 test-playwright-docker-demo:
     stage: test
-    needs: ["build-image"]
+    needs: ["build-image", "test-flask"]
 
     image: registry.green-rabbit.net:5000/kimata/local_playwright:230623A
 
