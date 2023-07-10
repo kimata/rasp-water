@@ -37,6 +37,9 @@ def term():
     global should_terminate
     global worker
 
+    if worker is None:
+        return
+
     should_terminate = True
     worker.join()
     worker = None
@@ -96,6 +99,8 @@ def flow_notify_worker(config, queue):
                 send_data(config, stat["flow"])
             elif stat["type"] == "error":
                 app_log(stat["message"], APP_LOG_LEVEL.ERROR)
+            else:  # pragma: no cover
+                pass
 
         liveness_file.touch()
 
@@ -125,7 +130,9 @@ def judge_execute(config, state, auto):
 
     if weather_forecast.get_rain_fall(config):
         # NOTE: ダミーモードの場合，とにかく水やりする (CI テストの為)
-        if os.environ["DUMMY_MODE"] == "true":
+        if (os.environ.get("DUMMY_MODE", "false") == "true") and (
+            os.environ.get("TEST", "false") != "true"
+        ):  # pragma: no cover
             return True
         else:
             app_log("☂ 前後で雨が降る予報があるため、自動での水やりを見合わせます。")

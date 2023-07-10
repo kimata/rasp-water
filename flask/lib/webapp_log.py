@@ -64,14 +64,15 @@ def term():
     global log_thread
     global should_terminate
 
+    if log_thread is None:
+        return
+
     should_terminate = True
 
-    if log_thread is not None:
-        log_thread.join()
-        log_thread = None
-    if sqlite is not None:
-        sqlite.close()
-        sqlite = None
+    log_thread.join()
+    log_thread = None
+    sqlite.close()
+    sqlite = None
 
 
 def app_log_impl(message, level):

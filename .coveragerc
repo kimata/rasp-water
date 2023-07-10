@@ -4,6 +4,7 @@ exclude_lines =
     if __name__ == .__main__.:
     def get_db_config
     class GZipRotator
+    def log_formatter
     def error_img
     def error_with_image
     if log_dir_path is not None:

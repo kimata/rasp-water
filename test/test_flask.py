@@ -17,6 +17,10 @@ from app import create_app
 
 @pytest.fixture(scope="session")
 def app():
+    import webapp_config
+
+    webapp_config.SCHEDULE_DATA_PATH.unlink(missing_ok=True)
+
     os.environ["TEST"] = "true"
     os.environ["WERKZEUG_RUN_MAIN"] = "true"
 
@@ -65,7 +69,28 @@ def test_index(client):
     assert response.status_code == 200
 
 
-def test_valve_ctrl(client, mocker):
+def test_valve_ctrl_read(client, mocker):
+    response = client.get(
+        "/rasp-water/api/valve_ctrl",
+    )
+    assert response.status_code == 200
+    assert response.json["result"] == "success"
+
+
+def test_valve_ctrl_mismatch(client):
+    import valve
+
+    # NOTE: Fault injection
+    valve.set_control_mode(-10)
+
+    response = client.get(
+        "/rasp-water/api/valve_ctrl",
+    )
+    assert response.status_code == 200
+    assert response.json["result"] == "success"
+
+
+def test_valve_ctrl_manual(client, mocker):
     mocker.patch("fluent.sender.FluentSender.emit", return_value=True)
 
     period = 15
@@ -109,12 +134,6 @@ def test_valve_ctrl_auto(client, mocker):
             "auto": 1,
             "period": 2,
         },
-    )
-    assert response.status_code == 200
-    assert response.json["result"] == "success"
-
-    response = client.get(
-        "/rasp-water/api/valve_ctrl",
     )
     assert response.status_code == 200
     assert response.json["result"] == "success"
@@ -230,10 +249,23 @@ def test_schedule_ctrl_execute(client):
         query_string={"cmd": "set", "data": json.dumps(schedule_data)},
     )
     assert response.status_code == 200
-    time.sleep(62)
+    time.sleep(120)
+
+
+def test_schedule_ctrl_execute_pending(client, mocker):
+    mocker.patch("weather_forecast.get_rain_fall", return_value=True)
+
+    schedule_data = gen_schedule_data(1)
+    response = client.get(
+        "/rasp-water/api/schedule_ctrl",
+        query_string={"cmd": "set", "data": json.dumps(schedule_data)},
+    )
+    assert response.status_code == 200
+    time.sleep(120)
 
 
 def test_schedule_ctrl_execute_fail(client, mocker):
+    mocker.patch("weather_forecast.get_rain_fall", return_value=False)
     mocker.patch("scheduler.valve_auto_control_impl", return_value=False)
 
     schedule_data = gen_schedule_data(1)
@@ -246,6 +278,14 @@ def test_schedule_ctrl_execute_fail(client, mocker):
 
 
 def test_schedule_ctrl_read(client):
+    response = client.get("/rasp-water/api/schedule_ctrl")
+    assert response.status_code == 200
+    assert len(response.json) == 2
+
+
+def test_schedule_ctrl_validate_fail(client, mocker):
+    mocker.patch("scheduler.schedule_validate", return_value=False)
+
     response = client.get("/rasp-water/api/schedule_ctrl")
     assert response.status_code == 200
     assert len(response.json) == 2
@@ -343,11 +383,23 @@ def test_valve_flow_close(client, mocker):
     time.sleep(15)
 
 
+def test_second_str():
+    import rasp_water_valve
+
+    assert rasp_water_valve.second_str(60) == "1分"
+    assert rasp_water_valve.second_str(61) == "1分1秒"
+
+
 def test_terminate():
     import webapp_log
     import rasp_water_schedule
     import rasp_water_valve
 
+    webapp_log.term()
+    rasp_water_schedule.term()
+    rasp_water_valve.term()
+
+    # NOTE: 二重に呼んでもエラーにならないことを確認
     webapp_log.term()
     rasp_water_schedule.term()
     rasp_water_valve.term()

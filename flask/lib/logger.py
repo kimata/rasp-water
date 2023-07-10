@@ -14,7 +14,7 @@ ROTATE_COUNT = 10
 LOG_FORMAT = "{name} %(asctime)s %(levelname)s [%(filename)s:%(lineno)s %(funcName)s] %(message)s"
 
 
-def formatter(name):
+def log_formatter(name):
     return logging.Formatter(
         fmt=LOG_FORMAT.format(name=name), datefmt="%Y-%m-%d %H:%M:%S"
     )
@@ -51,7 +51,7 @@ def init(
             maxBytes=MAX_SIZE,
             backupCount=ROTATE_COUNT,
         )
-        log_handler.formatter = formatter(name)
+        log_handler.formatter = log_formatter(name)
         log_handler.namer = GZipRotator.namer
         log_handler.rotator = GZipRotator.rotator
 
@@ -64,7 +64,7 @@ def init(
     if is_str_log:
         str_io = io.StringIO()
         handler = logging.StreamHandler(str_io)
-        handler.formatter = formatter(name)
+        handler.formatter = log_formatter(name)
         logging.getLogger().addHandler(handler)
 
         return str_io

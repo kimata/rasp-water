@@ -60,7 +60,9 @@ class FAIL_MODE(IntEnum):
     CLOSE = 2
 
 
-if os.environ["DUMMY_MODE"] != "true":  # pragma: no cover
+if (os.environ.get("DUMMY_MODE", "false") != "true") and (
+    os.environ.get("TEST", "false") != "true"
+):  # pragma: no cover
     import RPi.GPIO as GPIO
 
     def conv_rawadc_to_flow(adc):
@@ -211,6 +213,7 @@ def control_worker(config, queue):
                     except:  # pragma: no cover
                         logging.warning(traceback.format_exc())
                 if (close_time is None) and STAT_PATH_VALVE_CLOSE.exists():
+                    # NOTE: 常にバルブコマンドで制御するので，基本的にここには来ない
                     close_time = datetime.datetime.now()
 
             if (not STAT_PATH_VALVE_OPEN.exists()) and (open_start_time is not None):
@@ -370,7 +373,7 @@ def get_control_mode():
                 }
             else:
                 if (now - close_time).total_seconds() > 1:
-                    logging.warn("Timer control of the valve may be broken")
+                    logging.warning("Timer control of the valve may be broken")
                 return {"mode": CONTROL_MODE.TIMER, "remain": 0}
     else:
         return {"mode": CONTROL_MODE.IDLE, "remain": 0}

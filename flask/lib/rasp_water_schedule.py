@@ -19,16 +19,14 @@ schedule_lock = threading.Lock()
 schedule_queue = None
 worker = None
 
-WDAY_STR = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"]
-WDAY_STR_JA = ["日", "月", "火", "水", "木", "金", "土"]
+WDAY_STR = ["日", "月", "火", "水", "木", "金", "土"]
 
 
 def init(config):
     global worker
     global schedule_queue
 
-    if worker is not None:
-        term()
+    assert worker is None
 
     schedule_queue = Queue()
     scheduler.init()
@@ -44,16 +42,17 @@ def init(config):
 
 def term():
     global worker
+
+    if worker is None:
+        return
+
     scheduler.should_terminate = True
     worker.join()
     worker = None
 
 
-def wday_str_list(wday_list, lang="en"):
+def wday_str_list(wday_list):
     wday_str = WDAY_STR
-    if lang == "ja":
-        wday_str = WDAY_STR_JA
-
     return map(
         lambda i: wday_str[i], (i for i in range(len(wday_list)) if wday_list[i])
     )
@@ -61,7 +60,7 @@ def wday_str_list(wday_list, lang="en"):
 
 def schedule_entry_str(entry):
     return "{} 開始 {} 分間 {}".format(
-        entry["time"], entry["period"], ",".join(wday_str_list(entry["wday"], "ja"))
+        entry["time"], entry["period"], ",".join(wday_str_list(entry["wday"]))
     )
 
 

@@ -20,5 +20,6 @@ blueprint_default = Blueprint("webapp-default", __name__)
 
 
 @blueprint_default.route("/")
+@gzipped
 def root():
     return redirect("{webapp_prefix}/".format(webapp_prefix=APP_URL_PREFIX))
