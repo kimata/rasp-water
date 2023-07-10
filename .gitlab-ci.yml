@@ -75,6 +75,10 @@ test-flask:
           python3-psutil python3-pytest-cov python3-pytest-mock python3-pip
         - pip install -r requirements.txt
         - python3 -m pytest --cov=flask --cov-config=.coveragerc --cov-branch --cov-report=html --capture=no test/test_flask.py
+    artifacts:
+        when: always
+        paths:
+            - test/evidence/**
 
 test-playwright:
     stage: test
