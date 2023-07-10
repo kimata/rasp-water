@@ -53,7 +53,7 @@ def send(token, ch_name, message):
             text=message["text"],
             blocks=message["json"],
         )
-    except slack_sdk.errors.SlackApiError as e:
+    except slack_sdk.errors.SlackApiError as e:  # pragma: no cover
         logging.warning(e.response["error"])
 
 
@@ -89,6 +89,10 @@ def check_interval(interval_min):
         return False
 
     return True
+
+
+def clear_interval():
+    ERROR_NOTIFY_FOOTPRINT.unlink(missing_ok=True)
 
 
 def error_img(token, ch_id, title, img, text):

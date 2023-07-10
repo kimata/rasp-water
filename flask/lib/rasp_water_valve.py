@@ -25,8 +25,7 @@ should_terminate = False
 def init(config):
     global worker
 
-    if worker is not None:
-        term()
+    assert worker is None
 
     flow_stat_queue = Queue()
     valve.init(config, flow_stat_queue)
@@ -39,6 +38,7 @@ def term():
     global worker
 
     should_terminate = True
+    worker.join()
     worker = None
 
     valve.term()
@@ -113,7 +113,7 @@ def get_valve_state():
             "remain": state["remain"],
             "result": "success",
         }
-    except:
+    except:  # pragma: no cover
         logging.warning("Failed to get valve control mode")
 
         return {"state": 0, "remain": 0, "result": "fail"}

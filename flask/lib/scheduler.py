@@ -37,11 +37,11 @@ def valve_auto_control_impl(config, period):
         # )
         # logging.debug(res.text)
         # return res.status_code == 200
-    except:
+    except:  # pragma: no cover
         logging.warning(traceback.format_exc())
         pass
 
-    return False
+    return False  # pragma: no cover
 
 
 def valve_auto_control(config, period):
@@ -84,7 +84,7 @@ def schedule_store(schedule_data):
             SCHEDULE_DATA_PATH.parent.mkdir(parents=True, exist_ok=True)
             with open(SCHEDULE_DATA_PATH, "wb") as f:
                 pickle.dump(schedule_data, f)
-    except:
+    except:  # pragma: no cover
         logging.error(traceback.format_exc())
         app_log("😵 スケジュール設定の保存に失敗しました。", APP_LOG_LEVEL.ERROR)
         pass
@@ -99,7 +99,7 @@ def schedule_load():
                     schedule_data = pickle.load(f)
                     if schedule_validate(schedule_data):
                         return schedule_data
-        except:
+        except:  # pragma: no cover
             logging.error(traceback.format_exc())
             app_log("😵 スケジュール設定の読み出しに失敗しました。", APP_LOG_LEVEL.ERROR)
             pass

@@ -42,8 +42,7 @@ def init(config_):
 
     config = config_
 
-    if sqlite is not None:
-        term()
+    assert sqlite is None
 
     sqlite = sqlite3.connect(LOG_DB_PATH, check_same_thread=False)
     sqlite.execute(
@@ -98,7 +97,9 @@ def app_log_impl(message, level):
                 config["slack"]["error"]["interval_min"],
             )
 
-        if os.environ.get("DUMMY_MODE", "false") == "true":
+        if (os.environ.get("DUMMY_MODE", "false") == "true") and (
+            os.environ.get("TEST", "false") != "true"
+        ):  # pragma: no cover
             logging.error("This application is terminated because it is in dummy mode.")
             os._exit(-1)
 

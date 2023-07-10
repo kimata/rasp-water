@@ -1,0 +1,18 @@
+[report]
+exclude_lines =
+    pragma: no cover
+    if __name__ == .__main__.:
+    def get_db_config
+    class GZipRotator
+    def error_img
+    def error_with_image
+    if log_dir_path is not None:
+    if log_queue is not None:
+    if is_str_log:
+    def notify_watch_impl
+    def notify_watch
+    def stop_watch
+    elif level == APP_LOG_LEVEL.WARN:
+
+[html]
+directory = test/evidence/coverage

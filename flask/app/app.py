@@ -29,7 +29,7 @@ from config import load_config
 
 
 def create_app(config_file, port=5000, dummy_mode=False, debug_mode=False):
-    if debug_mode:
+    if debug_mode:  # pragma: no cover
         log_level = logging.DEBUG
     else:
         log_level = logging.INFO
@@ -41,7 +41,7 @@ def create_app(config_file, port=5000, dummy_mode=False, debug_mode=False):
     # NOTE: オプションでダミーモードが指定された場合，環境変数もそれに揃えておく
     if dummy_mode:
         os.environ["DUMMY_MODE"] = "true"
-    else:
+    else:  # pragma: no cover
         os.environ["DUMMY_MODE"] = "false"
 
     import rasp_water_valve
@@ -66,7 +66,7 @@ def create_app(config_file, port=5000, dummy_mode=False, debug_mode=False):
         rasp_water_valve.init(config)
         webapp_log.init(config)
 
-        def notify_terminate():
+        def notify_terminate():  # pragma: no cover
             valve.set_state(valve.VALVE_STATE.CLOSE)
             webapp_log.app_log("🏃 アプリを再起動します．")
             webapp_log.term()

@@ -38,6 +38,11 @@ ADC_SCALE_VALUE = 3
 # 流量計のアナログ出力値 (ADS1015 のドライバ ti_ads1015 が公開)
 ADC_VALUE_PATH = "/sys/bus/iio/devices/iio:device0/in_voltage0_raw"
 
+# 電磁弁を開いてからこの時間経過しても，水が流れていなかったらエラーにする
+TIME_CLOSE_FAIL = 45
+# 電磁弁を閉じてからこの時間経過しても，水が流れていたらエラーにする
+TIME_OPEN_FAIL = 60
+
 
 class VALVE_STATE(IntEnum):
     OPEN = 1
@@ -49,7 +54,13 @@ class CONTROL_MODE(IntEnum):
     IDLE = 0
 
 
-if os.environ["DUMMY_MODE"] != "true":
+class FAIL_MODE(IntEnum):
+    NONE = 0
+    OPEN = 1
+    CLOSE = 2
+
+
+if os.environ["DUMMY_MODE"] != "true":  # pragma: no cover
     import RPi.GPIO as GPIO
 
     def conv_rawadc_to_flow(adc):
@@ -95,7 +106,12 @@ else:
         def setwarnings(warnings):
             return
 
-    def get_flow():
+    def get_flow(fail_mode=FAIL_MODE.NONE):
+        if fail_mode == FAIL_MODE.OPEN:  # pragma: no cover
+            return {"flow": 10, "result": "success"}
+        elif fail_mode == FAIL_MODE.CLOSE:  # pragma: no cover
+            return {"flow": 0, "result": "success"}
+
         if not STAT_PATH_VALVE_OPEN.exists():
             if get_flow.prev_flow > 1:
                 get_flow.prev_flow /= 1.3
@@ -192,7 +208,7 @@ def control_worker(config, queue):
                                 # NOTE: 下記の関数の中で
                                 # STAT_PATH_VALVE_CONTROL_COMMAND は削除される
                                 set_state(VALVE_STATE.CLOSE)
-                    except:
+                    except:  # pragma: no cover
                         logging.warning(traceback.format_exc())
                 if (close_time is None) and STAT_PATH_VALVE_CLOSE.exists():
                     close_time = datetime.datetime.now()
@@ -217,11 +233,13 @@ def control_worker(config, queue):
                         }
                     )
 
-                    if (period_sec > 30) and (total < 1):
+                    if (period_sec > TIME_CLOSE_FAIL) and (total < 1):
                         queue.put({"type": "error", "message": "😵 元栓が閉まっている可能性があります．"})
 
                     stop_measure = True
-                elif (datetime.datetime.now() - close_time).total_seconds() > 60:
+                elif (
+                    datetime.datetime.now() - close_time
+                ).total_seconds() > TIME_OPEN_FAIL:
                     queue.put({"type": "error", "message": "😵 バルブを閉めても水が流れ続けています．"})
                     stop_measure = True
 
@@ -230,6 +248,7 @@ def control_worker(config, queue):
                     close_time = None
                     flow_sum = 0
                     flow_count = 0
+                    zero_count = 0
 
                     notify_last_time = None
                     notify_last_flow_sum = 0
@@ -245,8 +264,7 @@ def init(config, queue, pin=GPIO_PIN_DEFAULT):
     global worker
     global pin_no
 
-    if worker is not None:
-        term()
+    assert worker is None
 
     pin_no = pin
 
@@ -272,6 +290,7 @@ def term():
     global should_terminate
 
     should_terminate = True
+    worker.join()
     worker = None
 
 

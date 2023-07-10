@@ -9,7 +9,7 @@ from multiprocessing import Queue
 
 from webapp_config import APP_URL_PREFIX
 from webapp_event import notify_event, EVENT_TYPE
-from webapp_log import app_log
+from webapp_log import app_log, APP_LOG_LEVEL
 from flask_util import support_jsonp, auth_user
 import scheduler
 
@@ -45,6 +45,7 @@ def init(config):
 def term():
     global worker
     scheduler.should_terminate = True
+    worker.join()
     worker = None
 
 
@@ -84,9 +85,16 @@ def api_schedule_ctrl():
     cmd = request.args.get("cmd", None)
     data = request.args.get("data", None)
     if cmd == "set":
-        with schedule_lock:
-            schedule_data = json.loads(data)
+        schedule_data = json.loads(data)
 
+        if not scheduler.schedule_validate(schedule_data):
+            app_log(
+                "😵 スケジュールの指定が不正です．",
+                APP_LOG_LEVEL.ERROR,
+            )
+            return jsonify(scheduler.schedule_load())
+
+        with schedule_lock:
             endpoint = urllib.parse.urljoin(
                 request.url_root,
                 url_for("rasp-water-valve.api_valve_ctrl"),
