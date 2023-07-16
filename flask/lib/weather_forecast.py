@@ -29,14 +29,14 @@ def get_weather_info_yahoo(config):
 
         res = requests.get(YAHOO_API_ENDPOINT, params=params)
 
-        if res.status_code != 200:  # pragma: no cover
+        if res.status_code != 200:
             logging.warning("Failed to fetch weather info from Yahoo")
             return None
 
         return json.loads(res.content)["Feature"][0]["Property"]["WeatherList"][
             "Weather"
         ]
-    except:  # pragma: no cover
+    except:
         logging.warning("Failed to fetch weather info from Yahoo")
         return None
 

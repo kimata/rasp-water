@@ -6,6 +6,7 @@ import threading
 import time
 import logging
 import multiprocessing
+import traceback
 
 from webapp_config import APP_URL_PREFIX
 
@@ -30,12 +31,16 @@ def notify_watch_impl(queue):
     logging.info("Start notify watch thread")
 
     while True:
-        while not queue.empty():
-            notify_event(queue.get())
-        time.sleep(0.1)
-
         if is_stop_watch:
             break
+        try:
+            if not queue.empty():
+                notify_event(queue.get())
+            time.sleep(0.1)
+        except OverflowError:  # pragma: no cover
+            # NOTE: テストする際，freezer 使って日付をいじるとこの例外が発生する
+            logging.debug(traceback.format_exc())
+            pass
 
     logging.info("Stop notify watch thread")
 

@@ -8,11 +8,12 @@ import time
 import os
 import pathlib
 import fluent.sender
+import traceback
 
 from webapp_config import APP_URL_PREFIX
 from webapp_event import notify_event, EVENT_TYPE
 from webapp_log import app_log, APP_LOG_LEVEL
-from flask_util import support_jsonp, remote_host
+from flask_util import support_jsonp, auth_user
 import weather_forecast
 import valve
 
@@ -86,21 +87,27 @@ def flow_notify_worker(config, queue):
         if should_terminate:
             break
 
-        if not queue.empty():
-            stat = queue.get()
+        try:
+            if not queue.empty():
+                stat = queue.get()
 
-            if stat["type"] == "total":
-                app_log(
-                    "🚿 {time_str}間，約 {water:.2f}L の水やりを行いました。".format(
-                        time_str=second_str(stat["period"]), water=stat["total"]
+                if stat["type"] == "total":
+                    app_log(
+                        "🚿 {time_str}間，約 {water:.2f}L の水やりを行いました。".format(
+                            time_str=second_str(stat["period"]), water=stat["total"]
+                        )
                     )
-                )
-            elif stat["type"] == "instantaneous":
-                send_data(config, stat["flow"])
-            elif stat["type"] == "error":
-                app_log(stat["message"], APP_LOG_LEVEL.ERROR)
-            else:  # pragma: no cover
-                pass
+                elif stat["type"] == "instantaneous":
+                    send_data(config, stat["flow"])
+                elif stat["type"] == "error":
+                    app_log(stat["message"], APP_LOG_LEVEL.ERROR)
+                else:  # pragma: no cover
+                    pass
+            time.sleep(0.1)
+        except OverflowError:  # pragma: no cover
+            # NOTE: テストする際，freezer 使って日付をいじるとこの例外が発生する
+            logging.debug(traceback.format_exc())
+            pass
 
         liveness_file.touch()
 
@@ -118,7 +125,7 @@ def get_valve_state():
             "remain": state["remain"],
             "result": "success",
         }
-    except:  # pragma: no cover
+    except:
         logging.warning("Failed to get valve control mode")
 
         return {"state": 0, "remain": 0, "result": "fail"}
@@ -182,11 +189,9 @@ def api_valve_ctrl():
     config = current_app.config["CONFIG"]
 
     if cmd == 1:
+        user = auth_user(request)
         return jsonify(
-            dict(
-                {"cmd": "set"},
-                **set_valve_state(config, state, period, auto, remote_host(request))
-            )
+            dict({"cmd": "set"}, **set_valve_state(config, state, period, auto, user))
         )
     else:
         return jsonify(dict({"cmd": "get"}, **get_valve_state()))

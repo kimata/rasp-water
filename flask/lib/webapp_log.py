@@ -14,6 +14,7 @@ from webapp_config import APP_URL_PREFIX, LOG_DB_PATH
 from webapp_event import notify_event, EVENT_TYPE
 from flask_util import support_jsonp, gzipped
 import notify_slack
+import traceback
 
 
 class APP_LOG_LEVEL(IntEnum):
@@ -108,14 +109,21 @@ def app_log_impl(message, level):
 def app_log_worker(log_queue):
     global should_terminate
 
+    sleep_sec = 0.4
+
     while True:
-        if not log_queue.empty():
-            log = log_queue.get()
-            app_log_impl(log["message"], log["level"])
         if should_terminate:
             break
 
-        time.sleep(0.2)
+        try:
+            if not log_queue.empty():
+                log = log_queue.get()
+                app_log_impl(log["message"], log["level"])
+        except OverflowError:  # pragma: no cover
+            # NOTE: テストする際，freezer 使って日付をいじるとこの例外が発生する
+            logging.debug(traceback.format_exc())
+            pass
+        time.sleep(sleep_sec)
 
 
 def app_log(message, level=APP_LOG_LEVEL.INFO):

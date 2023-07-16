@@ -37,11 +37,11 @@ def valve_auto_control_impl(config, period):
         # )
         # logging.debug(res.text)
         # return res.status_code == 200
-    except:  # pragma: no cover
+    except:
         logging.warning(traceback.format_exc())
         pass
 
-    return False  # pragma: no cover
+    return False
 
 
 def valve_auto_control(config, period):
@@ -84,7 +84,7 @@ def schedule_store(schedule_data):
             SCHEDULE_DATA_PATH.parent.mkdir(parents=True, exist_ok=True)
             with open(SCHEDULE_DATA_PATH, "wb") as f:
                 pickle.dump(schedule_data, f)
-    except:  # pragma: no cover
+    except:
         logging.error(traceback.format_exc())
         app_log("😵 スケジュール設定の保存に失敗しました。", APP_LOG_LEVEL.ERROR)
         pass
@@ -99,7 +99,7 @@ def schedule_load():
                     schedule_data = pickle.load(f)
                     if schedule_validate(schedule_data):
                         return schedule_data
-        except:  # pragma: no cover
+        except:
             logging.error(traceback.format_exc())
             app_log("😵 スケジュール設定の読み出しに失敗しました。", APP_LOG_LEVEL.ERROR)
             pass
@@ -168,20 +168,22 @@ def schedule_worker(config, queue):
     logging.info("Start schedule worker")
 
     while True:
-        if not queue.empty():
-            schedule_data = queue.get()
-            set_schedule(config, schedule_data)
-            schedule_store(schedule_data)
-
-        schedule.run_pending()
-
         if should_terminate:
             break
+        try:
+            if not queue.empty():
+                schedule_data = queue.get()
+                set_schedule(config, schedule_data)
+                schedule_store(schedule_data)
 
-        liveness_file.touch()
-
-        logging.debug("Sleep {sleep_sec} sec...".format(sleep_sec=sleep_sec))
-        time.sleep(sleep_sec)
+            schedule.run_pending()
+            liveness_file.touch()
+            logging.debug("Sleep {sleep_sec} sec...".format(sleep_sec=sleep_sec))
+            time.sleep(sleep_sec)
+        except OverflowError:  # pragma: no cover
+            # NOTE: テストする際，freezer 使って日付をいじるとこの例外が発生する
+            logging.debug(traceback.format_exc())
+            pass
 
     logging.info("Terminate schedule worker")
 

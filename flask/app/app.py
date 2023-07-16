@@ -61,6 +61,8 @@ def create_app(config_file, port=5000, dummy_mode=False, debug_mode=False):
     if os.environ.get("WERKZEUG_RUN_MAIN") == "true":
         if dummy_mode:
             logging.warning("Set dummy mode")
+        else:  # pragma: no cover
+            pass
 
         rasp_water_schedule.init(config)
         rasp_water_valve.init(config)
@@ -72,6 +74,8 @@ def create_app(config_file, port=5000, dummy_mode=False, debug_mode=False):
             webapp_log.term()
 
         atexit.register(notify_terminate)
+    else:  # pragma: no cover
+        pass
 
     CORS(app)
 

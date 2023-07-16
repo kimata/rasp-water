@@ -31,6 +31,8 @@ GPIO_PIN_DEFAULT = 18
 
 # 流量計の A/D 値が 5V の時の流量
 FLOW_SCALE_MAX = 12
+# 異常とみなす流量
+FLOW_ERROR_TH = 20
 
 # 流量計をモニタする ADC の設定 (ADS1015 のドライバ ti_ads1015 が公開)
 ADC_SCALE_PATH = "/sys/bus/iio/devices/iio:device0/in_voltage0_scale"
@@ -42,6 +44,8 @@ ADC_VALUE_PATH = "/sys/bus/iio/devices/iio:device0/in_voltage0_raw"
 TIME_CLOSE_FAIL = 45
 # 電磁弁を閉じてからこの時間経過しても，水が流れていたらエラーにする
 TIME_OPEN_FAIL = 60
+# この時間の間，異常な流量になっていたらエラーにする
+TIME_OVER_FAIL = 5
 
 
 class VALVE_STATE(IntEnum):
@@ -52,12 +56,6 @@ class VALVE_STATE(IntEnum):
 class CONTROL_MODE(IntEnum):
     TIMER = 1
     IDLE = 0
-
-
-class FAIL_MODE(IntEnum):
-    NONE = 0
-    OPEN = 1
-    CLOSE = 2
 
 
 if (os.environ.get("DUMMY_MODE", "false") != "true") and (
@@ -108,12 +106,7 @@ else:
         def setwarnings(warnings):
             return
 
-    def get_flow(fail_mode=FAIL_MODE.NONE):
-        if fail_mode == FAIL_MODE.OPEN:  # pragma: no cover
-            return {"flow": 10, "result": "success"}
-        elif fail_mode == FAIL_MODE.CLOSE:  # pragma: no cover
-            return {"flow": 0, "result": "success"}
-
+    def get_flow():
         if not STAT_PATH_VALVE_OPEN.exists():
             if get_flow.prev_flow > 1:
                 get_flow.prev_flow /= 1.3
@@ -161,10 +154,11 @@ def control_worker(config, queue):
     flow_sum = 0
     flow_count = 0
     zero_count = 0
-
+    over_count = 0
     notify_last_time = None
     notify_last_flow_sum = 0
     notify_last_count = 0
+    stop_measure = False
 
     i = 0
     while True:
@@ -223,7 +217,13 @@ def control_worker(config, queue):
                 if flow < 0.03:
                     zero_count += 1
 
-                stop_measure = False
+                if flow > FLOW_ERROR_TH:
+                    over_count += 1
+
+                if over_count > TIME_OVER_FAIL:
+                    set_state(VALVE_STATE.CLOSE)
+                    queue.put({"type": "error", "message": "😵水が流れすぎています．"})
+
                 if zero_count > 5:
                     # NOTE: 流量(L/min)の平均を求めてから期間(min)を掛ける
                     total = float(flow_sum) / flow_count * period_sec / 60
@@ -252,6 +252,7 @@ def control_worker(config, queue):
                     flow_sum = 0
                     flow_count = 0
                     zero_count = 0
+                    over_count = 0
 
                     notify_last_time = None
                     notify_last_flow_sum = 0

@@ -74,11 +74,11 @@ test-flask:
           python3-schedule python3-fluent-logger python3-coloredlogs python3-docopt
           python3-psutil python3-pytest-cov python3-pytest-mock python3-pip
         - pip install -r requirements.txt
-        - python3 -m pytest --cov=flask --cov-config=.coveragerc --cov-branch --cov-report=html --capture=no test/test_flask.py
+        - python3 -m pytest --cov=flask --cov-config=.coveragerc --cov-branch --cov-report=html --capture=no tests/test_flask.py
     artifacts:
         when: always
         paths:
-            - test/evidence/**
+            - tests/evidence/**
 
 test-playwright:
     stage: test
@@ -96,12 +96,12 @@ test-playwright:
           python3-psutil python3-pip
         - pip install -r requirements.txt
         - python3 ./flask/app/app.py -D > flask_log.txt 2>&1 &
-        - python3 -m pytest --log-cli-level=INFO --capture=no test/test_basic.py
+        - python3 -m pytest --log-cli-level=INFO --capture=no tests/test_basic.py
     artifacts:
         when: always
         paths:
             - flask_log.txt
-            - test/evidence/**
+            - tests/evidence/**
 
 test-playwright-docker:
     stage: test
@@ -115,14 +115,14 @@ test-playwright-docker:
 
         - docker pull ${CI_REGISTRY_IMAGE}
         - docker run --rm --detach=true --tty=true --name ${CI_JOB_NAME}-${CI_JOB_ID} --label job=${CI_JOB_NAME} ${CI_REGISTRY_IMAGE} ./flask/app/app.py -D
-        - python3 -m pytest --log-cli-level=INFO --capture=no test/test_basic.py --host $(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${CI_JOB_NAME}-${CI_JOB_ID})
+        - python3 -m pytest --log-cli-level=INFO --capture=no tests/test_basic.py --host $(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${CI_JOB_NAME}-${CI_JOB_ID})
         - docker logs ${CI_JOB_NAME}-${CI_JOB_ID} > flask_log.txt
         - docker stop ${CI_JOB_NAME}-${CI_JOB_ID}
     artifacts:
         when: always
         paths:
             - flask_log.txt
-            - test/evidence/**
+            - tests/evidence/**
 
 test-playwright-docker-demo:
     stage: test
@@ -136,14 +136,14 @@ test-playwright-docker-demo:
 
         - docker pull ${CI_REGISTRY_IMAGE}
         - docker run --rm --detach=true --tty=true --name ${CI_JOB_NAME}-${CI_JOB_ID} --label job=${CI_JOB_NAME} ${CI_REGISTRY_IMAGE} ./flask/app/app.py -D -c config.example.yaml
-        - python3 -m pytest --log-cli-level=INFO --capture=no test/test_basic.py --host $(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${CI_JOB_NAME}-${CI_JOB_ID})
+        - python3 -m pytest --log-cli-level=INFO --capture=no tests/test_basic.py --host $(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${CI_JOB_NAME}-${CI_JOB_ID})
         - docker logs ${CI_JOB_NAME}-${CI_JOB_ID} > flask_log.txt
         - docker stop ${CI_JOB_NAME}-${CI_JOB_ID}
     artifacts:
         when: always
         paths:
             - flask_log.txt
-            - test/evidence/**
+            - tests/evidence/**
 
 test-healthz-docker:
     stage: test
