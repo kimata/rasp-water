@@ -48,7 +48,7 @@ jobs:
             - name: Upload built file
               uses: actions/upload-artifact@v3
               with:
-                  name: vue-built
+                  name: angular-built
                   path: dist
 
     test:
@@ -70,7 +70,7 @@ jobs:
             - name: Download react built files
               uses: actions/download-artifact@v3
               with:
-                  name: vue-built
+                  name: angular-built
                   path: dist
 
             - name: Set locale
