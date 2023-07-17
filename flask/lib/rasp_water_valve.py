@@ -111,7 +111,7 @@ def flow_notify_worker(config, queue):
 
         liveness_file.touch()
 
-        time.sleep(1)
+        time.sleep(0.25)
 
     logging.info("Terminate flow notify worker")
 
@@ -137,9 +137,7 @@ def judge_execute(config, state, auto):
 
     if weather_forecast.get_rain_fall(config):
         # NOTE: ダミーモードの場合，とにかく水やりする (CI テストの為)
-        if (os.environ.get("DUMMY_MODE", "false") == "true") and (
-            os.environ.get("TEST", "false") != "true"
-        ):  # pragma: no cover
+        if os.environ.get("DUMMY_MODE", "false") == "true":
             return True
         else:
             app_log("☂ 前後で雨が降る予報があるため、自動での水やりを見合わせます。")

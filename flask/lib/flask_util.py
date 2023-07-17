@@ -66,7 +66,7 @@ def support_jsonp(f):
     return decorated_function
 
 
-def remote_host(request):  # pragma: no cover
+def remote_host(request):
     try:
         return socket.gethostbyaddr(request.remote_addr)[0]
     except:

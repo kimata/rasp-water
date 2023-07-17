@@ -3,6 +3,12 @@
 from enum import IntEnum
 import os
 import time
+
+# NOTE: pytest-freezer を使ったテスト時に，time.time() を mock で
+# 置き換えたいので，別名にしておく．
+from time import time as valve_time
+from builtins import open as valve_open
+
 import threading
 import datetime
 import logging
@@ -46,6 +52,8 @@ TIME_CLOSE_FAIL = 45
 TIME_OPEN_FAIL = 60
 # この時間の間，異常な流量になっていたらエラーにする
 TIME_OVER_FAIL = 5
+# この時間の間，流量が 0 だったら，今回の計測を停止する．
+TIME_ZERO_TAIL = 5
 
 
 class VALVE_STATE(IntEnum):
@@ -89,6 +97,9 @@ else:
         BCM = 0
         OUT = 0
         state = 0
+        time_start = None
+        time_stop = None
+        gpio_hist = []
 
         def setmode(mode):
             return
@@ -96,7 +107,38 @@ else:
         def setup(gpio, direction):
             return
 
+        def hist_get():
+            return GPIO.gpio_hist
+
+        def hist_clear():
+            GPIO.gpio_hist = []
+
         def output(gpio, value):
+            if value == 0:
+                if GPIO.time_start is not None:
+                    GPIO.gpio_hist.append(
+                        {
+                            "state": "close",
+                            "duration": int(valve_time() - GPIO.time_start),
+                        }
+                    )
+                else:
+                    GPIO.gpio_hist.append(
+                        {
+                            "state": "close",
+                        }
+                    )
+                GPIO.time_start = None
+                GPIO.time_stop = valve_time()
+            else:
+                GPIO.time_start = valve_time()
+                GPIO.time_stop = None
+                GPIO.gpio_hist.append(
+                    {
+                        "state": "open",
+                    }
+                )
+
             GPIO.state = value
             return
 
@@ -140,7 +182,9 @@ should_terminate = False
 
 
 # NOTE: STAT_PATH_VALVE_CONTROL_COMMAND の内容に基づいて，
-# バルブを一定時間開けます
+# バルブを一定時間開けます．
+# pytest-freezer を使ったテストのため，この関数の中では，
+# time.time() の代わりに valve_time() を使う．
 def control_worker(config, queue):
     global should_terminate
 
@@ -151,6 +195,7 @@ def control_worker(config, queue):
 
     open_start_time = None
     close_time = None
+    flow = 0
     flow_sum = 0
     flow_count = 0
     zero_count = 0
@@ -170,7 +215,7 @@ def control_worker(config, queue):
             flow_sum += flow
             flow_count += 1
 
-            if (datetime.datetime.now() - notify_last_time).total_seconds() > 10:
+            if (valve_time() - notify_last_time) > 10:
                 # NOTE: 10秒ごとに途中集計を報告する
                 queue.put(
                     {
@@ -180,38 +225,38 @@ def control_worker(config, queue):
                     }
                 )
 
-                notify_last_time = datetime.datetime.now()
+                notify_last_time = valve_time()
                 notify_last_flow_sum = flow_sum
                 notify_last_count = flow_count
 
         # NOTE: 以下の処理はファイルシステムへのアクセスが発生するので，実施頻度を落とす
-        if i % 10 == 0:
+        if i % 5 == 0:
             liveness_file.touch()
 
             if open_start_time is None:
                 if STAT_PATH_VALVE_OPEN.exists():
                     # NOTE: バルブが開かれていたら，状態を変更してトータルの水量の集計を開始する
-                    open_start_time = datetime.datetime.now()
+                    open_start_time = valve_time()
                     notify_last_time = open_start_time
             else:
                 if STAT_PATH_VALVE_CONTROL_COMMAND.exists():
                     # NOTE: バルブコマンドが存在したら，閉じる時間をチェックして，必要に応じて閉じる
                     try:
-                        with open(STAT_PATH_VALVE_CONTROL_COMMAND, "r") as f:
-                            close_time = datetime.datetime.fromtimestamp(int(f.read()))
-                            if datetime.datetime.now() > close_time:
+                        with valve_open(STAT_PATH_VALVE_CONTROL_COMMAND, "r") as f:
+                            close_time = int(f.read(), 10)
+                            if valve_time() > close_time:
                                 logging.info("Times is up, close valve")
                                 # NOTE: 下記の関数の中で
                                 # STAT_PATH_VALVE_CONTROL_COMMAND は削除される
                                 set_state(VALVE_STATE.CLOSE)
-                    except:  # pragma: no cover
+                    except:
                         logging.warning(traceback.format_exc())
                 if (close_time is None) and STAT_PATH_VALVE_CLOSE.exists():
                     # NOTE: 常にバルブコマンドで制御するので，基本的にここには来ない
-                    close_time = datetime.datetime.now()
+                    close_time = valve_time()
 
             if (not STAT_PATH_VALVE_OPEN.exists()) and (open_start_time is not None):
-                period_sec = (datetime.datetime.now() - open_start_time).total_seconds()
+                period_sec = valve_time() - open_start_time
 
                 # NOTE: バルブが閉じられた後，流量が 0 になっていたらトータル流量を報告する
                 if flow < 0.03:
@@ -224,7 +269,7 @@ def control_worker(config, queue):
                     set_state(VALVE_STATE.CLOSE)
                     queue.put({"type": "error", "message": "😵水が流れすぎています．"})
 
-                if zero_count > 5:
+                if zero_count > TIME_ZERO_TAIL:
                     # NOTE: 流量(L/min)の平均を求めてから期間(min)を掛ける
                     total = float(flow_sum) / flow_count * period_sec / 60
 
@@ -240,13 +285,13 @@ def control_worker(config, queue):
                         queue.put({"type": "error", "message": "😵 元栓が閉まっている可能性があります．"})
 
                     stop_measure = True
-                elif (
-                    datetime.datetime.now() - close_time
-                ).total_seconds() > TIME_OPEN_FAIL:
+                elif (valve_time() - close_time) > TIME_OPEN_FAIL:
+                    set_state(VALVE_STATE.CLOSE)
                     queue.put({"type": "error", "message": "😵 バルブを閉めても水が流れ続けています．"})
                     stop_measure = True
 
                 if stop_measure:
+                    stop_measure = False
                     open_start_time = None
                     close_time = None
                     flow_sum = 0
@@ -265,10 +310,13 @@ def control_worker(config, queue):
 
 
 def init(config, queue, pin=GPIO_PIN_DEFAULT):
+    global should_terminate
     global worker
     global pin_no
 
     assert worker is None
+
+    should_terminate = False
 
     pin_no = pin
 
@@ -357,6 +405,7 @@ def set_control_mode(open_sec):
     ).timestamp()
 
     STAT_PATH_VALVE_CONTROL_COMMAND.parent.mkdir(parents=True, exist_ok=True)
+
     with open(STAT_PATH_VALVE_CONTROL_COMMAND, "w") as f:
         f.write("{close_time:.0f}".format(close_time=close_time))
 
