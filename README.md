@@ -17,10 +17,11 @@ Angular で作られた UI と，Flask で作られたアプリケーション�
 
 ハード関係は[ブログ](https://rabbit-note.com/2018/12/31/raspberry-pi-watering-system-hard/)で紹介しています．
 
-## カスタマイズ
+## デモ
 
-電磁弁の制御は rasp_water.py の {set,get}\_valve_state で行っていますの
-で，ここを書き換えることで制御方法を変えることができます．
+下記で，擬似的に水やりを行えます．
+
+https://rasp-water-demo.kubernetes.green-rabbit.net/rasp-water/
 
 ## スクリーンショット
 
@@ -68,3 +69,13 @@ Kubernetes 用の設定ファイルが `kubernetes/outdoor_unit_cooler.yml` に�
   <dt>nodeSelector</dt>
   <dd>Pod を配置したいノード名に変更します．</dd>
 </dl>
+
+## カスタマイズ
+
+電磁弁の制御は rasp_water.py の {set,get}\_valve_state で行っていますの
+で，ここを書き換えることで制御方法を変えることができます．
+
+## テスト結果
+
+-   https://kimata.github.io/rasp-water/
+-   https://kimata.github.io/rasp-water/coverage/
