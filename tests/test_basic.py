@@ -924,7 +924,7 @@ def test_schedule_ctrl_execute_fail(client, mocker, freezer):
     import rasp_water_valve
 
     mocker.patch("weather_forecast.get_rain_fall", return_value=False)
-    mocker.patch("scheduler.valve_auto_control_impl", return_value=False)
+    mocker.patch("app_scheduler.valve_auto_control_impl", return_value=False)
 
     rasp_water_valve.term()
 
@@ -1030,7 +1030,7 @@ def test_schedule_ctrl_write_fail(client, mocker):
 
 
 def test_schedule_ctrl_validate_fail(client, mocker):
-    mocker.patch("scheduler.schedule_validate", return_value=False)
+    mocker.patch("app_scheduler.schedule_validate", return_value=False)
 
     response = client.get("/rasp-water/api/schedule_ctrl")
     assert response.status_code == 200

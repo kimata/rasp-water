@@ -11,7 +11,7 @@ from webapp_config import APP_URL_PREFIX
 from webapp_event import notify_event, EVENT_TYPE
 from webapp_log import app_log, APP_LOG_LEVEL
 from flask_util import support_jsonp, auth_user
-import scheduler
+import app_scheduler
 
 blueprint = Blueprint("rasp-water-schedule", __name__, url_prefix=APP_URL_PREFIX)
 
@@ -29,9 +29,9 @@ def init(config):
     assert worker is None
 
     schedule_queue = Queue()
-    scheduler.init()
+    app_scheduler.init()
     worker = threading.Thread(
-        target=scheduler.schedule_worker,
+        target=app_scheduler.schedule_worker,
         args=(
             config,
             schedule_queue,
@@ -46,7 +46,7 @@ def term():
     if worker is None:
         return
 
-    scheduler.should_terminate = True
+    app_scheduler.should_terminate = True
     worker.join()
     worker = None
 
@@ -86,12 +86,12 @@ def api_schedule_ctrl():
     if cmd == "set":
         schedule_data = json.loads(data)
 
-        if not scheduler.schedule_validate(schedule_data):
+        if not app_scheduler.schedule_validate(schedule_data):
             app_log(
                 "😵 スケジュールの指定が不正です．",
                 APP_LOG_LEVEL.ERROR,
             )
-            return jsonify(scheduler.schedule_load())
+            return jsonify(app_scheduler.schedule_load())
 
         with schedule_lock:
             endpoint = urllib.parse.urljoin(
@@ -105,7 +105,7 @@ def api_schedule_ctrl():
 
             # NOTE: 本来は schedule_worker の中だけで呼んでるので不要だけど，
             # レスポンスを schedule_load() で返したいので，ここでも呼ぶ．
-            scheduler.schedule_store(schedule_data)
+            app_scheduler.schedule_store(schedule_data)
 
             notify_event(EVENT_TYPE.SCHEDULE)
 
@@ -117,4 +117,4 @@ def api_schedule_ctrl():
                 )
             )
 
-    return jsonify(scheduler.schedule_load())
+    return jsonify(app_scheduler.schedule_load())
