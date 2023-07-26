@@ -9,6 +9,7 @@ import re
 import time
 import json
 import datetime
+from unittest import mock
 
 sys.path.append(str(pathlib.Path(__file__).parent.parent / "flask" / "app"))
 
@@ -16,6 +17,15 @@ from app import create_app
 from weather_forecast import get_rain_fall as get_rain_fall_orig
 
 CONFIG_FILE = "config.example.yaml"
+
+
+@pytest.fixture(scope="session", autouse=True)
+def slack_mock():
+    with mock.patch(
+        "notify_slack.slack_sdk.web.client.WebClient.chat_postMessage",
+        retunr_value=True,
+    ) as fixture:
+        yield fixture
 
 
 @pytest.fixture(scope="session")
@@ -1065,18 +1075,24 @@ def test_log_clear(client):
 def test_sysinfo(client):
     response = client.get("/rasp-water/api/sysinfo")
     assert response.status_code == 200
+    assert "date" not in response.json
+    assert "uptime" not in response.json
+    assert "loadAverage" not in response.json
 
 
 def test_snapshot(client):
     response = client.get("/rasp-water/api/snapshot")
     assert response.status_code == 200
+    assert "msg" in response.json
     response = client.get("/rasp-water/api/snapshot")
     assert response.status_code == 200
+    assert "msg" not in response.json
 
 
 def test_memory(client):
     response = client.get("/rasp-water/api/memory")
     assert response.status_code == 200
+    assert "memory" in response.json
 
 
 def test_second_str():
