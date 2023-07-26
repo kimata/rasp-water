@@ -70,6 +70,7 @@ test-flask:
         - export GIT_SSL_NO_VERIFY=1
         - git clone https://gitlab.green-rabbit.net/kimata/hems_config.git
         - mv hems_config/rasp-water.yaml config.yaml
+        - apt-get update
         - apt-get install -y curl
         - curl -sSL https://install.python-poetry.org | python3 -
         - export PATH="/root/.local/bin:$PATH"
@@ -94,6 +95,7 @@ test-playwright:
         - export GIT_SSL_NO_VERIFY=1
         - git clone https://gitlab.green-rabbit.net/kimata/hems_config.git
         - mv hems_config/rasp-water.yaml config.yaml
+        - apt-get update
         - apt-get install -y python3-flask python3-flask-cors python3-yaml
           python3-schedule python3-fluent-logger python3-coloredlogs python3-docopt
           python3-psutil python3-pip
