@@ -1075,9 +1075,9 @@ def test_log_clear(client):
 def test_sysinfo(client):
     response = client.get("/rasp-water/api/sysinfo")
     assert response.status_code == 200
-    assert "date" not in response.json
-    assert "uptime" not in response.json
-    assert "loadAverage" not in response.json
+    assert "date" in response.json
+    assert "uptime" in response.json
+    assert "loadAverage" in response.json
 
 
 def test_snapshot(client):
