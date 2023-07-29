@@ -19,7 +19,7 @@ from weather_forecast import get_rain_fall as get_rain_fall_orig
 CONFIG_FILE = "config.example.yaml"
 
 
-@pytest.fixture(scope="function", autouse=True)
+@pytest.fixture(scope="session", autouse=True)
 def env_mock():
     with mock.patch.dict(
         "os.environ",
