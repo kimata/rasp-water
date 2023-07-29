@@ -19,6 +19,18 @@ from weather_forecast import get_rain_fall as get_rain_fall_orig
 CONFIG_FILE = "config.example.yaml"
 
 
+@pytest.fixture(scope="function", autouse=True)
+def env_mock():
+    with mock.patch.dict(
+        "os.environ",
+        {
+            "TEST": "true",
+            "NO_COLORED_LOGS": "true",
+        },
+    ) as fixture:
+        yield fixture
+
+
 @pytest.fixture(scope="session", autouse=True)
 def slack_mock():
     with mock.patch(
@@ -30,7 +42,7 @@ def slack_mock():
 
 @pytest.fixture(scope="session")
 def app():
-    with mock.patch.dict("os.environ", {"TEST": "true", "WERKZEUG_RUN_MAIN": "true"}):
+    with mock.patch.dict("os.environ", {"WERKZEUG_RUN_MAIN": "true"}):
         app = create_app(CONFIG_FILE, dummy_mode=True)
 
         yield app
