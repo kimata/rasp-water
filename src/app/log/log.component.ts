@@ -9,11 +9,13 @@ import { NgbPagination } from '@ng-bootstrap/ng-bootstrap';
 
 import { ToastService } from '../service/toast.service';
 
-import 'dayjs/locale/ja';
-import dayjs, { locale, extend } from 'dayjs';
+import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
-locale('ja');
-extend(relativeTime);
+import localizedFormat from 'dayjs/plugin/localizedFormat';
+
+dayjs.locale('ja');
+dayjs.extend(relativeTime);
+dayjs.extend(localizedFormat);
 
 import { PushService } from '../service/push.service';
 
