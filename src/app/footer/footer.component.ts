@@ -3,7 +3,11 @@ import { Inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import build from '../../build';
 
-import * as moment from 'moment';
+import 'dayjs/locale/ja';
+import dayjs, { locale, extend } from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
+locale('ja');
+extend(relativeTime);
 
 export interface SysinfoResponse {
     date: string;
@@ -18,8 +22,8 @@ export interface SysinfoResponse {
     standalone: true,
 })
 export class FooterComponent implements OnInit {
-    buildDate = moment(build.timestamp).format('llll');
-    buildDateFrom = moment(build.timestamp).fromNow();
+    buildDate = dayjs(build.timestamp).format('llll');
+    buildDateFrom = dayjs(build.timestamp).fromNow();
     date = '';
     uptime = '';
     uptimeFrom = '';
@@ -38,8 +42,8 @@ export class FooterComponent implements OnInit {
     updateSysinfo() {
         this.http.jsonp<SysinfoResponse>(`${this.API_URL}/sysinfo`, 'callback').subscribe(
             (res: SysinfoResponse) => {
-                const date = moment(res['date']);
-                const uptime = moment(res['uptime']);
+                const date = dayjs(res['date']);
+                const uptime = dayjs(res['uptime']);
                 this.date = date.format('llll');
                 this.uptime = uptime.format('llll');
                 this.uptimeFrom = uptime.fromNow();

@@ -4,14 +4,18 @@ import { Component, OnInit, Pipe, PipeTransform } from '@angular/core';
 import { Inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 
+import { NgIf, NgFor, SlicePipe } from '@angular/common';
+import { NgbPagination } from '@ng-bootstrap/ng-bootstrap';
+
 import { ToastService } from '../service/toast.service';
 
-import * as moment from 'moment';
-import 'moment/locale/ja';
+import 'dayjs/locale/ja';
+import dayjs, { locale, extend } from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
+locale('ja');
+extend(relativeTime);
 
 import { PushService } from '../service/push.service';
-import { NgbPagination } from '@ng-bootstrap/ng-bootstrap';
-import { NgIf, NgFor, SlicePipe } from '@angular/common';
 
 @Pipe({
     name: 'nl2br',
@@ -83,7 +87,7 @@ export class LogComponent implements OnInit {
             (res: LogResponse) => {
                 this.log = res['data'];
                 for (const entry in this.log) {
-                    const date = moment(this.log[entry]['date']);
+                    const date = dayjs(this.log[entry]['date']);
                     this.log[entry]['date'] = date.format('M月D日(ddd) HH:mm');
                     this.log[entry]['fromNow'] = date.fromNow();
                 }

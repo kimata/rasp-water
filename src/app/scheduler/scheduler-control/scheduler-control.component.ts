@@ -4,7 +4,9 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 
 import { ToastService } from '../../service/toast.service';
 
-import * as moment from 'moment';
+import 'dayjs/locale/ja';
+import dayjs, { locale, extend } from 'dayjs';
+locale('ja');
 
 import { PushService } from '../../service/push.service';
 import { SchedulerEntryComponent, ScheduleEntry } from '../scheduler-entry/scheduler-entry.component';
@@ -99,10 +101,10 @@ export class SchedulerControlComponent implements OnInit {
     }
 
     convertTime(time: any) {
-        if (time instanceof moment) {
-            return (time as moment.Moment).format('HH:mm');
+        if (time instanceof dayjs) {
+            return (time as dayjs.Dayjs).format('HH:mm');
         } else {
-            return moment(time, 'HH:mm').format('HH:mm');
+            return dayjs(time, 'HH:mm').format('HH:mm');
         }
     }
 
