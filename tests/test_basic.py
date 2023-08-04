@@ -105,7 +105,7 @@ def ctrl_log_check(expect, is_strict=True, is_error=True):
     import valve
 
     if len(expect) == 0:
-        assert valve.GPIO.hist_get() == expect
+        assert valve.GPIO.hist_get() == expect, "操作されてないはずのバルブが操作されています．"
     elif len(expect) >= 2:
         if is_strict:
             valve.GPIO.hist_get() == expect
@@ -117,7 +117,9 @@ def ctrl_log_check(expect, is_strict=True, is_error=True):
             assert len(valve.GPIO.hist_get()) == len(expect)
             for i in range(len(expect)):
                 if expect[i]["state"] == "open":
-                    assert valve.GPIO.hist_get()[i] == expect[i]
+                    assert (
+                        valve.GPIO.hist_get()[i] == expect[i]
+                    ), "{i} 番目の操作が期待値と異なります．".format(i=i)
                 else:
                     if "duration" in expect[i]:
                         assert (valve.GPIO.hist_get()[i] == expect[i]) or (
@@ -126,9 +128,11 @@ def ctrl_log_check(expect, is_strict=True, is_error=True):
                                 "duration": expect[i]["duration"] - 1,
                                 "state": expect[i]["state"],
                             }
-                        )
+                        ), "{i} 番目の操作が期待値と異なります．".format(i=i)
                     else:
-                        assert valve.GPIO.hist_get()[i] == expect[i]
+                        assert (
+                            valve.GPIO.hist_get()[i] == expect[i]
+                        ), "{i} 番目の操作が期待値と異なります．".format(i=i)
 
 
 def ctrl_log_clear():
