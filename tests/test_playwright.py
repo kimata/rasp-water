@@ -128,6 +128,7 @@ def test_schedule(page, host, port):
 @flaky(max_runs=3)
 def test_schedule_run(page, host, port):
     SCHEDULE_AFTER_MIN = 1
+    PERIOD = 1
 
     init(page)
     page.goto(app_url(host, port))
@@ -139,8 +140,8 @@ def test_schedule_run(page, host, port):
     enable_checkbox = page.locator('//input[contains(@id,"schedule-entry-")]')
     enable_wday_index = [bool_random() for _ in range(14)]
     wday_checkbox = page.locator('//input[@name="wday"]')
-    period_input = page.locator('//input[contains(@id,"schedule-period-")]')
     time_input = page.locator('//input[@type="time"]')
+    period_input = page.locator('//input[contains(@id,"schedule-period-")]')
     for i in range(enable_checkbox.count()):
         # NOTE: checkbox 自体は hidden にして，CSS で表示しているので，
         # 通常の locator では操作できない
@@ -159,10 +160,7 @@ def test_schedule_run(page, host, port):
             time_input.nth(i).fill(time_str_after(SCHEDULE_AFTER_MIN))
 
         # NOTE: 散水時間は 1 分にする
-        period_input.nth(i).fill(1)
-
-    period_input = page.locator('//input[contains(@id,"schedule-period-")]')
-    period = int(period_input.nth(1).input_value())
+        period_input.nth(i).fill(str(PERIOD))
 
     page.locator('button:text("保存")').click()
 
@@ -170,7 +168,7 @@ def test_schedule_run(page, host, port):
 
     check_log(page, "水やりを開始します", (SCHEDULE_AFTER_MIN + 1) * 60)
 
-    check_log(page, "水やりを行いました", (period * 60) + 10)
+    check_log(page, "水やりを行いました", (PERIOD * 60) + 10)
 
 
 @flaky(max_runs=3)
