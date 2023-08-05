@@ -52,7 +52,7 @@ test-flask:
     dependencies:
         - build-angular
 
-    image: registry.green-rabbit.net:5000/kimata/local_ubuntu:230805C
+    image: registry.green-rabbit.net:5000/kimata/local_ubuntu:230805D
 
     script:
         - apt-get update
@@ -74,7 +74,7 @@ test-playwright:
     dependencies:
         - build-angular
 
-    image: registry.green-rabbit.net:5000/kimata/local_ubuntu:230805C
+    image: registry.green-rabbit.net:5000/kimata/local_ubuntu:230805D
 
     script:
         - apt-get update
@@ -104,7 +104,7 @@ test-playwright-docker:
     stage: test
     needs: ["build-image", "test-flask"]
 
-    image: registry.green-rabbit.net:5000/kimata/local_ubuntu:230805C
+    image: registry.green-rabbit.net:5000/kimata/local_ubuntu:230805D
 
     script:
         - apt-get update
@@ -132,7 +132,7 @@ test-playwright-docker-demo:
     stage: test
     needs: ["build-image", "test-flask"]
 
-    image: registry.green-rabbit.net:5000/kimata/local_ubuntu:230805C
+    image: registry.green-rabbit.net:5000/kimata/local_ubuntu:230805D
 
     script:
         - apt-get update
