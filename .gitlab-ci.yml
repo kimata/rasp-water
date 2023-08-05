@@ -60,10 +60,11 @@ build-image:
 
 test-flask:
     stage: test
-
     needs: ["build-angular"]
     dependencies:
         - build-angular
+
+    image: ubuntu:22.04
 
     script:
         - apt-get update
@@ -90,6 +91,8 @@ test-playwright:
     needs: ["build-angular", "test-flask"]
     dependencies:
         - build-angular
+
+    image: ubuntu:22.04
 
     script:
         - apt-get update
@@ -124,6 +127,8 @@ test-playwright-docker:
     stage: test
     needs: ["build-image", "test-flask"]
 
+    image: ubuntu:22.04
+
     script:
         - apt-get update
 
@@ -155,7 +160,7 @@ test-playwright-docker-demo:
     stage: test
     needs: ["build-image", "test-flask"]
 
-    image: registry.green-rabbit.net:5000/kimata/ubuntu-docker-build:d386d462
+    image: ubuntu:22.04
 
     script:
         - apt-get update
