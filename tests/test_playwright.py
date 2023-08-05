@@ -127,7 +127,7 @@ def test_schedule(page, host, port):
 
 @flaky(max_runs=3)
 def test_schedule_run(page, host, port):
-    SCHEDULE_AFTER_MIN = 2
+    SCHEDULE_AFTER_MIN = 1
 
     init(page)
     page.goto(app_url(host, port))
@@ -151,7 +151,7 @@ def test_schedule_run(page, host, port):
             if enable_wday_index[i * 7 + j]:
                 wday_checkbox.nth(i * 7 + j).check()
 
-        # NOTE: 片方はランダム，他方はテスト用に 2 分後に設定
+        # NOTE: 片方はランダム，他方はテスト用に 1 分後に設定
         if i == 0:
             time_input.nth(i).fill(time_str_random())
         else:
