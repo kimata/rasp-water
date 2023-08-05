@@ -23,8 +23,61 @@ schedule = "^1.2.0"
 psutil = "^5.9.5"
 fluent-logger = "^0.10.0"
 isort = "^5.12.0"
+flaky = "^3.7.0"
+selenium = "^4.11.2"
 
 [tool.poetry.dev-dependencies]
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "--verbose --cov=app --cov=flask --capture=sys --cov-report=html --html=tests/evidence/index.htm --self-contained-html"
+testpaths = [
+    "tests",
+]
+
+[tool.coverage.run]
+branch = true
+
+[tool.coverage.report]
+exclude_lines = [
+  "pragma: no cover",
+  "if __name__ == .__main__.:",
+
+  # 以下，未使用関数
+  # config.py
+  "def get_db_config",
+
+  # logger.py
+  "class GZipRotator",
+  "def log_formatter",
+  "if log_dir_path is not None:",
+  "if log_queue is not None:",
+  "if is_str_log:",
+
+  # notify_slack.py
+  "def info",
+  "def error_img",
+  "def error_with_image",
+
+  # webapp_event.py
+  "def notify_watch_impl",
+  "def notify_watch",
+  "def stop_watch",
+
+  # webapp_log.py
+  "elif level == APP_LOG_LEVEL.WARN:",
+
+  # flask_util.py
+  "def remote_host",
+]
+
+[tool.coverage.html]
+directory = "tests/evidence/coverage"
+
+[tool.black]
+target-version = ['py39']
+line-length = 120
+
 
 [tool.isort]
 profile = "black"

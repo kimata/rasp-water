@@ -13,6 +13,7 @@ from unittest import mock
 import pytest
 
 sys.path.append(str(pathlib.Path(__file__).parent.parent / "flask" / "app"))
+sys.path.append(str(pathlib.Path(__file__).parent.parent / "flask" / "lib"))
 
 from weather_forecast import get_rain_fall as get_rain_fall_orig
 
@@ -119,9 +120,7 @@ def ctrl_log_check(expect, is_strict=True, is_error=True):
             assert len(valve.GPIO.hist_get()) == len(expect)
             for i in range(len(expect)):
                 if expect[i]["state"] == "open":
-                    assert (
-                        valve.GPIO.hist_get()[i] == expect[i]
-                    ), "{i} 番目の操作が期待値と異なります．".format(i=i)
+                    assert valve.GPIO.hist_get()[i] == expect[i], "{i} 番目の操作が期待値と異なります．".format(i=i)
                 else:
                     if "duration" in expect[i]:
                         assert (valve.GPIO.hist_get()[i] == expect[i]) or (
@@ -132,9 +131,7 @@ def ctrl_log_check(expect, is_strict=True, is_error=True):
                             }
                         ), "{i} 番目の操作が期待値と異なります．".format(i=i)
                     else:
-                        assert (
-                            valve.GPIO.hist_get()[i] == expect[i]
-                        ), "{i} 番目の操作が期待値と異なります．".format(i=i)
+                        assert valve.GPIO.hist_get()[i] == expect[i], "{i} 番目の操作が期待値と異なります．".format(i=i)
 
 
 def ctrl_log_clear():
@@ -258,9 +255,7 @@ def test_valve_ctrl_manual(client, mocker):
 
     time.sleep(period + 2)
 
-    ctrl_log_check(
-        [{"state": "open"}, {"duration": period, "state": "close"}], is_strict=False
-    )
+    ctrl_log_check([{"state": "open"}, {"duration": period, "state": "close"}], is_strict=False)
 
 
 def test_valve_ctrl_auto(client, mocker):
@@ -283,9 +278,7 @@ def test_valve_ctrl_auto(client, mocker):
 
     time.sleep(period + 2)
 
-    ctrl_log_check(
-        [{"state": "open"}, {"duration": period, "state": "close"}], is_strict=False
-    )
+    ctrl_log_check([{"state": "open"}, {"duration": period, "state": "close"}], is_strict=False)
 
 
 def test_valve_ctrl_auto_rainfall(client, mocker):
@@ -309,9 +302,7 @@ def test_valve_ctrl_auto_rainfall(client, mocker):
     time.sleep(period + 2)
 
     # NOTE: ダミーモードの場合は，天気に関わらず水やりする
-    ctrl_log_check(
-        [{"state": "open"}, {"duration": period, "state": "close"}], is_strict=False
-    )
+    ctrl_log_check([{"state": "open"}, {"duration": period, "state": "close"}], is_strict=False)
 
     ctrl_log_clear()
 
@@ -353,9 +344,7 @@ def test_valve_ctrl_auto_forecast(client, mocker):
 
     time.sleep(period + 2)
 
-    ctrl_log_check(
-        [{"state": "open"}, {"duration": period, "state": "close"}], is_strict=False
-    )
+    ctrl_log_check([{"state": "open"}, {"duration": period, "state": "close"}], is_strict=False)
 
 
 def test_valve_ctrl_auto_forecast_error_1(client, mocker):
@@ -380,9 +369,7 @@ def test_valve_ctrl_auto_forecast_error_1(client, mocker):
     time.sleep(period + 2)
 
     # NOTE: get_weather_info_yahoo == None の場合，水やりは行う
-    ctrl_log_check(
-        [{"state": "open"}, {"duration": period, "state": "close"}], is_strict=False
-    )
+    ctrl_log_check([{"state": "open"}, {"duration": period, "state": "close"}], is_strict=False)
 
 
 def test_valve_ctrl_auto_forecast_error_2(client, mocker):
@@ -411,9 +398,7 @@ def test_valve_ctrl_auto_forecast_error_2(client, mocker):
 
     time.sleep(period + 2)
 
-    ctrl_log_check(
-        [{"state": "open"}, {"duration": period, "state": "close"}], is_strict=False
-    )
+    ctrl_log_check([{"state": "open"}, {"duration": period, "state": "close"}], is_strict=False)
 
 
 def test_valve_ctrl_auto_forecast_error_3(client, mocker):
@@ -442,9 +427,7 @@ def test_valve_ctrl_auto_forecast_error_3(client, mocker):
 
     time.sleep(period + 2)
 
-    ctrl_log_check(
-        [{"state": "open"}, {"duration": period, "state": "close"}], is_strict=False
-    )
+    ctrl_log_check([{"state": "open"}, {"duration": period, "state": "close"}], is_strict=False)
 
 
 def test_valve_ctrl_auto_forecast_error_4(client, mocker):
@@ -470,9 +453,7 @@ def test_valve_ctrl_auto_forecast_error_4(client, mocker):
 
     time.sleep(period + 2)
 
-    ctrl_log_check(
-        [{"state": "open"}, {"duration": period, "state": "close"}], is_strict=False
-    )
+    ctrl_log_check([{"state": "open"}, {"duration": period, "state": "close"}], is_strict=False)
 
 
 def test_valve_flow(client):
@@ -751,9 +732,7 @@ def test_valve_flow_read_command_fail(client, mocker):
         if (file == valve.STAT_PATH_VALVE_CONTROL_COMMAND) and (mode == "r"):
             return RuntimeError()
         else:
-            return orig_open(
-                file, mode, buffering, encoding, errors, newline, closefd, opener
-            )
+            return orig_open(file, mode, buffering, encoding, errors, newline, closefd, opener)
 
     mocker.patch("valve.valve_open", side_effect=open_mock)
 
@@ -1147,9 +1126,7 @@ def test_valve_init(client, mocker):
         if file == valve.ADC_SCALE_PATH:
             return file_mock
         else:
-            return orig_open(
-                file, mode, buffering, encoding, errors, newline, closefd, opener
-            )
+            return orig_open(file, mode, buffering, encoding, errors, newline, closefd, opener)
 
     mocker.patch("builtins.open", side_effect=open_mock)
 
