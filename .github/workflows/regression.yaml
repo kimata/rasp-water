@@ -81,7 +81,7 @@ jobs:
               run: |
                   curl -sSL https://install.python-poetry.org | python3 -
 
-            - name: Add path for Poetry
+            - name: Add path of Poetry
               run: echo "$HOME/.poetry/bin" >> $GITHUB_PATH
 
             - name: Cache python modules
@@ -102,7 +102,7 @@ jobs:
 
             - name: Run Tests
               run: |
-                  poetry run pytest --verbose --cov=flask --cov-config=.coveragerc --cov-branch --cov-report=html --html=tests/evidence/index.htm --self-contained-html tests/test_basic.py
+                  poetry run pytest -vv tests/test_basic.py
 
             - name: Upload coverage file
               uses: actions/upload-artifact@v3
