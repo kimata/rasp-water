@@ -46,40 +46,22 @@ build-image:
           --push --tag ${CI_REGISTRY_IMAGE} .
         # - docker buildx stop ${BUILDER}
 
-# NOTE: Playwright を使うようになったので削除
-# test-cypress:
-#     stage: test
-#     image: cypress/included:12.13.0
-#     script:
-#         - npm ci --cache .npm --prefer-offline
-#         - npx start-server-and-test 'ng serve' http-get://localhost:4200/ 'npx cypress run'
-#     cache:
-#         key: npm
-#         paths:
-#             - .npm/
-
 test-flask:
     stage: test
     needs: ["build-angular"]
     dependencies:
         - build-angular
 
-    image: ubuntu:22.04
+    image: registry.green-rabbit.net:5000/kimata/local_ubuntu:230805A
 
     script:
         - apt-get update
-
-        - apt-get install -y git
 
         - export GIT_SSL_NO_VERIFY=1
         - git clone https://gitlab.green-rabbit.net/kimata/hems_config.git
         - mv hems_config/rasp-water.yaml config.yaml
 
-        - apt-get install -y curl python3
-        - curl -sSL https://install.python-poetry.org | python3 -
-        - export PATH="/root/.local/bin:$PATH"
         - poetry install --no-interaction
-
         - poetry run pytest -vv tests/test_basic.py
     artifacts:
         when: always
@@ -92,29 +74,24 @@ test-playwright:
     dependencies:
         - build-angular
 
-    image: ubuntu:22.04
+    image: registry.green-rabbit.net:5000/kimata/local_ubuntu:230805A
 
     script:
         - apt-get update
-
-        - apt-get install -y git
 
         - export GIT_SSL_NO_VERIFY=1
         - git clone https://gitlab.green-rabbit.net/kimata/hems_config.git
         - mv hems_config/rasp-water.yaml config.yaml
 
-        - apt-get install -y python3-flask python3-flask-cors python3-yaml
-          python3-schedule python3-fluent-logger python3-coloredlogs python3-docopt
-          python3-psutil python3-pip
-        - pip install -r requirements.txt
-        - python3 ./flask/app/app.py -D > flask_log.txt 2>&1 &
+        - poetry install --no-interaction
+
+        - poetry run ./flask/app/app.py -D > flask_log.txt 2>&1 &
 
         - apt-get install -y curl python3
         - curl -sSL https://install.python-poetry.org | python3 -
         - export PATH="/root/.local/bin:$PATH"
-        - poetry install --no-interaction
-        - poetry run playwright install
 
+        - poetry run playwright install
         - poetry run pytest -vv tests/test_playwright.py
 
     artifacts:
@@ -127,12 +104,10 @@ test-playwright-docker:
     stage: test
     needs: ["build-image", "test-flask"]
 
-    image: ubuntu:22.04
+    image: registry.green-rabbit.net:5000/kimata/local_ubuntu:230805A
 
     script:
         - apt-get update
-
-        - apt-get install -y docker
 
         # NOTE: テストに失敗するとテスト用のコンテナが残るので削除する
         - docker ps  --filter "label=job=${CI_JOB_NAME}" | grep hours | cut -d " " -f1 | while read id; do docker stop -t 5 $id; done || true
@@ -140,9 +115,6 @@ test-playwright-docker:
         - docker pull ${CI_REGISTRY_IMAGE}
         - docker run --rm --detach=true --tty=true --name ${CI_JOB_NAME}-${CI_JOB_ID} --label job=${CI_JOB_NAME} ${CI_REGISTRY_IMAGE} ./flask/app/app.py -D
 
-        - apt-get install -y curl python3
-        - curl -sSL https://install.python-poetry.org | python3 -
-        - export PATH="/root/.local/bin:$PATH"
         - poetry install --no-interaction
         - poetry run playwright install
 
@@ -160,12 +132,10 @@ test-playwright-docker-demo:
     stage: test
     needs: ["build-image", "test-flask"]
 
-    image: ubuntu:22.04
+    image: registry.green-rabbit.net:5000/kimata/local_ubuntu:230805A
 
     script:
         - apt-get update
-
-        - apt-get install -y docker
 
         # NOTE: テストに失敗するとテスト用のコンテナが残るので削除する
         - docker ps  --filter "label=job=${CI_JOB_NAME}" | grep hours | cut -d " " -f1 | while read id; do docker stop -t 5 $id; done || true
@@ -173,9 +143,6 @@ test-playwright-docker-demo:
         - docker pull ${CI_REGISTRY_IMAGE}
         - docker run --rm --detach=true --tty=true --name ${CI_JOB_NAME}-${CI_JOB_ID} --label job=${CI_JOB_NAME} ${CI_REGISTRY_IMAGE} ./flask/app/app.py -D -c config.example.yaml
 
-        - apt-get install -y curl python3
-        - curl -sSL https://install.python-poetry.org | python3 -
-        - export PATH="/root/.local/bin:$PATH"
         - poetry install --no-interaction
         - poetry run playwright install
 
