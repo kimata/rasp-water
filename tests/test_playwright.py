@@ -139,6 +139,7 @@ def test_schedule_run(page, host, port):
     enable_checkbox = page.locator('//input[contains(@id,"schedule-entry-")]')
     enable_wday_index = [bool_random() for _ in range(14)]
     wday_checkbox = page.locator('//input[@name="wday"]')
+    period_input = page.locator('//input[contains(@id,"schedule-period-")]')
     time_input = page.locator('//input[@type="time"]')
     for i in range(enable_checkbox.count()):
         # NOTE: checkbox 自体は hidden にして，CSS で表示しているので，
@@ -156,6 +157,9 @@ def test_schedule_run(page, host, port):
             time_input.nth(i).fill(time_str_random())
         else:
             time_input.nth(i).fill(time_str_after(SCHEDULE_AFTER_MIN))
+
+        # NOTE: 散水時間は 1 分にする
+        period_input.nth(i).fill(1)
 
     period_input = page.locator('//input[contains(@id,"schedule-period-")]')
     period = int(period_input.nth(1).input_value())
