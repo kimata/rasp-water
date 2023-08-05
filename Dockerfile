@@ -5,28 +5,24 @@ ARG TARGETPLATFORM
 ENV TZ=Asia/Tokyo
 ENV DEBIAN_FRONTEND=noninteractive
 
-RUN if [ "$TARGETPLATFORM" = "linux/arm64" ]; then GPIO_LIB="python3-rpi.gpio"; fi; \
-    apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y \
     language-pack-ja \
-    python3 python3-pip \
-    python3-docopt \
-    python3-yaml python3-coloredlogs \
-    python3-fluent-logger \
-    python3-requests \
-    python3-schedule \
-    python3-flask python3-flask-cors \
-    python3-psutil \
+    curl \
     ${GPIO_LIB} \
  && apt-get clean \
  && rm -rf /va/rlib/apt/lists/*
 
 WORKDIR /opt/rasp-water
 
-COPY requirements.txt .
-RUN pip3 install -r requirements.txt
+RUN curl -sSL https://install.python-poetry.org | python3 -
+ENV PATH="/root/.local/bin:$PATH"
+
+COPY pyproject.toml .
+
+RUN poetry install --no-dev
 
 COPY . .
 
 EXPOSE 5000
 
-CMD ["./flask/app/app.py"]
+CMD ["poetry", "run", "./flask/app/app.py"]
