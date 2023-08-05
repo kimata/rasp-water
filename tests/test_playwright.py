@@ -12,9 +12,7 @@ APP_URL_TMPL = "http://{host}:{port}/rasp-water/"
 
 
 def check_log(page, message, timeout_sec=2):
-    expect(page.locator("//app-log//div").first).to_contain_text(
-        message, timeout=timeout_sec * 1000
-    )
+    expect(page.locator("//app-log//div").first).to_contain_text(message, timeout=timeout_sec * 1000)
 
     # NOTE: ログクリアする場合，ログの内容が変化しているので，ここで再取得する
     log_list = page.locator("//app-log//div")
@@ -24,9 +22,7 @@ def check_log(page, message, timeout_sec=2):
 
 
 def time_str_random():
-    return "{hour:02d}:{min:02d}".format(
-        hour=int(24 * random.random()), min=int(60 * random.random())
-    )
+    return "{hour:02d}:{min:02d}".format(hour=int(24 * random.random()), min=int(60 * random.random()))
 
 
 def time_str_after(min):
