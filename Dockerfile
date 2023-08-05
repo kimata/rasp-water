@@ -8,7 +8,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install -y \
     language-pack-ja \
     curl \
-    ${GPIO_LIB} \
+    python3 \
  && apt-get clean \
  && rm -rf /va/rlib/apt/lists/*
 
