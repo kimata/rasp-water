@@ -1,17 +1,15 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-from flask import (
-    jsonify,
-    Blueprint,
-)
 import os
-import subprocess
 import re
-import psutil
+import subprocess
 import tracemalloc
 
-from webapp_config import APP_URL_PREFIX
+import psutil
 from flask_util import support_jsonp
+from webapp_config import APP_URL_PREFIX
+
+from flask import Blueprint, jsonify
 
 blueprint = Blueprint("webapp-util", __name__, url_prefix=APP_URL_PREFIX)
 

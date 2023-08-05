@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import slack_sdk
-
+import datetime
 import json
 import logging
 import os
 import pathlib
-import datetime
 import tempfile
 import threading
+
+import slack_sdk
 
 notify_hist = []
 
@@ -183,8 +183,9 @@ def get_hist():
 
 if __name__ == "__main__":
     import os
-    import logger
     import sys
+
+    import logger
     import PIL.Image
     from config import load_config
 

@@ -1,20 +1,22 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import os
-import sys
-import pathlib
-import pytest
-import re
-import time
-import json
 import datetime
+import json
+import os
+import pathlib
+import re
+import sys
+import time
 from unittest import mock
+
+import pytest
 
 sys.path.append(str(pathlib.Path(__file__).parent.parent / "flask" / "app"))
 
-from app import create_app
 from weather_forecast import get_rain_fall as get_rain_fall_orig
+
+from app import create_app
 
 CONFIG_FILE = "config.example.yaml"
 
@@ -729,6 +731,7 @@ def test_valve_flow_close_fail(client, mocker):
 
 def test_valve_flow_read_command_fail(client, mocker):
     import builtins
+
     import valve
 
     ctrl_log_clear()
@@ -771,8 +774,8 @@ def test_valve_flow_read_command_fail(client, mocker):
 
 
 def test_schedule_ctrl_execute(client, mocker, freezer):
-    from config import load_config
     import rasp_water_valve
+    from config import load_config
 
     rasp_water_valve.term()
 
@@ -816,8 +819,8 @@ def test_schedule_ctrl_execute(client, mocker, freezer):
 
 
 def test_schedule_ctrl_execute_force(client, mocker, freezer):
-    from config import load_config
     import rasp_water_valve
+    from config import load_config
 
     rasp_water_valve.term()
 
@@ -858,8 +861,8 @@ def test_schedule_ctrl_execute_force(client, mocker, freezer):
 
 
 def test_schedule_ctrl_execute_pending(client, mocker, freezer):
-    from config import load_config
     import rasp_water_valve
+    from config import load_config
 
     rasp_water_valve.term()
 
@@ -900,8 +903,8 @@ def test_schedule_ctrl_execute_pending(client, mocker, freezer):
 
 
 def test_schedule_ctrl_error(client, mocker, freezer):
-    from config import load_config
     import rasp_water_valve
+    from config import load_config
 
     valve_state_moch = mocker.patch("rasp_water_valve.set_valve_state")
     valve_state_moch.side_effect = RuntimeError()
@@ -944,8 +947,8 @@ def test_schedule_ctrl_error(client, mocker, freezer):
 
 
 def test_schedule_ctrl_execute_fail(client, mocker, freezer):
-    from config import load_config
     import rasp_water_valve
+    from config import load_config
 
     mocker.patch("weather_forecast.get_rain_fall", return_value=False)
     mocker.patch("app_scheduler.valve_auto_control_impl", return_value=False)
@@ -1118,9 +1121,10 @@ def test_second_str():
 
 def test_valve_init(client, mocker):
     import builtins
-    from config import load_config
+
     import rasp_water_valve
     import valve
+    from config import load_config
 
     rasp_water_valve.term()
     time.sleep(2)
@@ -1153,9 +1157,9 @@ def test_valve_init(client, mocker):
 
 
 def test_terminate():
-    import webapp_log
     import rasp_water_schedule
     import rasp_water_valve
+    import webapp_log
 
     webapp_log.term()
     rasp_water_schedule.term()

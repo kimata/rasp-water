@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from playwright.sync_api import expect
-import random
 import datetime
+import random
 import time
+
 from flaky import flaky
+from playwright.sync_api import expect
 
 APP_URL_TMPL = "http://{host}:{port}/rasp-water/"
 

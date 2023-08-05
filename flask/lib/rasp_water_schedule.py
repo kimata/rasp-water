@@ -1,17 +1,18 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-from flask import request, jsonify, Blueprint, url_for
-from flask_cors import cross_origin
 import json
 import threading
 import urllib.parse
 from multiprocessing import Queue
 
-from webapp_config import APP_URL_PREFIX
-from webapp_event import notify_event, EVENT_TYPE
-from webapp_log import app_log, APP_LOG_LEVEL
-from flask_util import support_jsonp, auth_user
 import app_scheduler
+from flask_cors import cross_origin
+from flask_util import auth_user, support_jsonp
+from webapp_config import APP_URL_PREFIX
+from webapp_event import EVENT_TYPE, notify_event
+from webapp_log import APP_LOG_LEVEL, app_log
+
+from flask import Blueprint, jsonify, request, url_for
 
 blueprint = Blueprint("rasp-water-schedule", __name__, url_prefix=APP_URL_PREFIX)
 

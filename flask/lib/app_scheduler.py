@@ -1,18 +1,17 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-
 import logging
-import schedule
-import time
-import pickle
-import traceback
-import threading
 import pathlib
+import pickle
 import re
+import threading
+import time
+import traceback
 
-from webapp_config import SCHEDULE_DATA_PATH
-from webapp_log import app_log, APP_LOG_LEVEL
 import rasp_water_valve
+import schedule
+from webapp_config import SCHEDULE_DATA_PATH
+from webapp_log import APP_LOG_LEVEL, app_log
 
 RETRY_COUNT = 3
 
@@ -189,10 +188,11 @@ def schedule_worker(config, queue):
 
 
 if __name__ == "__main__":
-    from multiprocessing.pool import ThreadPool
-    from multiprocessing import Queue
-    import logger
     import datetime
+    from multiprocessing import Queue
+    from multiprocessing.pool import ThreadPool
+
+    import logger
 
     logger.init("test", level=logging.DEBUG)
 

@@ -4,8 +4,9 @@
 # NOTE: 現時点で使われていない
 
 import os
-from influxdb import InfluxDBClient
 from datetime import datetime
+
+from influxdb import InfluxDBClient
 
 INFLUXDB_ADDR = "192.168.0.10"
 INFLUXDB_PORT = 8086

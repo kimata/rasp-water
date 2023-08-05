@@ -1,22 +1,20 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-from enum import IntEnum
+import datetime
+import logging
 import os
+import pathlib
+import threading
 import time
+import traceback
+from builtins import open as valve_open
+from enum import IntEnum
 
 # NOTE: pytest-freezer を使ったテスト時に，time.time() を mock で
 # 置き換えたいので，別名にしておく．
 from time import time as valve_time
-from builtins import open as valve_open
-
-import threading
-import datetime
-import logging
-import traceback
-import pathlib
 
 from webapp_config import STAT_DIR_PATH
-
 
 # バルブを一定期間開く際に作られるファイル．
 # ファイルの内容はバルブを閉じるべき UNIX 時間．
@@ -430,8 +428,9 @@ def get_control_mode():
 
 
 if __name__ == "__main__":
-    import logger
     from multiprocessing import Queue
+
+    import logger
     from config import load_config
 
     logger.init("test", level=logging.INFO)

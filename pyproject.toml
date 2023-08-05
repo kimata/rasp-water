@@ -22,8 +22,16 @@ pytest-playwright = "^0.3.3"
 schedule = "^1.2.0"
 psutil = "^5.9.5"
 fluent-logger = "^0.10.0"
+isort = "^5.12.0"
 
 [tool.poetry.dev-dependencies]
+
+[tool.isort]
+profile = "black"
+line_length = 120
+multi_line_output = 5
+include_trailing_comma = true
+
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

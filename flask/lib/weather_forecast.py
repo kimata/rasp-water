@@ -4,8 +4,9 @@
 import functools
 import json
 import logging
-import requests
 from datetime import datetime
+
+import requests
 
 YAHOO_API_ENDPOINT = "https://map.yahooapis.jp/weather/V1/place"
 

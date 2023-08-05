@@ -1,21 +1,22 @@
 # -*- coding: utf-8 -*-
-from flask import request, jsonify, Blueprint, current_app
-from flask_cors import cross_origin
-import threading
 import logging
-from multiprocessing import Queue
-import time
 import os
 import pathlib
-import fluent.sender
+import threading
+import time
 import traceback
+from multiprocessing import Queue
 
-from webapp_config import APP_URL_PREFIX
-from webapp_event import notify_event, EVENT_TYPE
-from webapp_log import app_log, APP_LOG_LEVEL
-from flask_util import support_jsonp, auth_user
-import weather_forecast
+import fluent.sender
 import valve
+import weather_forecast
+from flask_cors import cross_origin
+from flask_util import auth_user, support_jsonp
+from webapp_config import APP_URL_PREFIX
+from webapp_event import EVENT_TYPE, notify_event
+from webapp_log import APP_LOG_LEVEL, app_log
+
+from flask import Blueprint, current_app, jsonify, request
 
 blueprint = Blueprint("rasp-water-valve", __name__, url_prefix=APP_URL_PREFIX)
 

@@ -13,17 +13,19 @@ Options:
   -d                : デバッグモードで動作します．
 """
 
+import atexit
+import logging
+import os
+import pathlib
+import sys
+
 from docopt import docopt
+from flask_cors import CORS
 
 from flask import Flask
-from flask_cors import CORS
-import sys
-import pathlib
-import logging
-import atexit
-import os
 
 sys.path.append(str(pathlib.Path(__file__).parent.parent / "lib"))
+
 import logger
 from config import load_config
 
@@ -44,14 +46,13 @@ def create_app(config_file, port=5000, dummy_mode=False, debug_mode=False):
     else:  # pragma: no cover
         os.environ["DUMMY_MODE"] = "false"
 
-    import rasp_water_valve
     import rasp_water_schedule
-
-    import webapp_base
-    import webapp_util
-    import webapp_log
-    import webapp_event
+    import rasp_water_valve
     import valve
+    import webapp_base
+    import webapp_event
+    import webapp_log
+    import webapp_util
 
     app = Flask("rasp-water")
 
