@@ -1,2 +1,3 @@
 flask/data/*
-test/evidence/*
+tests/evidence/*
+node_modules
