@@ -1,12 +1,8 @@
-FROM ubuntu:22.04
-
-ARG TARGETPLATFORM
+FROM python:3.11.4-bookworm as build
 
 ENV TZ=Asia/Tokyo
-ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update && apt-get install -y \
-    language-pack-ja \
     gcc \
     curl \
     python3 \
@@ -21,9 +17,19 @@ ENV PATH="/root/.local/bin:$PATH"
 
 COPY pyproject.toml .
 
-RUN poetry install
+RUN poetry config virtualenvs.create false \
+ && poetry install \
+ && rm -rf ~/.cache
+
+FROM python:3.11.4-slim-bookworm as prod
+
+COPY --from=build /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
+
+WORKDIR /opt/rasp-water
 
 COPY . .
+
+ENV PATH="/root/.local/bin:$PATH"
 
 EXPOSE 5000
 

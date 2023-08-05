@@ -110,7 +110,7 @@ test-playwright-docker:
 
         - docker pull ${CI_REGISTRY_IMAGE}
         - docker run --rm --detach=true --tty=true --name ${CI_JOB_NAME}-${CI_JOB_ID} --label job=${CI_JOB_NAME} ${CI_REGISTRY_IMAGE}
-          poetry run ./flask/app/app.py -D
+          ./flask/app/app.py -D
 
         - poetry install --no-interaction --with test
         - poetry run playwright install --with-deps chromium
