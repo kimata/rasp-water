@@ -20,9 +20,13 @@ def port(request):
 
 @pytest.fixture
 def page(page):
+    from playwright.sync_api import expect
+
     timeout = 2000
     page.set_default_navigation_timeout(timeout)
     page.set_default_timeout(timeout)
+    expect.set_options(timeout=timeout)
+
     yield page
 
 
