@@ -5,12 +5,11 @@ ARG TARGETPLATFORM
 ENV TZ=Asia/Tokyo
 ENV DEBIAN_FRONTEND=noninteractive
 
-RUN if [ "$TARGETPLATFORM" = "linux/arm64" ]; then GPIO_LIB="python3-rpi.gpio"; fi; \
-    apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y \
     language-pack-ja \
+    gcc \
     curl \
     python3 \
-    ${GPIO_LIB} \
  && apt-get clean \
  && rm -rf /va/rlib/apt/lists/*
 

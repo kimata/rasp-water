@@ -83,7 +83,7 @@ test-playwright:
         - git clone https://gitlab.green-rabbit.net/kimata/hems_config.git
         - mv hems_config/rasp-water.yaml config.yaml
 
-        - poetry install --no-interaction
+        - poetry install --no-interaction --with test
 
         - poetry run ./flask/app/app.py -D > flask_log.txt 2>&1 &
 
@@ -115,7 +115,7 @@ test-playwright-docker:
         - docker pull ${CI_REGISTRY_IMAGE}
         - docker run --rm --detach=true --tty=true --name ${CI_JOB_NAME}-${CI_JOB_ID} --label job=${CI_JOB_NAME} ${CI_REGISTRY_IMAGE} ./flask/app/app.py -D
 
-        - poetry install --no-interaction
+        - poetry install --no-interaction --with test
         - poetry run playwright install
 
         - poetry run pytest -vv tests/test_playwright.py
@@ -143,7 +143,7 @@ test-playwright-docker-demo:
         - docker pull ${CI_REGISTRY_IMAGE}
         - docker run --rm --detach=true --tty=true --name ${CI_JOB_NAME}-${CI_JOB_ID} --label job=${CI_JOB_NAME} ${CI_REGISTRY_IMAGE} ./flask/app/app.py -D -c config.example.yaml
 
-        - poetry install --no-interaction
+        - poetry install --no-interaction --with test
         - poetry run playwright install
 
         - poetry run pytest -vv tests/test_playwright.py
