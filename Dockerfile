@@ -21,7 +21,7 @@ ENV PATH="/root/.local/bin:$PATH"
 
 COPY pyproject.toml .
 
-RUN poetry install --no-dev
+RUN poetry install
 
 COPY . .
 
