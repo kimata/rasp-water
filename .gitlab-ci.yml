@@ -85,15 +85,12 @@ test-playwright:
 
         - poetry install --no-interaction --with test
 
-        - poetry run playwright install --with-deps chromium
-        - poetry run pytest -vv tests/test_playwright.py
-
         - sleep 100000000000
 
         - poetry run ./flask/app/app.py -D > flask_log.txt 2>&1 &
 
-        # - poetry run playwright install --with-deps chromium
-        # - poetry run pytest -vv tests/test_playwright.py
+        - poetry run playwright install --with-deps chromium
+        - poetry run pytest -vv tests/test_playwright.py
 
     artifacts:
         when: always
