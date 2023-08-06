@@ -19,6 +19,7 @@ fluent-logger = "^0.10.0"
 slack-sdk = "^3.21.3"
 "RPi.GPIO" = "^0.7.1"
 uptime = "^3.0.1"
+pytz = "^2023.3"
 
 [tool.poetry.group.test.dependencies]
 flaky = "^3.7.0"
