@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+import datetime
 import os
-import re
-import subprocess
 import tracemalloc
 
 import psutil
+import uptime
 from flask_util import support_jsonp
 from webapp_config import APP_URL_PREFIX
 
@@ -48,23 +48,10 @@ def snap():
 @blueprint.route("/api/sysinfo", methods=["GET"])
 @support_jsonp
 def api_sysinfo():
-    date = (
-        subprocess.Popen(["date", "-R"], stdout=subprocess.PIPE)
-        .communicate()[0]
-        .decode()
-        .strip()
+    return jsonify(
+        {
+            "date": datetime.datetime.now().isoformat(),
+            "uptime": uptime.boottime().isoformat(),
+            "loadAverage": "%.2f, %.2f, %.2f" % os.getloadavg(),
+        }
     )
-
-    uptime = (
-        subprocess.Popen(["uptime", "-s"], stdout=subprocess.PIPE)
-        .communicate()[0]
-        .decode()
-        .strip()
-    )
-
-    loadAverage = re.search(
-        r"load average: (.+)",
-        subprocess.Popen(["uptime"], stdout=subprocess.PIPE).communicate()[0].decode(),
-    ).group(1)
-
-    return jsonify({"date": date, "uptime": uptime, "loadAverage": loadAverage})
