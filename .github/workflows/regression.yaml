@@ -101,8 +101,7 @@ jobs:
               run: poetry install --no-interaction
 
             - name: Run Tests
-              run: |
-                  poetry run pytest -vv tests/test_basic.py
+              run: poetry run pytest -vv tests/test_basic.py
 
             - name: Upload coverage file
               uses: actions/upload-artifact@v3

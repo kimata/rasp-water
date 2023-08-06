@@ -2,7 +2,7 @@ FROM python:3.11.4-bookworm as build
 
 ENV TZ=Asia/Tokyo
 
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install --assume-yes \
     gcc \
     curl \
     python3 \

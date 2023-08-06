@@ -8,10 +8,9 @@ import threading
 import time
 import traceback
 
-import pytz
 import rasp_water_valve
 import schedule
-from webapp_config import SCHEDULE_DATA_PATH
+from webapp_config import SCHEDULE_DATA_PATH, TIMEZONE
 from webapp_log import APP_LOG_LEVEL, app_log
 
 RETRY_COUNT = 3
@@ -122,36 +121,23 @@ def set_schedule(config, schedule_data):
             continue
 
         if entry["wday"][0]:
-            schedule.every().sunday.at(entry["time"], pytz.timezone("Asia/Tokyo")).do(
-                valve_auto_control, config, entry["period"]
-            )
+            schedule.every().sunday.at(entry["time"], TIMEZONE).do(valve_auto_control, config, entry["period"])
         if entry["wday"][1]:
-            schedule.every().monday.at(entry["time"], pytz.timezone("Asia/Tokyo")).do(
-                valve_auto_control, config, entry["period"]
-            )
+            schedule.every().monday.at(entry["time"], TIMEZONE).do(valve_auto_control, config, entry["period"])
         if entry["wday"][2]:
-            schedule.every().tuesday.at(entry["time"], pytz.timezone("Asia/Tokyo")).do(
-                valve_auto_control, config, entry["period"]
-            )
+            schedule.every().tuesday.at(entry["time"], TIMEZONE).do(valve_auto_control, config, entry["period"])
         if entry["wday"][3]:
-            schedule.every().wednesday.at(entry["time"], pytz.timezone("Asia/Tokyo")).do(
-                valve_auto_control, config, entry["period"]
-            )
+            schedule.every().wednesday.at(entry["time"], TIMEZONE).do(valve_auto_control, config, entry["period"])
         if entry["wday"][4]:
-            schedule.every().thursday.at(entry["time"], pytz.timezone("Asia/Tokyo")).do(
-                valve_auto_control, config, entry["period"]
-            )
+            schedule.every().thursday.at(entry["time"], TIMEZONE).do(valve_auto_control, config, entry["period"])
         if entry["wday"][5]:
-            schedule.every().friday.at(entry["time"], pytz.timezone("Asia/Tokyo")).do(
-                valve_auto_control, config, entry["period"]
-            )
+            schedule.every().friday.at(entry["time"], TIMEZONE).do(valve_auto_control, config, entry["period"])
         if entry["wday"][6]:
-            schedule.every().saturday.at(entry["time"], pytz.timezone("Asia/Tokyo")).do(
-                valve_auto_control, config, entry["period"]
-            )
+            schedule.every().saturday.at(entry["time"], TIMEZONE).do(valve_auto_control, config, entry["period"])
 
     for job in schedule.get_jobs():
         logging.info("Next run: {next_run}".format(next_run=job.next_run))
+
     logging.info("Time to next jobs is {idle} sec".format(idle=schedule.idle_seconds()))
 
 

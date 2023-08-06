@@ -2,7 +2,11 @@
 # -*- coding: utf-8 -*-
 import pathlib
 
+import pytz
+
 APP_URL_PREFIX = "/rasp-water"
+
+TIMEZONE = pytz.timezone("Asia/Tokyo")
 
 STATIC_FILE_PATH = pathlib.Path(__file__).parent.parent.parent / "dist" / "rasp-water"
 
