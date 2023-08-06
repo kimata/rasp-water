@@ -1,3 +1,4 @@
+.git/
 flask/data/*
 tests/evidence/*
-node_modules
+node_modules/
