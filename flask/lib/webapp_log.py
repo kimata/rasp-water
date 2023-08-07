@@ -80,8 +80,14 @@ def app_log_impl(message, level):
     global config
     with log_lock:
         # NOTE: SQLite に記録する時刻はローカルタイムにする
-        sqlite.execute('INSERT INTO log VALUES (NULL, DATETIME("now", "? hours"), ?)', [TIMEZONE_OFFSET, message])
-        sqlite.execute('DELETE FROM log WHERE date <= DATETIME("now", "? hours", "-60 days")', [TIMEZONE_OFFSET])
+        sqlite.execute(
+            'INSERT INTO log VALUES (NULL, DATETIME("now", ?), ?)',
+            ["{offset} hours".format(offset=TIMEZONE_OFFSET), message],
+        )
+        sqlite.execute(
+            'DELETE FROM log WHERE date <= DATETIME("now", ?, "-60 days")',
+            ["{offset} hours".format(offset=TIMEZONE_OFFSET)],
+        )
         sqlite.commit()
 
         notify_event(EVENT_TYPE.LOG)
@@ -142,9 +148,9 @@ def get_log(stop_day):
 
     cur = sqlite.cursor()
     cur.execute(
-        'SELECT * FROM log WHERE date <= DATETIME("now", ?) ORDER BY id DESC LIMIT 500',
-        # NOTE: stop_day 日前までののログしか出さない
-        ["-{stop_day} days".format(stop_day=stop_day)],
+        'SELECT * FROM log WHERE date <= DATETIME("now", ?,?) ORDER BY id DESC LIMIT 500',
+        # NOTE: デモ用に stop_day 日前までののログしか出さない指定ができるようにする
+        ["{offset} hours".format(offset=TIMEZONE_OFFSET), "-{stop_day} days".format(stop_day=stop_day)],
     )
     return cur.fetchall()
 
