@@ -13,7 +13,7 @@ from wsgiref.handlers import format_date_time
 
 import notify_slack
 from flask_util import gzipped, support_jsonp
-from webapp_config import APP_URL_PREFIX, LOG_DB_PATH
+from webapp_config import APP_URL_PREFIX, LOG_DB_PATH, TIMEZONE_OFFSET
 from webapp_event import EVENT_TYPE, notify_event
 
 from flask import Blueprint, g, jsonify, request
@@ -48,9 +48,7 @@ def init(config_):
     assert sqlite is None
 
     sqlite = sqlite3.connect(LOG_DB_PATH, check_same_thread=False)
-    sqlite.execute(
-        "CREATE TABLE IF NOT EXISTS log(id INTEGER primary key autoincrement, date INTEGER, message TEXT)"
-    )
+    sqlite.execute("CREATE TABLE IF NOT EXISTS log(id INTEGER primary key autoincrement, date INTEGER, message TEXT)")
     sqlite.commit()
     sqlite.row_factory = lambda c, r: dict(zip([col[0] for col in c.description], r))
 
@@ -81,12 +79,9 @@ def term():
 def app_log_impl(message, level):
     global config
     with log_lock:
-        sqlite.execute(
-            'INSERT INTO log VALUES (NULL, DATETIME("now", "localtime"), ?)', [message]
-        )
-        sqlite.execute(
-            'DELETE FROM log WHERE date <= DATETIME("now", "localtime", "-60 days")'
-        )
+        # NOTE: SQLite に記録する時刻はローカルタイムにする
+        sqlite.execute('INSERT INTO log VALUES (NULL, DATETIME("now", "? hours"), ?)', [TIMEZONE_OFFSET, message])
+        sqlite.execute('DELETE FROM log WHERE date <= DATETIME("now", "? hours", "-60 days")', [TIMEZONE_OFFSET])
         sqlite.commit()
 
         notify_event(EVENT_TYPE.LOG)
@@ -145,11 +140,10 @@ def app_log(message, level=APP_LOG_LEVEL.INFO):
 def get_log(stop_day):
     global sqlite
 
-    # NOTE: stop_day 日前までののログしか出さない
-
     cur = sqlite.cursor()
     cur.execute(
-        'SELECT * FROM log WHERE date <= DATETIME("now", "localtime", ?) ORDER BY id DESC LIMIT 500',
+        'SELECT * FROM log WHERE date <= DATETIME("now", ?) ORDER BY id DESC LIMIT 500',
+        # NOTE: stop_day 日前までののログしか出さない
         ["-{stop_day} days".format(stop_day=stop_day)],
     )
     return cur.fetchall()
@@ -181,9 +175,7 @@ def api_log_view():
     if len(log) == 0:
         last_time = time.time()
     else:
-        last_time = datetime.datetime.strptime(
-            log[0]["date"], "%Y-%m-%d %H:%M:%S"
-        ).timestamp()
+        last_time = datetime.datetime.strptime(log[0]["date"], "%Y-%m-%d %H:%M:%S").timestamp()
 
     response = jsonify({"data": log, "last_time": last_time})
 
