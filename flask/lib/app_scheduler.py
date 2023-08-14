@@ -195,7 +195,9 @@ if __name__ == "__main__":
     pool = ThreadPool(processes=1)
     result = pool.apply_async(schedule_worker, (queue,))
 
-    exec_time = datetime.datetime.now() + datetime.timedelta(seconds=5)
+    exec_time = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=+9), "JST")) + datetime.timedelta(
+        seconds=5
+    )
     queue.put([{"time": exec_time.strftime("%H:%M"), "func": test_func}])
 
     # NOTE: 終了するのを待つ

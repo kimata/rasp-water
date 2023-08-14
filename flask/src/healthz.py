@@ -12,10 +12,10 @@ Options:
   -d                : デバッグモードで動作します．
 """
 
-import datetime
 import logging
 import pathlib
 import sys
+import time
 
 import requests
 from docopt import docopt
@@ -31,9 +31,9 @@ def check_liveness_impl(name, liveness_file, interval):
         logging.warning("{name} is not executed.".format(name=name))
         return False
 
-    elapsed = datetime.datetime.now() - datetime.datetime.fromtimestamp(liveness_file.stat().st_mtime)
+    elapsed = time.time() - liveness_file.stat().st_mtime
     # NOTE: 少なくとも1分は様子を見る
-    if elapsed.total_seconds() > max(interval * 2, 60):
+    if elapsed > max(interval * 2, 60):
         logging.warning(
             "Execution interval of {name} is too long. ({elapsed:,} sec)".format(name=name, elapsed=elapsed.seconds)
         )

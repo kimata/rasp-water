@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-import datetime
+
 import logging
 import os
 import pathlib
@@ -394,27 +394,27 @@ def set_control_mode(open_sec):
 
     set_state(VALVE_STATE.OPEN)
 
-    close_time = (datetime.datetime.now() + datetime.timedelta(seconds=open_sec)).timestamp()
+    time_close = time.time() + open_sec
 
     STAT_PATH_VALVE_CONTROL_COMMAND.parent.mkdir(parents=True, exist_ok=True)
 
     with open(STAT_PATH_VALVE_CONTROL_COMMAND, "w") as f:
-        f.write("{close_time:.0f}".format(close_time=close_time))
+        f.write("{close_time:.0f}".format(close_time=time_close))
 
 
 def get_control_mode():
     if STAT_PATH_VALVE_CONTROL_COMMAND.exists():
         with open(STAT_PATH_VALVE_CONTROL_COMMAND, "r") as f:
-            close_time = datetime.datetime.fromtimestamp(int(f.read()))
-            now = datetime.datetime.now()
+            time_close = int(f.read())
+            time_now = time.time()
 
-            if close_time >= now:
+            if time_close >= time_now:
                 return {
                     "mode": CONTROL_MODE.TIMER,
-                    "remain": int((close_time - now).total_seconds()),
+                    "remain": time_close - time_now,
                 }
             else:
-                if (now - close_time).total_seconds() > 1:
+                if (time_now - time_close) > 1:
                     logging.warning("Timer control of the valve may be broken")
                 return {"mode": CONTROL_MODE.TIMER, "remain": 0}
     else:

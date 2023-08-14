@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+import datetime
 import functools
 import json
 import logging
-from datetime import datetime
 
 import requests
 
@@ -51,7 +51,13 @@ def get_rain_fall(config):
         map(
             lambda x: x["Rainfall"],
             filter(
-                lambda x: (datetime.now() - datetime.strptime(x["Date"], "%Y%m%d%H%M")).total_seconds() / (60 * 60)
+                lambda x: (
+                    datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=+9), "JST"))
+                    - datetime.datetime.strptime(x["Date"], "%Y%m%d%H%M").replace(
+                        tzinfo=datetime.timezone(datetime.timedelta(hours=+9), "JST")
+                    )
+                ).total_seconds()
+                / (60 * 60)
                 < config["weather"]["rain_fall"]["before_hour"],
                 weather_info,
             ),
