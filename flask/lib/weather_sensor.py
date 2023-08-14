@@ -26,16 +26,10 @@ WET_THRESHOLD2 = 0.5
 
 def is_soil_wet_1():
     try:
-        client = InfluxDBClient(
-            host=INFLUXDB_ADDR, port=INFLUXDB_PORT, database=INFLUXDB_DB
-        )
+        client = InfluxDBClient(host=INFLUXDB_ADDR, port=INFLUXDB_PORT, database=INFLUXDB_DB)
         result = client.query(INFLUXDB_QUERY1)
 
-        points = list(
-            filter(
-                lambda x: x is not None, map(lambda x: x["mean"], result.get_points())
-            )
-        )
+        points = list(filter(lambda x: x is not None, map(lambda x: x["mean"], result.get_points())))
 
         with open(
             os.path.join(os.path.dirname(os.path.abspath(__file__)), "soilwet.log"),
@@ -55,16 +49,10 @@ def is_soil_wet_1():
 
 def is_soil_wet_2():
     try:
-        client = InfluxDBClient(
-            host=INFLUXDB_ADDR, port=INFLUXDB_PORT, database=INFLUXDB_DB
-        )
+        client = InfluxDBClient(host=INFLUXDB_ADDR, port=INFLUXDB_PORT, database=INFLUXDB_DB)
         result = client.query(INFLUXDB_QUERY2)
 
-        points = list(
-            filter(
-                lambda x: x is not None, map(lambda x: x["sum"], result.get_points())
-            )
-        )
+        points = list(filter(lambda x: x is not None, map(lambda x: x["sum"], result.get_points())))
 
         with open(
             os.path.join(os.path.dirname(os.path.abspath(__file__)), "soilwet.log"),

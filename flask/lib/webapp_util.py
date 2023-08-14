@@ -50,7 +50,7 @@ def snap():
 def api_sysinfo():
     return jsonify(
         {
-            "date": datetime.datetime.now().isoformat(),
+            "date": datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=+9), "JST")).isoformat(),
             "uptime": uptime.boottime().isoformat(),
             "loadAverage": "%.2f, %.2f, %.2f" % os.getloadavg(),
         }

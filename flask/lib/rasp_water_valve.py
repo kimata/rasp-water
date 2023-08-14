@@ -51,12 +51,8 @@ def term():
 
 def send_data(config, flow):
     logging.info("Send fluentd: flow = {flow:.1f}".format(flow=flow))
-    sender = fluent.sender.FluentSender(
-        config["fluent"]["data"]["tag"], host=config["fluent"]["host"]
-    )
-    sender.emit(
-        "rasp", {"hostname": config["fluent"]["data"]["hostname"], "flow": flow}
-    )
+    sender = fluent.sender.FluentSender(config["fluent"]["data"]["tag"], host=config["fluent"]["host"])
+    sender.emit("rasp", {"hostname": config["fluent"]["data"]["hostname"], "flow": flow})
     sender.close()
 
 
@@ -189,9 +185,7 @@ def api_valve_ctrl():
 
     if cmd == 1:
         user = auth_user(request)
-        return jsonify(
-            dict({"cmd": "set"}, **set_valve_state(config, state, period, auto, user))
-        )
+        return jsonify(dict({"cmd": "set"}, **set_valve_state(config, state, period, auto, user)))
     else:
         return jsonify(dict({"cmd": "get"}, **get_valve_state()))
 

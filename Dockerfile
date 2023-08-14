@@ -1,7 +1,5 @@
 FROM python:3.11.4-bookworm as build
 
-ENV TZ=Asia/Tokyo
-
 RUN apt-get update && apt-get install --assume-yes \
     gcc \
     curl \
@@ -23,6 +21,8 @@ RUN poetry config virtualenvs.create false \
 
 FROM python:3.11.4-slim-bookworm as prod
 
+ENV TZ=Asia/Tokyo
+
 COPY --from=build /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
 
 WORKDIR /opt/rasp-water
@@ -33,4 +33,4 @@ ENV PATH="/root/.local/bin:$PATH"
 
 EXPOSE 5000
 
-CMD ["poetry", "run", "./flask/app/app.py"]
+CMD ["./flask/app/app.py"]

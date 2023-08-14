@@ -54,15 +54,11 @@ def term():
 
 def wday_str_list(wday_list):
     wday_str = WDAY_STR
-    return map(
-        lambda i: wday_str[i], (i for i in range(len(wday_list)) if wday_list[i])
-    )
+    return map(lambda i: wday_str[i], (i for i in range(len(wday_list)) if wday_list[i]))
 
 
 def schedule_entry_str(entry):
-    return "{} 開始 {} 分間 {}".format(
-        entry["time"], entry["period"], ",".join(wday_str_list(entry["wday"]))
-    )
+    return "{} 開始 {} 分間 {}".format(entry["time"], entry["period"], ",".join(wday_str_list(entry["wday"])))
 
 
 def schedule_str(schedule):

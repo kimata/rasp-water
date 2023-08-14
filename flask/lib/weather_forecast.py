@@ -34,9 +34,7 @@ def get_weather_info_yahoo(config):
             logging.warning("Failed to fetch weather info from Yahoo")
             return None
 
-        return json.loads(res.content)["Feature"][0]["Property"]["WeatherList"][
-            "Weather"
-        ]
+        return json.loads(res.content)["Feature"][0]["Property"]["WeatherList"]["Weather"]
     except:
         logging.warning("Failed to fetch weather info from Yahoo")
         return None
@@ -53,10 +51,7 @@ def get_rain_fall(config):
         map(
             lambda x: x["Rainfall"],
             filter(
-                lambda x: (
-                    datetime.now() - datetime.strptime(x["Date"], "%Y%m%d%H%M")
-                ).total_seconds()
-                / (60 * 60)
+                lambda x: (datetime.now() - datetime.strptime(x["Date"], "%Y%m%d%H%M")).total_seconds() / (60 * 60)
                 < config["weather"]["rain_fall"]["before_hour"],
                 weather_info,
             ),
@@ -72,9 +67,7 @@ def get_rain_fall(config):
     )
 
     rainfall_judge = rainfall_total > config["weather"]["rain_fall"]["threshold"]
-    logging.info(
-        "Rain fall judge: {rainfall_judge}".format(rainfall_judge=rainfall_judge)
-    )
+    logging.info("Rain fall judge: {rainfall_judge}".format(rainfall_judge=rainfall_judge))
 
     return rainfall_judge
 

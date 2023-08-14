@@ -31,17 +31,16 @@ pytest-playwright = "^0.3.3"
 
 [tool.pytest.ini_options]
 minversion = "6.0"
-addopts = [
-    "--verbose",
-    "--cov=app",
-    "--cov=flask",
-    "--capture=sys",
-    "--cov-report=html",
-    "--html=tests/evidence/index.htm",
-    "--self-contained-html",
-]
+
+addopts = "--verbose --cov=app --cov=flask --log-file-level=INFO --log-format=\"%(asctime)s %(levelname)s %(message)s\" --log-format=\"%(asctime)s %(levelname)s %(message)s\" --capture=sys --cov-report=html --html=tests/evidence/index.htm --self-contained-html"
+
 testpaths = [
     "tests",
+]
+filterwarnings = [
+    "ignore:The hookimpl CovPlugin.pytest_configure_node uses",
+    "ignore:The hookimpl CovPlugin.pytest_testnodedown uses",
+    "ignore::DeprecationWarning:pytest_freezegun",
 ]
 
 [tool.coverage.run]
@@ -87,13 +86,10 @@ directory = "tests/evidence/coverage"
 target-version = ['py310']
 line-length = 120
 
-
 [tool.isort]
 profile = "black"
-line_length = 120
-multi_line_output = 5
+line_length = 110
 include_trailing_comma = true
-
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

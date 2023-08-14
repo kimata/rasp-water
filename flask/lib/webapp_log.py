@@ -149,7 +149,7 @@ def get_log(stop_day):
     cur = sqlite.cursor()
     cur.execute(
         'SELECT * FROM log WHERE date <= DATETIME("now", ?,?) ORDER BY id DESC LIMIT 500',
-        # NOTE: デモ用に stop_day 日前までののログしか出さない指定ができるようにする
+        # NOTE: デモ用に stop_day 日前までののログしか出さない指定ができるようにるす
         ["{offset} hours".format(offset=TIMEZONE_OFFSET), "-{stop_day} days".format(stop_day=stop_day)],
     )
     return cur.fetchall()

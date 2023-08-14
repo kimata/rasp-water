@@ -161,8 +161,7 @@ else:
             flow = max(
                 0,
                 min(
-                    get_flow.prev_flow
-                    + (random.random() - 0.5) * (FLOW_SCALE_MAX / 5.0),
+                    get_flow.prev_flow + (random.random() - 0.5) * (FLOW_SCALE_MAX / 5.0),
                     FLOW_SCALE_MAX,
                 ),
             )
@@ -218,8 +217,7 @@ def control_worker(config, queue):
                 queue.put(
                     {
                         "type": "instantaneous",
-                        "flow": float(flow_sum - notify_last_flow_sum)
-                        / (flow_count - notify_last_count),
+                        "flow": float(flow_sum - notify_last_flow_sum) / (flow_count - notify_last_count),
                     }
                 )
 
@@ -353,9 +351,7 @@ def set_state(valve_state):
 
     if valve_state != curr_state:
         logging.info(
-            "VALVE: {curr_state} -> {valve_state}".format(
-                curr_state=curr_state.name, valve_state=valve_state.name
-            )
+            "VALVE: {curr_state} -> {valve_state}".format(curr_state=curr_state.name, valve_state=valve_state.name)
         )
 
     GPIO.setwarnings(False)
@@ -398,9 +394,7 @@ def set_control_mode(open_sec):
 
     set_state(VALVE_STATE.OPEN)
 
-    close_time = (
-        datetime.datetime.now() + datetime.timedelta(seconds=open_sec)
-    ).timestamp()
+    close_time = (datetime.datetime.now() + datetime.timedelta(seconds=open_sec)).timestamp()
 
     STAT_PATH_VALVE_CONTROL_COMMAND.parent.mkdir(parents=True, exist_ok=True)
 

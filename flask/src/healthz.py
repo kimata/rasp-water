@@ -31,15 +31,11 @@ def check_liveness_impl(name, liveness_file, interval):
         logging.warning("{name} is not executed.".format(name=name))
         return False
 
-    elapsed = datetime.datetime.now() - datetime.datetime.fromtimestamp(
-        liveness_file.stat().st_mtime
-    )
+    elapsed = datetime.datetime.now() - datetime.datetime.fromtimestamp(liveness_file.stat().st_mtime)
     # NOTE: 少なくとも1分は様子を見る
     if elapsed.total_seconds() > max(interval * 2, 60):
         logging.warning(
-            "Execution interval of {name} is too long. ({elapsed:,} sec)".format(
-                name=name, elapsed=elapsed.seconds
-            )
+            "Execution interval of {name} is too long. ({elapsed:,} sec)".format(name=name, elapsed=elapsed.seconds)
         )
         return False
 
@@ -48,12 +44,7 @@ def check_liveness_impl(name, liveness_file, interval):
 
 def check_port(port):
     try:
-        if (
-            requests.get(
-                "http://{address}:{port}/".format(address="127.0.0.1", port=port)
-            ).status_code
-            == 200
-        ):
+        if requests.get("http://{address}:{port}/".format(address="127.0.0.1", port=port)).status_code == 200:
             return True
     except:
         pass
@@ -65,9 +56,7 @@ def check_port(port):
 
 def check_liveness(target_list, port):
     for target in target_list:
-        if not check_liveness_impl(
-            target["name"], target["liveness_file"], target["interval"]
-        ):
+        if not check_liveness_impl(target["name"], target["liveness_file"], target["interval"]):
             return False
     if not check_port(port):
         return False
