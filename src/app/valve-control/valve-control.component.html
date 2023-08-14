@@ -51,7 +51,7 @@
                 <h3>
                     水量 <small>(L/min)</small>
                     <div class="float-end remain" *ngIf="remain != 0">
-                        <small>残り: {{ remain | number }} 秒</small>
+                        <small>残り: {{ remain | number: ".1-1" }} 秒</small>
                     </div>
                 </h3>
                 <div class="progress" style="height: 30px">
