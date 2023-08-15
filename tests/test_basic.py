@@ -107,31 +107,33 @@ def gen_schedule_data(offset_min=1):
 def ctrl_log_check(expect, is_strict=True, is_error=True):
     import valve
 
+    hist_list = valve.GPIO.hist_get()
+
     if len(expect) == 0:
-        assert valve.GPIO.hist_get() == expect, "操作されてないはずのバルブが操作されています．"
+        assert hist_list == expect, "操作されてないはずのバルブが操作されています．"
     elif len(expect) >= 2:
         if is_strict:
-            valve.GPIO.hist_get() == expect
+            assert hist_list == expect
         else:
-            if is_error and (len(valve.GPIO.hist_get()) > len(expect)):
-                for i in range(len(valve.GPIO.hist_get()) - len(expect)):
+            if is_error and (len(hist_list) > len(expect)):
+                for i in range(len(hist_list) - len(expect)):
                     expect.append(expect[-1])
 
-            assert len(valve.GPIO.hist_get()) == len(expect)
+            assert len(hist_list) == len(expect)
             for i in range(len(expect)):
                 if expect[i]["state"] == "open":
-                    assert valve.GPIO.hist_get()[i] == expect[i], "{i} 番目の操作が期待値と異なります．".format(i=i)
+                    assert hist_list[i] == expect[i], "{i} 番目の操作が期待値と異なります．".format(i=i)
                 else:
-                    if "duration" in expect[i]:
-                        assert (valve.GPIO.hist_get()[i] == expect[i]) or (
-                            valve.GPIO.hist_get()[i]
+                    if "period" in expect[i]:
+                        assert (hist_list[i] == expect[i]) or (
+                            hist_list[i]
                             == {
-                                "duration": expect[i]["duration"] - 1,
+                                "period": expect[i]["period"] - 1,
                                 "state": expect[i]["state"],
                             }
                         ), "{i} 番目の操作が期待値と異なります．".format(i=i)
                     else:
-                        assert valve.GPIO.hist_get()[i] == expect[i], "{i} 番目の操作が期待値と異なります．".format(i=i)
+                        assert hist_list[i] == expect[i], "{i} 番目の操作が期待値と異なります．".format(i=i)
 
 
 def ctrl_log_clear():
@@ -230,7 +232,7 @@ def test_valve_ctrl_mismatch(client):
     assert response.json["result"] == "success"
     time.sleep(1)
 
-    ctrl_log_check([{"state": "open"}, {"duration": 0, "state": "close"}])
+    ctrl_log_check([{"state": "open"}, {"period": 0, "state": "close"}])
 
 
 def test_valve_ctrl_manual(client, mocker):
@@ -255,7 +257,7 @@ def test_valve_ctrl_manual(client, mocker):
 
     time.sleep(period + 2)
 
-    ctrl_log_check([{"state": "open"}, {"duration": period, "state": "close"}], is_strict=False)
+    ctrl_log_check([{"state": "open"}, {"period": period, "state": "close"}], is_strict=False)
 
 
 def test_valve_ctrl_auto(client, mocker):
@@ -278,7 +280,7 @@ def test_valve_ctrl_auto(client, mocker):
 
     time.sleep(period + 2)
 
-    ctrl_log_check([{"state": "open"}, {"duration": period, "state": "close"}], is_strict=False)
+    ctrl_log_check([{"state": "open"}, {"period": period, "state": "close"}], is_strict=False)
 
 
 def test_valve_ctrl_auto_rainfall(client, mocker):
@@ -302,7 +304,7 @@ def test_valve_ctrl_auto_rainfall(client, mocker):
     time.sleep(period + 2)
 
     # NOTE: ダミーモードの場合は，天気に関わらず水やりする
-    ctrl_log_check([{"state": "open"}, {"duration": period, "state": "close"}], is_strict=False)
+    ctrl_log_check([{"state": "open"}, {"period": period, "state": "close"}], is_strict=False)
 
     ctrl_log_clear()
 
@@ -344,7 +346,7 @@ def test_valve_ctrl_auto_forecast(client, mocker):
 
     time.sleep(period + 2)
 
-    ctrl_log_check([{"state": "open"}, {"duration": period, "state": "close"}], is_strict=False)
+    ctrl_log_check([{"state": "open"}, {"period": period, "state": "close"}], is_strict=False)
 
 
 def test_valve_ctrl_auto_forecast_error_1(client, mocker):
@@ -369,7 +371,7 @@ def test_valve_ctrl_auto_forecast_error_1(client, mocker):
     time.sleep(period + 2)
 
     # NOTE: get_weather_info_yahoo == None の場合，水やりは行う
-    ctrl_log_check([{"state": "open"}, {"duration": period, "state": "close"}], is_strict=False)
+    ctrl_log_check([{"state": "open"}, {"period": period, "state": "close"}], is_strict=False)
 
 
 def test_valve_ctrl_auto_forecast_error_2(client, mocker):
@@ -398,7 +400,7 @@ def test_valve_ctrl_auto_forecast_error_2(client, mocker):
 
     time.sleep(period + 2)
 
-    ctrl_log_check([{"state": "open"}, {"duration": period, "state": "close"}], is_strict=False)
+    ctrl_log_check([{"state": "open"}, {"period": period, "state": "close"}], is_strict=False)
 
 
 def test_valve_ctrl_auto_forecast_error_3(client, mocker):
@@ -427,7 +429,7 @@ def test_valve_ctrl_auto_forecast_error_3(client, mocker):
 
     time.sleep(period + 2)
 
-    ctrl_log_check([{"state": "open"}, {"duration": period, "state": "close"}], is_strict=False)
+    ctrl_log_check([{"state": "open"}, {"period": period, "state": "close"}], is_strict=False)
 
 
 def test_valve_ctrl_auto_forecast_error_4(client, mocker):
@@ -453,7 +455,7 @@ def test_valve_ctrl_auto_forecast_error_4(client, mocker):
 
     time.sleep(period + 2)
 
-    ctrl_log_check([{"state": "open"}, {"duration": period, "state": "close"}], is_strict=False)
+    ctrl_log_check([{"state": "open"}, {"period": period, "state": "close"}], is_strict=False)
 
 
 def test_valve_flow(client):
@@ -525,7 +527,7 @@ def test_schedule_ctrl_invalid(client, mocker):
     import notify_slack
 
     ctrl_log_clear()
-    notify_slack.clear_interval()
+    notify_slack.interval_clear()
 
     schedule_data = gen_schedule_data()
     del schedule_data[0]["period"]
@@ -607,7 +609,7 @@ def test_valve_flow_open_over(client, mocker):
     time.sleep(period + 2)
 
     ctrl_log_check(
-        [{"state": "open"}, {"duration": period, "state": "close"}, {"state": "close"}],
+        [{"state": "open"}, {"period": period, "state": "close"}, {"state": "close"}],
         is_strict=False,
         is_error=True,
     )
@@ -639,7 +641,7 @@ def test_valve_flow_open_fail(client, mocker):
     time.sleep(period + 6)
 
     ctrl_log_check(
-        [{"state": "open"}, {"duration": period, "state": "close"}, {"state": "close"}],
+        [{"state": "open"}, {"period": period, "state": "close"}, {"state": "close"}],
         is_strict=False,
         is_error=True,
     )
@@ -671,7 +673,7 @@ def test_valve_flow_close_ok(client, mocker):
     time.sleep(period + 2)
 
     ctrl_log_check(
-        [{"state": "open"}, {"duration": period, "state": "close"}],
+        [{"state": "open"}, {"period": period, "state": "close"}],
         is_strict=False,
     )
 
@@ -702,7 +704,7 @@ def test_valve_flow_close_fail(client, mocker):
     time.sleep(period + 2)
 
     ctrl_log_check(
-        [{"state": "open"}, {"duration": period, "state": "close"}],
+        [{"state": "open"}, {"period": period, "state": "close"}],
         is_strict=False,
     )
 
@@ -784,7 +786,7 @@ def test_schedule_ctrl_execute(client, mocker, freezer):
 
     freezer.move_to(time_test(2))
     time_mock.return_value = time.time()
-    time.sleep(4)
+    time.sleep(2)
 
     freezer.move_to(time_test(3))
     time_mock.return_value = time.time()
@@ -794,7 +796,7 @@ def test_schedule_ctrl_execute(client, mocker, freezer):
     assert response.status_code == 200
     assert "flow" in response.json
 
-    ctrl_log_check([{"state": "open"}, {"state": "close", "duration": 60}])
+    ctrl_log_check([{"state": "open"}, {"state": "close", "period": 60}])
 
 
 def test_schedule_ctrl_execute_force(client, mocker, freezer):
@@ -830,13 +832,13 @@ def test_schedule_ctrl_execute_force(client, mocker, freezer):
 
     freezer.move_to(time_test(2))
     time_mock.return_value = time.time()
-    time.sleep(4)
+    time.sleep(2)
 
     freezer.move_to(time_test(3))
     time_mock.return_value = time.time()
     time.sleep(1)
 
-    ctrl_log_check([{"state": "open"}, {"state": "close", "duration": 60}])
+    ctrl_log_check([{"state": "open"}, {"state": "close", "period": 60}])
 
 
 def test_schedule_ctrl_execute_pending(client, mocker, freezer):
@@ -872,7 +874,7 @@ def test_schedule_ctrl_execute_pending(client, mocker, freezer):
 
     freezer.move_to(time_test(2))
     time_mock.return_value = time.time()
-    time.sleep(4)
+    time.sleep(2)
 
     freezer.move_to(time_test(3))
     time_mock.return_value = time.time()
@@ -916,13 +918,13 @@ def test_schedule_ctrl_error(client, mocker, freezer):
 
     freezer.move_to(time_test(2))
     time_mock.return_value = time.time()
-    time.sleep(4)
+    time.sleep(2)
 
     freezer.move_to(time_test(3))
     time_mock.return_value = time.time()
     time.sleep(1)
 
-    ctrl_log_check([{"state": "open"}, {"state": "close", "duration": 60}])
+    ctrl_log_check([])
 
 
 def test_schedule_ctrl_execute_fail(client, mocker, freezer):
@@ -966,7 +968,7 @@ def test_schedule_ctrl_execute_fail(client, mocker, freezer):
     time_mock.return_value = time.time()
     time.sleep(1)
 
-    ctrl_log_check([{"state": "open"}, {"state": "close", "duration": 60}])
+    ctrl_log_check([])
 
 
 def test_schedule_ctrl_read(client):

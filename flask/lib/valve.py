@@ -10,7 +10,7 @@ import traceback
 from builtins import open as valve_open
 from enum import IntEnum
 
-# NOTE: pytest-freezer を使ったテスト時に，time.time() を mock で
+# NOTE: pytest-freezer を使ったテスト時に，別スレッドのものも含めて time.time() を mock で
 # 置き換えたいので，別名にしておく．
 from time import time as valve_time
 
@@ -111,17 +111,20 @@ else:
         def hist_clear():
             GPIO.gpio_hist = []
 
+        def hist_add(hist):
+            GPIO.gpio_hist.append(hist)
+
         def output(gpio, value):
             if value == 0:
                 if GPIO.time_start is not None:
-                    GPIO.gpio_hist.append(
+                    GPIO.hist_add(
                         {
                             "state": "close",
-                            "duration": int(valve_time() - GPIO.time_start),
+                            "period": int(valve_time() - GPIO.time_start),
                         }
                     )
                 else:
-                    GPIO.gpio_hist.append(
+                    GPIO.hist_add(
                         {
                             "state": "close",
                         }
@@ -131,7 +134,7 @@ else:
             else:
                 GPIO.time_start = valve_time()
                 GPIO.time_stop = None
-                GPIO.gpio_hist.append(
+                GPIO.hist_add(
                     {
                         "state": "open",
                     }
@@ -149,9 +152,9 @@ else:
     def get_flow():
         if not STAT_PATH_VALVE_OPEN.exists():
             if get_flow.prev_flow > 1:
-                get_flow.prev_flow /= 1.3
+                get_flow.prev_flow /= 1.5
             else:
-                get_flow.prev_flow = max(0, get_flow.prev_flow - 0.1)
+                get_flow.prev_flow = max(0, get_flow.prev_flow - 0.15)
 
             return {"flow": get_flow.prev_flow, "result": "success"}
 
@@ -190,13 +193,13 @@ def control_worker(config, queue):
 
     logging.info("Start valve control worker")
 
-    open_start_time = None
-    close_time = None
+    time_open_start = None
+    time_close = None
     flow = 0
     flow_sum = 0
-    flow_count = 0
-    zero_count = 0
-    over_count = 0
+    count_flow = 0
+    count_zero = 0
+    count_over = 0
     notify_last_time = None
     notify_last_flow_sum = 0
     notify_last_count = 0
@@ -207,67 +210,69 @@ def control_worker(config, queue):
         if should_terminate:
             break
 
-        if open_start_time is not None:
+        if time_open_start is not None:
             flow = get_flow()["flow"]
             flow_sum += flow
-            flow_count += 1
+            count_flow += 1
 
             if (valve_time() - notify_last_time) > 10:
                 # NOTE: 10秒ごとに途中集計を報告する
                 queue.put(
                     {
                         "type": "instantaneous",
-                        "flow": float(flow_sum - notify_last_flow_sum) / (flow_count - notify_last_count),
+                        "flow": float(flow_sum - notify_last_flow_sum) / (count_flow - notify_last_count),
                     }
                 )
 
                 notify_last_time = valve_time()
                 notify_last_flow_sum = flow_sum
-                notify_last_count = flow_count
+                notify_last_count = count_flow
 
         # NOTE: 以下の処理はファイルシステムへのアクセスが発生するので，実施頻度を落とす
         if i % 5 == 0:
             liveness_file.touch()
 
-            if open_start_time is None:
+            if time_open_start is None:
                 if STAT_PATH_VALVE_OPEN.exists():
                     # NOTE: バルブが開かれていたら，状態を変更してトータルの水量の集計を開始する
-                    open_start_time = valve_time()
-                    notify_last_time = open_start_time
+                    time_open_start = valve_time()
+                    notify_last_time = time_open_start
             else:
                 if STAT_PATH_VALVE_CONTROL_COMMAND.exists():
                     # NOTE: バルブコマンドが存在したら，閉じる時間をチェックして，必要に応じて閉じる
                     try:
                         with valve_open(STAT_PATH_VALVE_CONTROL_COMMAND, "r") as f:
-                            close_time = int(f.read(), 10)
-                            if valve_time() > close_time:
+                            time_close = float(f.read())
+
+                            # NOTE: テストの際に freezegun 使う関係で，単純な大小比較だけではなく差分絶対値の比較も行う
+                            if (valve_time() > time_close) or (abs(valve_time() - time_close) < 0.01):
                                 logging.info("Times is up, close valve")
                                 # NOTE: 下記の関数の中で
                                 # STAT_PATH_VALVE_CONTROL_COMMAND は削除される
                                 set_state(VALVE_STATE.CLOSE)
                     except:
                         logging.warning(traceback.format_exc())
-                if (close_time is None) and STAT_PATH_VALVE_CLOSE.exists():
+                if (time_close is None) and STAT_PATH_VALVE_CLOSE.exists():
                     # NOTE: 常にバルブコマンドで制御するので，基本的にここには来ない
-                    close_time = valve_time()
+                    time_close = valve_time()
 
-            if (not STAT_PATH_VALVE_OPEN.exists()) and (open_start_time is not None):
-                period_sec = valve_time() - open_start_time
+            if (not STAT_PATH_VALVE_OPEN.exists()) and (time_open_start is not None):
+                period_sec = valve_time() - time_open_start
 
                 # NOTE: バルブが閉じられた後，流量が 0 になっていたらトータル流量を報告する
                 if flow < 0.03:
-                    zero_count += 1
+                    count_zero += 1
 
                 if flow > FLOW_ERROR_TH:
-                    over_count += 1
+                    count_over += 1
 
-                if over_count > TIME_OVER_FAIL:
+                if count_over > TIME_OVER_FAIL:
                     set_state(VALVE_STATE.CLOSE)
                     queue.put({"type": "error", "message": "😵水が流れすぎています．"})
 
-                if zero_count > TIME_ZERO_TAIL:
+                if count_zero > TIME_ZERO_TAIL:
                     # NOTE: 流量(L/min)の平均を求めてから期間(min)を掛ける
-                    total = float(flow_sum) / flow_count * period_sec / 60
+                    total = float(flow_sum) / count_flow * period_sec / 60
 
                     queue.put(
                         {
@@ -281,19 +286,19 @@ def control_worker(config, queue):
                         queue.put({"type": "error", "message": "😵 元栓が閉まっている可能性があります．"})
 
                     stop_measure = True
-                elif (valve_time() - close_time) > TIME_OPEN_FAIL:
+                elif (valve_time() - time_close) > TIME_OPEN_FAIL:
                     set_state(VALVE_STATE.CLOSE)
                     queue.put({"type": "error", "message": "😵 バルブを閉めても水が流れ続けています．"})
                     stop_measure = True
 
                 if stop_measure:
                     stop_measure = False
-                    open_start_time = None
-                    close_time = None
+                    time_open_start = None
+                    time_close = None
                     flow_sum = 0
-                    flow_count = 0
-                    zero_count = 0
-                    over_count = 0
+                    count_flow = 0
+                    count_zero = 0
+                    count_over = 0
 
                     notify_last_time = None
                     notify_last_flow_sum = 0
@@ -343,7 +348,6 @@ def term():
 
 
 # NOTE: 実際にバルブを開きます．
-# 現在のバルブの状態と，バルブが現在の状態になってからの経過時間を返します．
 def set_state(valve_state):
     global pin_no
 
@@ -394,19 +398,19 @@ def set_control_mode(open_sec):
 
     set_state(VALVE_STATE.OPEN)
 
-    time_close = time.time() + open_sec
+    time_close = valve_time() + open_sec
 
     STAT_PATH_VALVE_CONTROL_COMMAND.parent.mkdir(parents=True, exist_ok=True)
 
     with open(STAT_PATH_VALVE_CONTROL_COMMAND, "w") as f:
-        f.write("{close_time:.0f}".format(close_time=time_close))
+        f.write("{time_close:.3f}".format(time_close=time_close))
 
 
 def get_control_mode():
     if STAT_PATH_VALVE_CONTROL_COMMAND.exists():
         with open(STAT_PATH_VALVE_CONTROL_COMMAND, "r") as f:
-            time_close = int(f.read())
-            time_now = time.time()
+            time_close = float(f.read())
+            time_now = valve_time()
 
             if time_close >= time_now:
                 return {
