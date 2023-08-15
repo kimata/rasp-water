@@ -114,7 +114,7 @@ def app_log_impl(message, level):
 def app_log_worker(log_queue):
     global should_terminate
 
-    sleep_sec = 0.4
+    sleep_sec = 0.1
 
     while True:
         if should_terminate:

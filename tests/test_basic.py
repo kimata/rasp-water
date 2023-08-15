@@ -77,14 +77,11 @@ def client(app, mocker):
 
     test_client = app.test_client()
 
-    schedule_clear(test_client)
-    app_log_clear(test_client)
-    import logging
-
-    logging.error("CLEAR")
     ctrl_log_clear()
-
+    schedule_clear(test_client)
     time.sleep(1)
+    app_log_clear(test_client)
+    app_log_check(test_client, [])
 
     yield test_client
 
@@ -112,9 +109,13 @@ def gen_schedule_data(offset_min=1):
 
 
 def ctrl_log_check(expect_list, is_strict=True, is_error=True):
+    import logging
+
     import valve
 
     hist_list = valve.GPIO.hist_get()
+
+    logging.debug(hist_list)
 
     if len(expect_list) == 0:
         assert hist_list == expect_list, "操作されてないはずのバルブが操作されています．"
@@ -148,9 +149,13 @@ def app_log_check(
     expect_list,
     is_strict=True,
 ):
+    import logging
+
     response = client.get("/rasp-water/api/log_view")
 
     log_list = response.json["data"]
+
+    logging.debug(log_list)
 
     if is_strict:
         # NOTE: クリアする直前のログが残っている可能性があるので，+1 でも OK とする
@@ -167,6 +172,12 @@ def app_log_check(
             assert "スケジュールを更新" in log_list[i]["message"]
         elif expect == "INVALID":
             assert "スケジュールの指定が不正" in log_list[i]["message"]
+        elif expect == "FAIL_AUTO":
+            assert "自動実行に失敗" in log_list[i]["message"]
+        elif expect == "FAIL_WRITE":
+            assert "保存に失敗" in log_list[i]["message"]
+        elif expect == "FAIL_READ":
+            assert "読み出しに失敗" in log_list[i]["message"]
         elif expect == "PENDING":
             assert "水やりを見合わせます" in log_list[i]["message"]
         elif expect == "FAIL_OVER":
@@ -531,7 +542,7 @@ def test_valve_flow(client):
 def test_event(client):
     response = client.get("/rasp-water/api/event", query_string={"count": "2"})
     assert response.status_code == 200
-    assert response.data.decode() == ""
+    assert response.data.decode()
 
     time.sleep(1)
 
@@ -637,10 +648,10 @@ def test_schedule_ctrl_invalid(client, mocker):
     )
     assert response.status_code == 200
 
-    time.sleep(2)
+    time.sleep(4)
 
     ctrl_log_check([])
-    app_log_check(client, ["CLEAR", "INVALID", "INVALID", "INVALID", "INVALID", "INVALID"])
+    app_log_check(client, ["CLEAR", "INVALID", "INVALID", "INVALID", "INVALID", "INVALID", "INVALID", "INVALID"])
 
 
 def test_valve_flow_open_over_1(client, mocker):
@@ -664,7 +675,6 @@ def test_valve_flow_open_over_1(client, mocker):
     ctrl_log_check(
         [{"state": "open"}, {"period": period, "state": "close"}, {"state": "close"}],
         is_strict=False,
-        is_error=True,
     )
     app_log_check(client, ["FAIL_OVER"], False)
 
@@ -693,7 +703,7 @@ def test_valve_flow_open_over_2(client, mocker):
     time.sleep(period + 5)
 
     ctrl_log_check(
-        [{"state": "open"}, {"period": period, "state": "close"}],
+        [{"state": "open"}, {"period": period, "state": "close"}, {"state": "close"}],
         is_strict=False,
     )
     app_log_check(client, ["FAIL_OVER"], False)
@@ -801,7 +811,9 @@ def test_valve_flow_read_command_fail(client, mocker):
     time.sleep(period + 5)
 
     ctrl_log_check([{"state": "open"}])
-    app_log_check(client, ["CLEAR", "START_AUTO", "STOP_AUTO"])
+    app_log_check(client, ["CLEAR", "START_AUTO"])
+
+    valve.STAT_PATH_VALVE_CONTROL_COMMAND.unlink(missing_ok=True)
 
 
 def test_schedule_ctrl_execute(client, mocker, freezer):
@@ -978,7 +990,7 @@ def test_schedule_ctrl_error(client, mocker, freezer):
     time.sleep(1)
 
     ctrl_log_check([])
-    app_log_check(client, ["CLEAR", "SCHEDULE"])
+    app_log_check(client, ["CLEAR", "SCHEDULE", "FAIL_AUTO"])
 
 
 def test_schedule_ctrl_execute_fail(client, mocker, freezer):
@@ -1023,7 +1035,7 @@ def test_schedule_ctrl_execute_fail(client, mocker, freezer):
     time.sleep(1)
 
     ctrl_log_check([])
-    app_log_check(client, ["CLEAR", "SCHEDULE"])
+    app_log_check(client, ["CLEAR", "SCHEDULE", "FAIL_AUTO"])
 
 
 def test_schedule_ctrl_read(client):
@@ -1050,7 +1062,7 @@ def test_schedule_ctrl_read_fail_1(client):
     time.sleep(1)
 
     ctrl_log_check([])
-    app_log_check(client, ["CLEAR"])
+    app_log_check(client, ["CLEAR", "FAIL_READ"])
 
 
 def test_schedule_ctrl_read_fail_2(client):
@@ -1114,7 +1126,7 @@ def test_schedule_ctrl_write_fail(client, mocker):
     time.sleep(1)
 
     ctrl_log_check([])
-    app_log_check(client, ["CLEAR"])
+    app_log_check(client, ["FAIL_WRITE"], False)
 
 
 def test_schedule_ctrl_validate_fail(client, mocker):

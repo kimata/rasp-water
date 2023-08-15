@@ -111,7 +111,7 @@ def flow_notify_worker(config, queue):
 
         liveness_file.touch()
 
-        time.sleep(0.25)
+        time.sleep(0.20)
 
     logging.info("Terminate flow notify worker")
 
