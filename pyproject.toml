@@ -20,6 +20,7 @@ schedule = "^1.2.0"
 slack-sdk = "^3.21.3"
 uptime = "^3.0.1"
 pytest-xdist = "^3.3.1"
+pytest-timeout = "^2.1.0"
 
 [tool.poetry.group.test.dependencies]
 flaky = "^3.7.0"
@@ -33,7 +34,7 @@ pytest-playwright = "^0.3.3"
 [tool.pytest.ini_options]
 minversion = "6.0"
 
-addopts = "--verbose --cov=app --cov=flask --log-file-level=DEBUG --log-format=\"%(asctime)s %(levelname)s %(message)s\" --log-format=\"%(asctime)s %(levelname)s [%(filename)s:%(lineno)s %(funcName)s] %(message)s\" --capture=sys --cov-report=html --html=tests/evidence/index.htm --self-contained-html"
+addopts = "--verbose --cov=app --cov=flask --timeout=180 --log-file-level=DEBUG --log-format=\"%(asctime)s %(levelname)s %(message)s\" --log-format=\"%(asctime)s %(levelname)s [%(filename)s:%(lineno)s %(funcName)s] %(message)s\" --capture=sys --cov-report=html --html=tests/evidence/index.htm --self-contained-html"
 
 testpaths = [
     "tests",

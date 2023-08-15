@@ -657,7 +657,10 @@ def test_schedule_ctrl_invalid(client, mocker):
 def test_valve_flow_open_over_1(client, mocker):
     flow_mock = mocker.patch("valve.get_flow")
     flow_mock.return_value = {"flow": 100, "result": "success"}
+
     mocker.patch("valve.TIME_OVER_FAIL", 0.5)
+    # NOTE: これをやっておかないと，後続のテストに影響がでる
+    mocker.patch("valve.TIME_ZERO_TAIL", 1)
 
     period = 3
     response = client.get(
@@ -685,6 +688,7 @@ def test_valve_flow_open_over_1(client, mocker):
 def test_valve_flow_open_over_2(client, mocker):
     flow_mock = mocker.patch("valve.get_flow")
     flow_mock.return_value = {"flow": 100, "result": "success"}
+
     mocker.patch("valve.TIME_CLOSE_FAIL", 1)
     # NOTE: これをやっておかないと，後続のテストに影響がでる
     mocker.patch("valve.TIME_ZERO_TAIL", 1)
@@ -767,7 +771,7 @@ def test_valve_flow_open_fail(client, mocker):
         [{"state": "open"}, {"period": period, "state": "close"}],
         is_strict=False,
     )
-    app_log_check(client, ["CLEAR", "START_AUTO", "STOP_AUTO"])
+    app_log_check(client, ["CLEAR", "START_AUTO", "STOP_AUTO", "FAIL_OPEN"])
 
     flow_mock.return_value = {"flow": 0, "result": "success"}
     time.sleep(1)
@@ -814,6 +818,8 @@ def test_valve_flow_read_command_fail(client, mocker):
     app_log_check(client, ["CLEAR", "START_AUTO"])
 
     valve.STAT_PATH_VALVE_CONTROL_COMMAND.unlink(missing_ok=True)
+
+    time.sleep(1)
 
 
 def test_schedule_ctrl_execute(client, mocker, freezer):
