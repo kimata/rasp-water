@@ -781,7 +781,7 @@ def test_valve_flow_close_fail(client, mocker):
         is_strict=False,
         is_error=True,
     )
-    app_log_check(client, ["CLEAR", "SCHEDULE", "START_AUTO", "FAIL_CLOSE"])
+    app_log_check(client, ["CLEAR", "START_AUTO", "FAIL_CLOSE"])
     check_notify_slack("バルブを閉めても水が流れ続けています。")
 
     flow_mock.return_value = {"flow": 0, "result": "success"}
