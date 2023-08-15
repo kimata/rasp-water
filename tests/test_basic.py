@@ -87,10 +87,10 @@ def client(app, mocker):
 
     time.sleep(1)
 
+    schedule_clear(test_client)
     app_log_clear(test_client)
     app_log_check(test_client, [])
     ctrl_log_clear()
-    schedule_clear(test_client)
 
     yield test_client
 
