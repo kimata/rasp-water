@@ -155,9 +155,9 @@ else:
     def get_flow():
         if not STAT_PATH_VALVE_OPEN.exists():
             if get_flow.prev_flow > 1:
-                get_flow.prev_flow /= 3
+                get_flow.prev_flow /= 5
             else:
-                get_flow.prev_flow = max(0, get_flow.prev_flow - 0.2)
+                get_flow.prev_flow = max(0, get_flow.prev_flow - 0.5)
 
             return {"flow": get_flow.prev_flow, "result": "success"}
 
