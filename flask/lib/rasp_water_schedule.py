@@ -85,7 +85,7 @@ def api_schedule_ctrl():
 
         if not app_scheduler.schedule_validate(schedule_data):
             app_log(
-                "😵 スケジュールの指定が不正です．",
+                "😵 スケジュールの指定が不正です。",
                 APP_LOG_LEVEL.ERROR,
             )
             return jsonify(app_scheduler.schedule_load())

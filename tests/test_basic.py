@@ -85,9 +85,8 @@ def client(app, mocker):
 
     test_client = app.test_client()
 
-    time.sleep(1)
-
     schedule_clear(test_client)
+    time.sleep(1)
     app_log_clear(test_client)
     app_log_check(test_client, [])
     ctrl_log_clear()
@@ -902,7 +901,7 @@ def test_schedule_ctrl_execute(client, mocker, freezer):
 
     freezer.move_to(time_test(3))
     time_mock.return_value = time.time()
-    time.sleep(8)
+    time.sleep(10)
 
     response = client.get("/rasp-water/api/valve_flow")
     assert response.status_code == 200
@@ -950,7 +949,7 @@ def test_schedule_ctrl_execute_force(client, mocker, freezer):
 
     freezer.move_to(time_test(3))
     time_mock.return_value = time.time()
-    time.sleep(8)
+    time.sleep(10)
 
     ctrl_log_check([{"state": "open"}, {"state": "close", "period": 60}])
     app_log_check(client, ["CLEAR", "SCHEDULE", "START_AUTO", "STOP_AUTO"])
@@ -994,7 +993,7 @@ def test_schedule_ctrl_execute_pending(client, mocker, freezer):
 
     freezer.move_to(time_test(3))
     time_mock.return_value = time.time()
-    time.sleep(8)
+    time.sleep(10)
 
     ctrl_log_check([])
     app_log_check(client, ["CLEAR", "SCHEDULE"])
