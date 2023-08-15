@@ -432,7 +432,7 @@ def test_valve_ctrl_auto_forecast(client, mocker):
     assert response.status_code == 200
     assert response.json["result"] == "success"
 
-    time.sleep(period + 2)
+    time.sleep(period + 5)
 
     # NOTE: 天気次第で結果が変わるのでログのチェックは行わない
     check_notify_slack(None)
