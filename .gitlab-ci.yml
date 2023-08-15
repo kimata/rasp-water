@@ -55,7 +55,8 @@ test-walk-through:
     image: registry.green-rabbit.net:5000/kimata/local_ubuntu:230812D
 
     script:
-        - poetry config virtualenvs.in-project true
+        - poetry config --local virtualenvs.in-project true
+        - poetry config --local cache-dir $PWD/.poetry/cache
         - poetry install --no-interaction --with test
 
         - poetry run pytest tests/test_basic.py
@@ -63,6 +64,7 @@ test-walk-through:
     cache:
         paths:
             - .venv
+            - .poetry
 
     artifacts:
         when: always
@@ -87,7 +89,8 @@ test-playwright:
         - git clone https://gitlab.green-rabbit.net/kimata/hems_config.git
         - mv hems_config/rasp-water.yaml config.yaml
 
-        - poetry config virtualenvs.in-project true
+        - poetry config --local virtualenvs.in-project true
+        - poetry config --local cache-dir $PWD/.poetry/cache
         - poetry install --no-interaction --with test
         - poetry run playwright install --with-deps chromium
 
@@ -97,6 +100,7 @@ test-playwright:
     cache:
         paths:
             - .venv
+            - .poetry
 
     artifacts:
         when: always
@@ -120,7 +124,8 @@ test-playwright-docker:
         - docker run --rm --detach=true --tty=true --name ${CI_JOB_NAME}-${CI_JOB_ID} --label job=${CI_JOB_NAME} ${CI_REGISTRY_IMAGE}
           ./flask/app/app.py -D
 
-        - poetry config virtualenvs.in-project true
+        - poetry config --local virtualenvs.in-project true
+        - poetry config --local cache-dir $PWD/.poetry/cache
         - poetry install --no-interaction --with test
         - poetry run playwright install --with-deps chromium
 
@@ -133,6 +138,7 @@ test-playwright-docker:
     cache:
         paths:
             - .venv
+            - .poetry
 
     artifacts:
         when: always
@@ -156,7 +162,8 @@ test-playwright-docker-demo:
         - docker run --rm --detach=true --tty=true --name ${CI_JOB_NAME}-${CI_JOB_ID} --label job=${CI_JOB_NAME} ${CI_REGISTRY_IMAGE}
           ./flask/app/app.py -D -c config.example.yaml
 
-        - poetry config virtualenvs.in-project true
+        - poetry config --local virtualenvs.in-project true
+        - poetry config --local cache-dir $PWD/.poetry/cache
         - poetry install --no-interaction --with test
         - poetry run playwright install --with-deps chromium
 
@@ -169,6 +176,7 @@ test-playwright-docker-demo:
     cache:
         paths:
             - .venv
+            - .poetry
 
     artifacts:
         when: always
