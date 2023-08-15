@@ -78,6 +78,8 @@ def term():
 
 def app_log_impl(message, level):
     global config
+    global sqlite
+
     with log_lock:
         # NOTE: SQLite に記録する時刻はローカルタイムにする
         sqlite.execute(
@@ -155,12 +157,18 @@ def get_log(stop_day):
     return cur.fetchall()
 
 
-@blueprint.route("/api/log_clear", methods=["GET"])
-@support_jsonp
-def api_log_clear():
+def clear_log():
+    global sqlite
+
     with log_lock:
         cur = sqlite.cursor()
         cur.execute("DELETE FROM log")
+
+
+@blueprint.route("/api/log_clear", methods=["GET"])
+@support_jsonp
+def api_log_clear():
+    clear_log()
     app_log("🧹 ログがクリアされました。")
 
     return jsonify({"result": "success"})

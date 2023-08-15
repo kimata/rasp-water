@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+import inspect
 import logging
 import os
 import pathlib
@@ -10,7 +11,7 @@ import traceback
 from builtins import open as valve_open
 from enum import IntEnum
 
-# NOTE: pytest-freezer を使ったテスト時に，別スレッドのものも含めて time.time() を mock で
+# NOTE: freezegun を使ったテスト時に，別スレッドのものも含めて time.time() を mock で
 # 置き換えたいので，別名にしておく．
 from time import time as valve_time
 
@@ -47,7 +48,8 @@ ADC_VALUE_PATH = "/sys/bus/iio/devices/iio:device0/in_voltage0_raw"
 # 電磁弁を開いてからこの時間経過しても，水が流れていなかったらエラーにする
 TIME_CLOSE_FAIL = 45
 # 電磁弁を閉じてからこの時間経過しても，水が流れていたらエラーにする
-TIME_OPEN_FAIL = 60
+# (テストで freezegun を使って分単位で制御する関係上，60 より大きい値にしておく)
+TIME_OPEN_FAIL = 61
 # この時間の間，異常な流量になっていたらエラーにする
 TIME_OVER_FAIL = 5
 # この時間の間，流量が 0 だったら，今回の計測を停止する．
@@ -115,6 +117,7 @@ else:
             GPIO.gpio_hist.append(hist)
 
         def output(gpio, value):
+            logging.debug("set GPIO.output = {state}".format(state="open" if value == 1 else "close"))
             if value == 0:
                 if GPIO.time_start is not None:
                     GPIO.hist_add(
@@ -183,7 +186,7 @@ should_terminate = False
 
 # NOTE: STAT_PATH_VALVE_CONTROL_COMMAND の内容に基づいて，
 # バルブを一定時間開けます．
-# pytest-freezer を使ったテストのため，この関数の中では，
+# freezegun を使ったテストのため，この関数の中では，
 # time.time() の代わりに valve_time() を使う．
 def control_worker(config, queue):
     global should_terminate
@@ -350,6 +353,15 @@ def term():
 # NOTE: 実際にバルブを開きます．
 def set_state(valve_state):
     global pin_no
+
+    logging.debug(
+        "set_state = {state} from {caller_func} at {caller_file}:{caller_line}".format(
+            state=valve_state,
+            caller_func=inspect.stack()[1].function,
+            caller_file=inspect.stack()[1].filename,
+            caller_line=inspect.stack()[1].lineno,
+        )
+    )
 
     curr_state = get_state()
 
