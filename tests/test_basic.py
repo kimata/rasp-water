@@ -897,7 +897,7 @@ def test_schedule_ctrl_execute(client, mocker, freezer):
 
     freezer.move_to(time_test(2))
     time_mock.return_value = time.time()
-    time.sleep(10)
+    time.sleep(15)
 
     freezer.move_to(time_test(3))
     time_mock.return_value = time.time()
@@ -945,7 +945,7 @@ def test_schedule_ctrl_execute_force(client, mocker, freezer):
 
     freezer.move_to(time_test(2))
     time_mock.return_value = time.time()
-    time.sleep(10)
+    time.sleep(15)
 
     freezer.move_to(time_test(3))
     time_mock.return_value = time.time()
@@ -989,7 +989,7 @@ def test_schedule_ctrl_execute_pending(client, mocker, freezer):
 
     freezer.move_to(time_test(2))
     time_mock.return_value = time.time()
-    time.sleep(10)
+    time.sleep(15)
 
     freezer.move_to(time_test(3))
     time_mock.return_value = time.time()
