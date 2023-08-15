@@ -26,8 +26,11 @@ should_terminate = False
 
 def init(config):
     global worker
+    global should_terminate
 
     assert worker is None
+
+    should_terminate = False
 
     flow_stat_queue = Queue()
     valve.init(config, flow_stat_queue)

@@ -54,7 +54,7 @@ def app():
         test_terminate()
 
 
-@pytest.fixture()
+@pytest.fixture(scope="function")
 def client(app, mocker):
     import slack_sdk
 
@@ -78,6 +78,13 @@ def client(app, mocker):
     test_client = app.test_client()
 
     schedule_clear(test_client)
+    app_log_clear(test_client)
+    import logging
+
+    logging.error("CLEAR")
+    ctrl_log_clear()
+
+    time.sleep(1)
 
     yield test_client
 
@@ -104,36 +111,74 @@ def gen_schedule_data(offset_min=1):
     ]
 
 
-def ctrl_log_check(expect, is_strict=True, is_error=True):
+def ctrl_log_check(expect_list, is_strict=True, is_error=True):
     import valve
 
     hist_list = valve.GPIO.hist_get()
 
-    if len(expect) == 0:
-        assert hist_list == expect, "操作されてないはずのバルブが操作されています．"
-    elif len(expect) >= 2:
+    if len(expect_list) == 0:
+        assert hist_list == expect_list, "操作されてないはずのバルブが操作されています．"
+    elif len(expect_list) >= 2:
         if is_strict:
-            assert hist_list == expect
+            assert hist_list == expect_list
         else:
-            if is_error and (len(hist_list) > len(expect)):
-                for i in range(len(hist_list) - len(expect)):
-                    expect.append(expect[-1])
+            if is_error and (len(hist_list) > len(expect_list)):
+                for i in range(len(hist_list) - len(expect_list)):
+                    expect_list.append(expect_list[-1])
 
-            assert len(hist_list) == len(expect)
-            for i in range(len(expect)):
-                if expect[i]["state"] == "open":
-                    assert hist_list[i] == expect[i], "{i} 番目の操作が期待値と異なります．".format(i=i)
+            assert len(hist_list) == len(expect_list)
+            for i in range(len(expect_list)):
+                if expect_list[i]["state"] == "open":
+                    assert hist_list[i] == expect_list[i], "{i} 番目の操作が期待値と異なります．".format(i=i)
                 else:
-                    if "period" in expect[i]:
-                        assert (hist_list[i] == expect[i]) or (
+                    if "period" in expect_list[i]:
+                        assert (hist_list[i] == expect_list[i]) or (
                             hist_list[i]
                             == {
-                                "period": expect[i]["period"] - 1,
-                                "state": expect[i]["state"],
+                                "period": expect_list[i]["period"] - 1,
+                                "state": expect_list[i]["state"],
                             }
                         ), "{i} 番目の操作が期待値と異なります．".format(i=i)
                     else:
-                        assert hist_list[i] == expect[i], "{i} 番目の操作が期待値と異なります．".format(i=i)
+                        assert hist_list[i] == expect_list[i], "{i} 番目の操作が期待値と異なります．".format(i=i)
+
+
+def app_log_check(
+    client,
+    expect_list,
+    is_strict=True,
+):
+    response = client.get("/rasp-water/api/log_view")
+
+    log_list = response.json["data"]
+
+    if is_strict:
+        # NOTE: クリアする直前のログが残っている可能性があるので，+1 でも OK とする
+        assert (len(log_list) == len(expect_list)) or (len(log_list) == (len(expect_list) + 1))
+
+    for (i, expect) in enumerate(reversed(expect_list)):
+        if expect == "START_AUTO":
+            assert "水やりを開始" in log_list[i]["message"]
+        elif expect == "STOP_AUTO":
+            assert "水やりを行いました" in log_list[i]["message"]
+        elif expect == "STOP_MANUAL":
+            assert "水やりを終了します" in log_list[i]["message"]
+        elif expect == "SCHEDULE":
+            assert "スケジュールを更新" in log_list[i]["message"]
+        elif expect == "INVALID":
+            assert "スケジュールの指定が不正" in log_list[i]["message"]
+        elif expect == "PENDING":
+            assert "水やりを見合わせます" in log_list[i]["message"]
+        elif expect == "FAIL_OVER":
+            assert "水が流れすぎています" in log_list[i]["message"]
+        elif expect == "FAIL_CLOSE":
+            assert "水が流れ続けています" in log_list[i]["message"]
+        elif expect == "FAIL_OPEN":
+            assert "元栓が閉まっている可能性があります" in log_list[i]["message"]
+        elif expect == "CLEAR":
+            assert "クリアされました" in log_list[i]["message"]
+        else:
+            assert False, "テストコードのバグです．({expect})".format(expect=expect)
 
 
 def ctrl_log_clear():
@@ -153,19 +198,23 @@ def schedule_clear(client):
     assert response.status_code == 200
 
 
+def app_log_clear(client):
+    response = client.get("/rasp-water/api/log_clear")
+    assert response.status_code == 200
+
+
 ######################################################################
 def test_redirect(client):
-    ctrl_log_clear()
     response = client.get("/")
     assert response.status_code == 302
     assert re.search(r"/rasp-water/$", response.location)
     time.sleep(1)
+
     ctrl_log_check([])
+    app_log_check(client, ["CLEAR"])
 
 
 def test_index(client):
-    ctrl_log_clear()
-
     response = client.get("/rasp-water/")
     assert response.status_code == 200
     assert "散水システム" in response.data.decode("utf-8")
@@ -173,12 +222,12 @@ def test_index(client):
     response = client.get("/rasp-water/", headers={"Accept-Encoding": "gzip"})
     assert response.status_code == 200
     time.sleep(1)
+
     ctrl_log_check([])
+    app_log_check(client, ["CLEAR"])
 
 
 def test_index_with_other_status(client, mocker):
-    ctrl_log_clear()
-
     mocker.patch(
         "flask.wrappers.Response.status_code",
         return_value=301,
@@ -188,24 +237,24 @@ def test_index_with_other_status(client, mocker):
     response = client.get("/rasp-water/", headers={"Accept-Encoding": "gzip"})
     assert response.status_code == 301
     time.sleep(1)
+
     ctrl_log_check([])
+    app_log_check(client, ["CLEAR"])
 
 
 def test_valve_ctrl_read(client):
-    ctrl_log_clear()
-
     response = client.get(
         "/rasp-water/api/valve_ctrl",
     )
     assert response.status_code == 200
     assert response.json["result"] == "success"
     time.sleep(1)
+
     ctrl_log_check([])
+    app_log_check(client, ["CLEAR"])
 
 
 def test_valve_ctrl_read_fail(client, mocker):
-    ctrl_log_clear()
-
     mocker.patch("valve.get_control_mode", side_effect=RuntimeError())
 
     response = client.get(
@@ -214,13 +263,13 @@ def test_valve_ctrl_read_fail(client, mocker):
     assert response.status_code == 200
     assert response.json["result"] == "fail"
     time.sleep(1)
+
     ctrl_log_check([])
+    app_log_check(client, ["CLEAR"])
 
 
 def test_valve_ctrl_mismatch(client):
     import valve
-
-    ctrl_log_clear()
 
     # NOTE: Fault injection
     valve.set_control_mode(-10)
@@ -230,14 +279,14 @@ def test_valve_ctrl_mismatch(client):
     )
     assert response.status_code == 200
     assert response.json["result"] == "success"
-    time.sleep(1)
+    time.sleep(2)
 
     ctrl_log_check([{"state": "open"}, {"period": 0, "state": "close"}])
+    # NOTE: 強引にバルブを開いているのでアプリのログには記録されない
+    app_log_check(client, ["CLEAR"])
 
 
 def test_valve_ctrl_manual(client, mocker):
-    ctrl_log_clear()
-
     mocker.patch("fluent.sender.FluentSender.emit", return_value=True)
     # NOTE: ログ表示の際のエラーも仕込んでおく
     mocker.patch("socket.gethostbyaddr", side_effect=RuntimeError())
@@ -255,14 +304,13 @@ def test_valve_ctrl_manual(client, mocker):
     assert response.json["result"] == "success"
     assert response.json["remain"] > (period - 2)
 
-    time.sleep(period + 2)
+    time.sleep(period + 5)
 
     ctrl_log_check([{"state": "open"}, {"period": period, "state": "close"}], is_strict=False)
+    app_log_check(client, ["CLEAR", "START_AUTO", "STOP_AUTO"])
 
 
 def test_valve_ctrl_auto(client, mocker):
-    ctrl_log_clear()
-
     mocker.patch("fluent.sender.FluentSender.emit", return_value=True)
 
     period = 2
@@ -278,14 +326,13 @@ def test_valve_ctrl_auto(client, mocker):
     assert response.status_code == 200
     assert response.json["result"] == "success"
 
-    time.sleep(period + 2)
+    time.sleep(period + 5)
 
     ctrl_log_check([{"state": "open"}, {"period": period, "state": "close"}], is_strict=False)
+    app_log_check(client, ["CLEAR", "START_AUTO", "STOP_AUTO"])
 
 
 def test_valve_ctrl_auto_rainfall(client, mocker):
-    ctrl_log_clear()
-
     mocker.patch("weather_forecast.get_rain_fall", return_value=True)
 
     period = 2
@@ -301,12 +348,14 @@ def test_valve_ctrl_auto_rainfall(client, mocker):
     assert response.status_code == 200
     assert response.json["result"] == "success"
 
-    time.sleep(period + 2)
+    time.sleep(period + 5)
 
     # NOTE: ダミーモードの場合は，天気に関わらず水やりする
     ctrl_log_check([{"state": "open"}, {"period": period, "state": "close"}], is_strict=False)
+    app_log_check(client, ["CLEAR", "START_AUTO", "STOP_AUTO"])
 
     ctrl_log_clear()
+    app_log_clear(client)
 
     mocker.patch.dict(os.environ, {"DUMMY_MODE": "false"}, clear=True)
     response = client.get(
@@ -321,14 +370,13 @@ def test_valve_ctrl_auto_rainfall(client, mocker):
     assert response.status_code == 200
     assert response.json["result"] == "success"
 
-    time.sleep(period + 2)
+    time.sleep(period + 5)
 
     ctrl_log_check([])
+    app_log_check(client, ["CLEAR", "PENDING"])
 
 
 def test_valve_ctrl_auto_forecast(client, mocker):
-    ctrl_log_clear()
-
     mocker.patch("weather_forecast.get_rain_fall", side_effect=get_rain_fall_orig)
 
     period = 2
@@ -347,11 +395,10 @@ def test_valve_ctrl_auto_forecast(client, mocker):
     time.sleep(period + 2)
 
     ctrl_log_check([{"state": "open"}, {"period": period, "state": "close"}], is_strict=False)
+    # NOTE: 天気次第で結果が変わるのでログのチェックは行わない
 
 
 def test_valve_ctrl_auto_forecast_error_1(client, mocker):
-    ctrl_log_clear()
-
     mocker.patch("weather_forecast.get_rain_fall", side_effect=get_rain_fall_orig)
     mocker.patch("weather_forecast.get_weather_info_yahoo", return_value=None)
 
@@ -368,16 +415,15 @@ def test_valve_ctrl_auto_forecast_error_1(client, mocker):
     assert response.status_code == 200
     assert response.json["result"] == "success"
 
-    time.sleep(period + 2)
+    time.sleep(period + 5)
 
     # NOTE: get_weather_info_yahoo == None の場合，水やりは行う
     ctrl_log_check([{"state": "open"}, {"period": period, "state": "close"}], is_strict=False)
+    app_log_check(client, ["CLEAR", "START_AUTO", "STOP_AUTO"])
 
 
 def test_valve_ctrl_auto_forecast_error_2(client, mocker):
     import weather_forecast
-
-    ctrl_log_clear()
 
     mocker.patch("weather_forecast.get_rain_fall", side_effect=get_rain_fall_orig)
 
@@ -398,15 +444,14 @@ def test_valve_ctrl_auto_forecast_error_2(client, mocker):
     assert response.status_code == 200
     assert response.json["result"] == "success"
 
-    time.sleep(period + 2)
+    time.sleep(period + 5)
 
     ctrl_log_check([{"state": "open"}, {"period": period, "state": "close"}], is_strict=False)
+    app_log_check(client, ["CLEAR", "START_AUTO", "STOP_AUTO"])
 
 
 def test_valve_ctrl_auto_forecast_error_3(client, mocker):
     import requests
-
-    ctrl_log_clear()
 
     mocker.patch("weather_forecast.get_rain_fall", side_effect=get_rain_fall_orig)
 
@@ -427,15 +472,14 @@ def test_valve_ctrl_auto_forecast_error_3(client, mocker):
     assert response.status_code == 200
     assert response.json["result"] == "success"
 
-    time.sleep(period + 2)
+    time.sleep(period + 5)
 
     ctrl_log_check([{"state": "open"}, {"period": period, "state": "close"}], is_strict=False)
+    app_log_check(client, ["CLEAR", "START_AUTO", "STOP_AUTO"])
 
 
 def test_valve_ctrl_auto_forecast_error_4(client, mocker):
     import weather_forecast
-
-    ctrl_log_clear()
 
     mocker.patch("weather_forecast.get_rain_fall", side_effect=get_rain_fall_orig)
     mocker.patch.object(weather_forecast.requests, "get", side_effect=RuntimeError())
@@ -453,9 +497,10 @@ def test_valve_ctrl_auto_forecast_error_4(client, mocker):
     assert response.status_code == 200
     assert response.json["result"] == "success"
 
-    time.sleep(period + 2)
+    time.sleep(period + 5)
 
     ctrl_log_check([{"state": "open"}, {"period": period, "state": "close"}], is_strict=False)
+    app_log_check(client, ["CLEAR", "START_AUTO", "STOP_AUTO"])
 
 
 def test_valve_flow(client):
@@ -477,16 +522,24 @@ def test_valve_flow(client):
     assert response.status_code == 200
     assert "flow" in response.json
 
+    time.sleep(1)
+
+    ctrl_log_check([{"state": "close"}])
+    app_log_check(client, ["CLEAR", "STOP_MANUAL"])
+
 
 def test_event(client):
     response = client.get("/rasp-water/api/event", query_string={"count": "2"})
     assert response.status_code == 200
-    assert response.data.decode()
+    assert response.data.decode() == ""
+
+    time.sleep(1)
+
+    ctrl_log_check([])
+    app_log_check(client, ["CLEAR"])
 
 
 def test_schedule_ctrl_inactive(client, freezer):
-    ctrl_log_clear()
-
     freezer.move_to(time_test(0))
     time.sleep(0.6)
 
@@ -521,12 +574,12 @@ def test_schedule_ctrl_inactive(client, freezer):
     time.sleep(0.6)
 
     ctrl_log_check([])
+    app_log_check(client, ["CLEAR", "SCHEDULE", "SCHEDULE"])
 
 
 def test_schedule_ctrl_invalid(client, mocker):
     import notify_slack
 
-    ctrl_log_clear()
     notify_slack.interval_clear()
 
     schedule_data = gen_schedule_data()
@@ -585,12 +638,12 @@ def test_schedule_ctrl_invalid(client, mocker):
     assert response.status_code == 200
 
     time.sleep(2)
+
     ctrl_log_check([])
+    app_log_check(client, ["CLEAR", "INVALID", "INVALID", "INVALID", "INVALID", "INVALID"])
 
 
-def test_valve_flow_open_over(client, mocker):
-    ctrl_log_clear()
-
+def test_valve_flow_open_over_1(client, mocker):
     flow_mock = mocker.patch("valve.get_flow")
     flow_mock.return_value = {"flow": 100, "result": "success"}
     mocker.patch("valve.TIME_OVER_FAIL", 0.5)
@@ -606,53 +659,20 @@ def test_valve_flow_open_over(client, mocker):
     )
     assert response.status_code == 200
 
-    time.sleep(period + 2)
+    time.sleep(period + 5)
 
     ctrl_log_check(
         [{"state": "open"}, {"period": period, "state": "close"}, {"state": "close"}],
         is_strict=False,
         is_error=True,
     )
+    app_log_check(client, ["FAIL_OVER"], False)
 
     flow_mock.return_value = {"flow": 0, "result": "success"}
     time.sleep(1)
 
 
-def test_valve_flow_open_fail(client, mocker):
-    ctrl_log_clear()
-
-    # NOTE: Fault injection
-    flow_mock = mocker.patch("valve.get_flow")
-    flow_mock.return_value = {"flow": 10, "result": "success"}
-    mocker.patch("valve.TIME_OPEN_FAIL", 1)
-
-    period = 3
-    response = client.get(
-        "/rasp-water/api/valve_ctrl",
-        query_string={
-            "cmd": 1,
-            "state": 1,
-            "period": period,
-        },
-    )
-
-    assert response.status_code == 200
-
-    time.sleep(period + 6)
-
-    ctrl_log_check(
-        [{"state": "open"}, {"period": period, "state": "close"}, {"state": "close"}],
-        is_strict=False,
-        is_error=True,
-    )
-
-    flow_mock.return_value = {"flow": 0, "result": "success"}
-    time.sleep(1)
-
-
-def test_valve_flow_close_ok(client, mocker):
-    ctrl_log_clear()
-
+def test_valve_flow_open_over_2(client, mocker):
     flow_mock = mocker.patch("valve.get_flow")
     flow_mock.return_value = {"flow": 100, "result": "success"}
     mocker.patch("valve.TIME_CLOSE_FAIL", 1)
@@ -670,20 +690,50 @@ def test_valve_flow_close_ok(client, mocker):
     )
     assert response.status_code == 200
 
-    time.sleep(period + 2)
+    time.sleep(period + 5)
 
     ctrl_log_check(
         [{"state": "open"}, {"period": period, "state": "close"}],
         is_strict=False,
     )
+    app_log_check(client, ["FAIL_OVER"], False)
 
     flow_mock.return_value = {"flow": 0, "result": "success"}
     time.sleep(1)
 
 
 def test_valve_flow_close_fail(client, mocker):
-    ctrl_log_clear()
+    # NOTE: Fault injection
+    flow_mock = mocker.patch("valve.get_flow")
+    flow_mock.return_value = {"flow": 10, "result": "success"}
+    mocker.patch("valve.TIME_OPEN_FAIL", 1)
 
+    period = 3
+    response = client.get(
+        "/rasp-water/api/valve_ctrl",
+        query_string={
+            "cmd": 1,
+            "state": 1,
+            "period": period,
+        },
+    )
+
+    assert response.status_code == 200
+
+    time.sleep(period + 5)
+
+    ctrl_log_check(
+        [{"state": "open"}, {"period": period, "state": "close"}, {"state": "close"}],
+        is_strict=False,
+        is_error=True,
+    )
+    app_log_check(client, ["CLEAR", "START_AUTO", "FAIL_CLOSE"])
+
+    flow_mock.return_value = {"flow": 0, "result": "success"}
+    time.sleep(1)
+
+
+def test_valve_flow_open_fail(client, mocker):
     # NOTE: Fault injection
     flow_mock = mocker.patch("valve.get_flow")
     flow_mock.return_value = {"flow": 0, "result": "success"}
@@ -701,12 +751,13 @@ def test_valve_flow_close_fail(client, mocker):
     )
     assert response.status_code == 200
 
-    time.sleep(period + 2)
+    time.sleep(period + 5)
 
     ctrl_log_check(
         [{"state": "open"}, {"period": period, "state": "close"}],
         is_strict=False,
     )
+    app_log_check(client, ["CLEAR", "START_AUTO", "STOP_AUTO"])
 
     flow_mock.return_value = {"flow": 0, "result": "success"}
     time.sleep(1)
@@ -716,8 +767,6 @@ def test_valve_flow_read_command_fail(client, mocker):
     import builtins
 
     import valve
-
-    ctrl_log_clear()
 
     orig_open = builtins.open
 
@@ -749,9 +798,10 @@ def test_valve_flow_read_command_fail(client, mocker):
     )
     assert response.status_code == 200
 
-    time.sleep(period)
+    time.sleep(period + 5)
 
     ctrl_log_check([{"state": "open"}])
+    app_log_check(client, ["CLEAR", "START_AUTO", "STOP_AUTO"])
 
 
 def test_schedule_ctrl_execute(client, mocker, freezer):
@@ -760,13 +810,13 @@ def test_schedule_ctrl_execute(client, mocker, freezer):
 
     rasp_water_valve.term()
 
-    time_mock = mocker.patch("valve.valve_time")
+    time.sleep(1)
 
-    time.sleep(3)
+    time_mock = mocker.patch("valve.valve_time")
 
     freezer.move_to(time_test(0))
     time_mock.return_value = time.time()
-    time.sleep(0.6)
+    time.sleep(1)
 
     rasp_water_valve.init(load_config(CONFIG_FILE))
     ctrl_log_clear()
@@ -778,7 +828,7 @@ def test_schedule_ctrl_execute(client, mocker, freezer):
         query_string={"cmd": "set", "data": json.dumps(schedule_data)},
     )
     assert response.status_code == 200
-    time.sleep(0.6)
+    time.sleep(1)
 
     freezer.move_to(time_test(1))
     time_mock.return_value = time.time()
@@ -786,17 +836,18 @@ def test_schedule_ctrl_execute(client, mocker, freezer):
 
     freezer.move_to(time_test(2))
     time_mock.return_value = time.time()
-    time.sleep(3)
+    time.sleep(10)
 
     freezer.move_to(time_test(3))
     time_mock.return_value = time.time()
-    time.sleep(1)
+    time.sleep(8)
 
     response = client.get("/rasp-water/api/valve_flow")
     assert response.status_code == 200
     assert "flow" in response.json
 
     ctrl_log_check([{"state": "open"}, {"state": "close", "period": 60}])
+    app_log_check(client, ["CLEAR", "SCHEDULE", "START_AUTO", "STOP_AUTO"])
 
 
 def test_schedule_ctrl_execute_force(client, mocker, freezer):
@@ -805,14 +856,14 @@ def test_schedule_ctrl_execute_force(client, mocker, freezer):
 
     rasp_water_valve.term()
 
+    time.sleep(1)
+
     mocker.patch("rasp_water_valve.judge_execute", return_value=True)
     time_mock = mocker.patch("valve.valve_time")
 
-    time.sleep(3)
-
     freezer.move_to(time_test(0))
     time_mock.return_value = time.time()
-    time.sleep(0.6)
+    time.sleep(1)
 
     rasp_water_valve.init(load_config(CONFIG_FILE))
     ctrl_log_clear()
@@ -824,7 +875,7 @@ def test_schedule_ctrl_execute_force(client, mocker, freezer):
         query_string={"cmd": "set", "data": json.dumps(schedule_data)},
     )
     assert response.status_code == 200
-    time.sleep(0.6)
+    time.sleep(1)
 
     freezer.move_to(time_test(1))
     time_mock.return_value = time.time()
@@ -832,13 +883,14 @@ def test_schedule_ctrl_execute_force(client, mocker, freezer):
 
     freezer.move_to(time_test(2))
     time_mock.return_value = time.time()
-    time.sleep(3)
+    time.sleep(10)
 
     freezer.move_to(time_test(3))
     time_mock.return_value = time.time()
-    time.sleep(1)
+    time.sleep(8)
 
     ctrl_log_check([{"state": "open"}, {"state": "close", "period": 60}])
+    app_log_check(client, ["CLEAR", "SCHEDULE", "START_AUTO", "STOP_AUTO"])
 
 
 def test_schedule_ctrl_execute_pending(client, mocker, freezer):
@@ -847,14 +899,14 @@ def test_schedule_ctrl_execute_pending(client, mocker, freezer):
 
     rasp_water_valve.term()
 
+    time.sleep(1)
+
     mocker.patch("rasp_water_valve.judge_execute", return_value=False)
     time_mock = mocker.patch("valve.valve_time")
 
-    time.sleep(3)
-
     freezer.move_to(time_test(0))
     time_mock.return_value = time.time()
-    time.sleep(0.6)
+    time.sleep(1)
 
     rasp_water_valve.init(load_config(CONFIG_FILE))
     ctrl_log_clear()
@@ -866,7 +918,7 @@ def test_schedule_ctrl_execute_pending(client, mocker, freezer):
         query_string={"cmd": "set", "data": json.dumps(schedule_data)},
     )
     assert response.status_code == 200
-    time.sleep(0.6)
+    time.sleep(1)
 
     freezer.move_to(time_test(1))
     time_mock.return_value = time.time()
@@ -874,13 +926,14 @@ def test_schedule_ctrl_execute_pending(client, mocker, freezer):
 
     freezer.move_to(time_test(2))
     time_mock.return_value = time.time()
-    time.sleep(3)
+    time.sleep(10)
 
     freezer.move_to(time_test(3))
     time_mock.return_value = time.time()
-    time.sleep(1)
+    time.sleep(8)
 
     ctrl_log_check([])
+    app_log_check(client, ["CLEAR", "SCHEDULE"])
 
 
 def test_schedule_ctrl_error(client, mocker, freezer):
@@ -918,13 +971,14 @@ def test_schedule_ctrl_error(client, mocker, freezer):
 
     freezer.move_to(time_test(2))
     time_mock.return_value = time.time()
-    time.sleep(3)
+    time.sleep(4)
 
     freezer.move_to(time_test(3))
     time_mock.return_value = time.time()
     time.sleep(1)
 
     ctrl_log_check([])
+    app_log_check(client, ["CLEAR", "SCHEDULE"])
 
 
 def test_schedule_ctrl_execute_fail(client, mocker, freezer):
@@ -962,19 +1016,25 @@ def test_schedule_ctrl_execute_fail(client, mocker, freezer):
 
     freezer.move_to(time_test(2))
     time_mock.return_value = time.time()
-    time.sleep(3)
+    time.sleep(4)
 
     freezer.move_to(time_test(3))
     time_mock.return_value = time.time()
     time.sleep(1)
 
     ctrl_log_check([])
+    app_log_check(client, ["CLEAR", "SCHEDULE"])
 
 
 def test_schedule_ctrl_read(client):
     response = client.get("/rasp-water/api/schedule_ctrl")
     assert response.status_code == 200
     assert len(response.json) == 2
+
+    time.sleep(1)
+
+    ctrl_log_check([])
+    app_log_check(client, ["CLEAR"])
 
 
 def test_schedule_ctrl_read_fail_1(client):
@@ -987,6 +1047,11 @@ def test_schedule_ctrl_read_fail_1(client):
     assert response.status_code == 200
     assert len(response.json) == 2
 
+    time.sleep(1)
+
+    ctrl_log_check([])
+    app_log_check(client, ["CLEAR"])
+
 
 def test_schedule_ctrl_read_fail_2(client):
     import webapp_config
@@ -996,6 +1061,11 @@ def test_schedule_ctrl_read_fail_2(client):
     response = client.get("/rasp-water/api/schedule_ctrl")
     assert response.status_code == 200
     assert len(response.json) == 2
+
+    time.sleep(1)
+
+    ctrl_log_check([])
+    app_log_check(client, ["CLEAR"])
 
 
 def test_schedule_ctrl_read_fail_3(client, mocker):
@@ -1015,6 +1085,11 @@ def test_schedule_ctrl_read_fail_3(client, mocker):
     response = client.get("/rasp-water/api/schedule_ctrl")
     assert response.status_code == 200
     assert len(response.json) == 2
+
+    time.sleep(1)
+
+    ctrl_log_check([])
+    app_log_check(client, ["CLEAR"])
 
 
 def test_schedule_ctrl_write_fail(client, mocker):
@@ -1036,6 +1111,11 @@ def test_schedule_ctrl_write_fail(client, mocker):
     assert response.status_code == 200
     time.sleep(1)
 
+    time.sleep(1)
+
+    ctrl_log_check([])
+    app_log_check(client, ["CLEAR"])
+
 
 def test_schedule_ctrl_validate_fail(client, mocker):
     mocker.patch("app_scheduler.schedule_validate", return_value=False)
@@ -1043,6 +1123,11 @@ def test_schedule_ctrl_validate_fail(client, mocker):
     response = client.get("/rasp-water/api/schedule_ctrl")
     assert response.status_code == 200
     assert len(response.json) == 2
+
+    time.sleep(1)
+
+    ctrl_log_check([])
+    app_log_check(client, ["CLEAR"])
 
 
 def test_log_view(client):
@@ -1054,6 +1139,11 @@ def test_log_view(client):
         },
     )
     assert response.status_code == 200
+
+    time.sleep(1)
+
+    ctrl_log_check([])
+    app_log_check(client, ["CLEAR"])
 
 
 def test_log_clear(client):
@@ -1068,6 +1158,11 @@ def test_log_clear(client):
         },
     )
     assert response.status_code == 200
+
+    time.sleep(1)
+
+    ctrl_log_check([])
+    app_log_check(client, ["CLEAR"])
 
 
 def test_sysinfo(client):

@@ -155,14 +155,14 @@ else:
     def get_flow():
         if not STAT_PATH_VALVE_OPEN.exists():
             if get_flow.prev_flow > 1:
-                get_flow.prev_flow /= 1.5
+                get_flow.prev_flow /= 3
             else:
-                get_flow.prev_flow = max(0, get_flow.prev_flow - 0.15)
+                get_flow.prev_flow = max(0, get_flow.prev_flow - 0.2)
 
             return {"flow": get_flow.prev_flow, "result": "success"}
 
         if get_flow.prev_flow == 0:
-            flow = random.random() * FLOW_SCALE_MAX
+            flow = FLOW_SCALE_MAX
         else:
             flow = max(
                 0,
