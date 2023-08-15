@@ -153,28 +153,28 @@ else:
             return
 
     def get_flow():
-        if not STAT_PATH_VALVE_OPEN.exists():
+        if STAT_PATH_VALVE_OPEN.exists():
+            if get_flow.prev_flow == 0:
+                flow = FLOW_SCALE_MAX
+            else:
+                flow = max(
+                    0,
+                    min(
+                        get_flow.prev_flow + (random.random() - 0.5) * (FLOW_SCALE_MAX / 5.0),
+                        FLOW_SCALE_MAX,
+                    ),
+                )
+
+            get_flow.prev_flow = flow
+
+            return {"flow": flow, "result": "success"}
+        else:
             if get_flow.prev_flow > 1:
                 get_flow.prev_flow /= 5
             else:
                 get_flow.prev_flow = max(0, get_flow.prev_flow - 0.5)
 
             return {"flow": get_flow.prev_flow, "result": "success"}
-
-        if get_flow.prev_flow == 0:
-            flow = FLOW_SCALE_MAX
-        else:
-            flow = max(
-                0,
-                min(
-                    get_flow.prev_flow + (random.random() - 0.5) * (FLOW_SCALE_MAX / 5.0),
-                    FLOW_SCALE_MAX,
-                ),
-            )
-
-        get_flow.prev_flow = flow
-
-        return {"flow": flow, "result": "success"}
 
     get_flow.prev_flow = 0
 
