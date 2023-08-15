@@ -43,6 +43,14 @@ def slack_mock():
         yield fixture
 
 
+@pytest.fixture(scope="function", autouse=True)
+def clear():
+    import notify_slack
+
+    notify_slack.interval_clear()
+    notify_slack.hist_clear()
+
+
 @pytest.fixture(scope="session")
 def app():
     with mock.patch.dict("os.environ", {"WERKZEUG_RUN_MAIN": "true"}):
@@ -77,11 +85,12 @@ def client(app, mocker):
 
     test_client = app.test_client()
 
-    ctrl_log_clear()
-    schedule_clear(test_client)
     time.sleep(1)
+
     app_log_clear(test_client)
     app_log_check(test_client, [])
+    ctrl_log_clear()
+    schedule_clear(test_client)
 
     yield test_client
 
@@ -118,7 +127,7 @@ def ctrl_log_check(expect_list, is_strict=True, is_error=True):
     logging.debug(hist_list)
 
     if len(expect_list) == 0:
-        assert hist_list == expect_list, "操作されてないはずのバルブが操作されています．"
+        assert hist_list == expect_list, "操作されてないはずのバルブが操作されています。"
     elif len(expect_list) >= 2:
         if is_strict:
             assert hist_list == expect_list
@@ -130,7 +139,7 @@ def ctrl_log_check(expect_list, is_strict=True, is_error=True):
             assert len(hist_list) == len(expect_list)
             for i in range(len(expect_list)):
                 if expect_list[i]["state"] == "open":
-                    assert hist_list[i] == expect_list[i], "{i} 番目の操作が期待値と異なります．".format(i=i)
+                    assert hist_list[i] == expect_list[i], "{i} 番目の操作が期待値と異なります。".format(i=i)
                 else:
                     if "period" in expect_list[i]:
                         assert (hist_list[i] == expect_list[i]) or (
@@ -139,9 +148,9 @@ def ctrl_log_check(expect_list, is_strict=True, is_error=True):
                                 "period": expect_list[i]["period"] - 1,
                                 "state": expect_list[i]["state"],
                             }
-                        ), "{i} 番目の操作が期待値と異なります．".format(i=i)
+                        ), "{i} 番目の操作が期待値と異なります。".format(i=i)
                     else:
-                        assert hist_list[i] == expect_list[i], "{i} 番目の操作が期待値と異なります．".format(i=i)
+                        assert hist_list[i] == expect_list[i], "{i} 番目の操作が期待値と異なります。".format(i=i)
 
 
 def app_log_check(
@@ -214,6 +223,18 @@ def app_log_clear(client):
     assert response.status_code == 200
 
 
+def check_notify_slack(message, index=-1):
+    import notify_slack
+
+    notify_hist = notify_slack.hist_get()
+
+    if message is None:
+        assert notify_hist == [], "正常なはずなのに，エラー通知がされています。"
+    else:
+        assert len(notify_hist) != 0, "異常が発生したはずなのに，エラー通知がされていません。"
+        assert notify_hist[index].find(message) != -1, "「{message}」が Slack で通知されていません。".format(message=message)
+
+
 ######################################################################
 def test_redirect(client):
     response = client.get("/")
@@ -223,6 +244,7 @@ def test_redirect(client):
 
     ctrl_log_check([])
     app_log_check(client, ["CLEAR"])
+    check_notify_slack(None)
 
 
 def test_index(client):
@@ -236,6 +258,7 @@ def test_index(client):
 
     ctrl_log_check([])
     app_log_check(client, ["CLEAR"])
+    check_notify_slack(None)
 
 
 def test_index_with_other_status(client, mocker):
@@ -251,6 +274,7 @@ def test_index_with_other_status(client, mocker):
 
     ctrl_log_check([])
     app_log_check(client, ["CLEAR"])
+    check_notify_slack(None)
 
 
 def test_valve_ctrl_read(client):
@@ -263,6 +287,7 @@ def test_valve_ctrl_read(client):
 
     ctrl_log_check([])
     app_log_check(client, ["CLEAR"])
+    check_notify_slack(None)
 
 
 def test_valve_ctrl_read_fail(client, mocker):
@@ -277,6 +302,7 @@ def test_valve_ctrl_read_fail(client, mocker):
 
     ctrl_log_check([])
     app_log_check(client, ["CLEAR"])
+    check_notify_slack(None)
 
 
 def test_valve_ctrl_mismatch(client):
@@ -295,6 +321,7 @@ def test_valve_ctrl_mismatch(client):
     ctrl_log_check([{"state": "open"}, {"period": 0, "state": "close"}])
     # NOTE: 強引にバルブを開いているのでアプリのログには記録されない
     app_log_check(client, ["CLEAR"])
+    check_notify_slack(None)
 
 
 def test_valve_ctrl_manual(client, mocker):
@@ -319,6 +346,7 @@ def test_valve_ctrl_manual(client, mocker):
 
     ctrl_log_check([{"state": "open"}, {"period": period, "state": "close"}], is_strict=False)
     app_log_check(client, ["CLEAR", "START_AUTO", "STOP_AUTO"])
+    check_notify_slack(None)
 
 
 def test_valve_ctrl_auto(client, mocker):
@@ -341,6 +369,7 @@ def test_valve_ctrl_auto(client, mocker):
 
     ctrl_log_check([{"state": "open"}, {"period": period, "state": "close"}], is_strict=False)
     app_log_check(client, ["CLEAR", "START_AUTO", "STOP_AUTO"])
+    check_notify_slack(None)
 
 
 def test_valve_ctrl_auto_rainfall(client, mocker):
@@ -385,6 +414,7 @@ def test_valve_ctrl_auto_rainfall(client, mocker):
 
     ctrl_log_check([])
     app_log_check(client, ["CLEAR", "PENDING"])
+    check_notify_slack(None)
 
 
 def test_valve_ctrl_auto_forecast(client, mocker):
@@ -407,6 +437,7 @@ def test_valve_ctrl_auto_forecast(client, mocker):
 
     ctrl_log_check([{"state": "open"}, {"period": period, "state": "close"}], is_strict=False)
     # NOTE: 天気次第で結果が変わるのでログのチェックは行わない
+    check_notify_slack(None)
 
 
 def test_valve_ctrl_auto_forecast_error_1(client, mocker):
@@ -431,6 +462,7 @@ def test_valve_ctrl_auto_forecast_error_1(client, mocker):
     # NOTE: get_weather_info_yahoo == None の場合，水やりは行う
     ctrl_log_check([{"state": "open"}, {"period": period, "state": "close"}], is_strict=False)
     app_log_check(client, ["CLEAR", "START_AUTO", "STOP_AUTO"])
+    check_notify_slack(None)
 
 
 def test_valve_ctrl_auto_forecast_error_2(client, mocker):
@@ -459,6 +491,7 @@ def test_valve_ctrl_auto_forecast_error_2(client, mocker):
 
     ctrl_log_check([{"state": "open"}, {"period": period, "state": "close"}], is_strict=False)
     app_log_check(client, ["CLEAR", "START_AUTO", "STOP_AUTO"])
+    check_notify_slack(None)
 
 
 def test_valve_ctrl_auto_forecast_error_3(client, mocker):
@@ -487,6 +520,7 @@ def test_valve_ctrl_auto_forecast_error_3(client, mocker):
 
     ctrl_log_check([{"state": "open"}, {"period": period, "state": "close"}], is_strict=False)
     app_log_check(client, ["CLEAR", "START_AUTO", "STOP_AUTO"])
+    check_notify_slack(None)
 
 
 def test_valve_ctrl_auto_forecast_error_4(client, mocker):
@@ -512,6 +546,7 @@ def test_valve_ctrl_auto_forecast_error_4(client, mocker):
 
     ctrl_log_check([{"state": "open"}, {"period": period, "state": "close"}], is_strict=False)
     app_log_check(client, ["CLEAR", "START_AUTO", "STOP_AUTO"])
+    check_notify_slack(None)
 
 
 def test_valve_flow(client):
@@ -537,6 +572,7 @@ def test_valve_flow(client):
 
     ctrl_log_check([{"state": "close"}])
     app_log_check(client, ["CLEAR", "STOP_MANUAL"])
+    check_notify_slack(None)
 
 
 def test_event(client):
@@ -548,6 +584,7 @@ def test_event(client):
 
     ctrl_log_check([])
     app_log_check(client, ["CLEAR"])
+    check_notify_slack(None)
 
 
 def test_schedule_ctrl_inactive(client, freezer):
@@ -586,6 +623,7 @@ def test_schedule_ctrl_inactive(client, freezer):
 
     ctrl_log_check([])
     app_log_check(client, ["CLEAR", "SCHEDULE", "SCHEDULE"])
+    check_notify_slack(None)
 
 
 def test_schedule_ctrl_invalid(client, mocker):
@@ -652,6 +690,7 @@ def test_schedule_ctrl_invalid(client, mocker):
 
     ctrl_log_check([])
     app_log_check(client, ["CLEAR", "INVALID", "INVALID", "INVALID", "INVALID", "INVALID", "INVALID", "INVALID"])
+    check_notify_slack("スケジュールの指定が不正です。")
 
 
 def test_valve_flow_open_over_1(client, mocker):
@@ -680,6 +719,7 @@ def test_valve_flow_open_over_1(client, mocker):
         is_strict=False,
     )
     app_log_check(client, ["FAIL_OVER"], False)
+    check_notify_slack("水が流れすぎています。")
 
     flow_mock.return_value = {"flow": 0, "result": "success"}
     time.sleep(1)
@@ -711,6 +751,7 @@ def test_valve_flow_open_over_2(client, mocker):
         is_strict=False,
     )
     app_log_check(client, ["FAIL_OVER"], False)
+    check_notify_slack("水が流れすぎています。")
 
     flow_mock.return_value = {"flow": 0, "result": "success"}
     time.sleep(1)
@@ -741,7 +782,8 @@ def test_valve_flow_close_fail(client, mocker):
         is_strict=False,
         is_error=True,
     )
-    app_log_check(client, ["CLEAR", "START_AUTO", "FAIL_CLOSE"])
+    app_log_check(client, ["CLEAR", "SCHEDULE", "START_AUTO", "FAIL_CLOSE"])
+    check_notify_slack("バルブを閉めても水が流れ続けています。")
 
     flow_mock.return_value = {"flow": 0, "result": "success"}
     time.sleep(1)
@@ -772,6 +814,7 @@ def test_valve_flow_open_fail(client, mocker):
         is_strict=False,
     )
     app_log_check(client, ["CLEAR", "START_AUTO", "STOP_AUTO", "FAIL_OPEN"])
+    check_notify_slack("元栓が閉まっている可能性があります。")
 
     flow_mock.return_value = {"flow": 0, "result": "success"}
     time.sleep(1)
@@ -816,6 +859,7 @@ def test_valve_flow_read_command_fail(client, mocker):
 
     ctrl_log_check([{"state": "open"}])
     app_log_check(client, ["CLEAR", "START_AUTO"])
+    check_notify_slack(None)
 
     valve.STAT_PATH_VALVE_CONTROL_COMMAND.unlink(missing_ok=True)
 
@@ -866,6 +910,7 @@ def test_schedule_ctrl_execute(client, mocker, freezer):
 
     ctrl_log_check([{"state": "open"}, {"state": "close", "period": 60}])
     app_log_check(client, ["CLEAR", "SCHEDULE", "START_AUTO", "STOP_AUTO"])
+    check_notify_slack(None)
 
 
 def test_schedule_ctrl_execute_force(client, mocker, freezer):
@@ -909,6 +954,7 @@ def test_schedule_ctrl_execute_force(client, mocker, freezer):
 
     ctrl_log_check([{"state": "open"}, {"state": "close", "period": 60}])
     app_log_check(client, ["CLEAR", "SCHEDULE", "START_AUTO", "STOP_AUTO"])
+    check_notify_slack(None)
 
 
 def test_schedule_ctrl_execute_pending(client, mocker, freezer):
@@ -952,6 +998,7 @@ def test_schedule_ctrl_execute_pending(client, mocker, freezer):
 
     ctrl_log_check([])
     app_log_check(client, ["CLEAR", "SCHEDULE"])
+    check_notify_slack(None)
 
 
 def test_schedule_ctrl_error(client, mocker, freezer):
@@ -997,6 +1044,7 @@ def test_schedule_ctrl_error(client, mocker, freezer):
 
     ctrl_log_check([])
     app_log_check(client, ["CLEAR", "SCHEDULE", "FAIL_AUTO"])
+    check_notify_slack(None)
 
 
 def test_schedule_ctrl_execute_fail(client, mocker, freezer):
@@ -1042,6 +1090,7 @@ def test_schedule_ctrl_execute_fail(client, mocker, freezer):
 
     ctrl_log_check([])
     app_log_check(client, ["CLEAR", "SCHEDULE", "FAIL_AUTO"])
+    check_notify_slack(None)
 
 
 def test_schedule_ctrl_read(client):
@@ -1053,6 +1102,7 @@ def test_schedule_ctrl_read(client):
 
     ctrl_log_check([])
     app_log_check(client, ["CLEAR"])
+    check_notify_slack(None)
 
 
 def test_schedule_ctrl_read_fail_1(client):
@@ -1069,6 +1119,7 @@ def test_schedule_ctrl_read_fail_1(client):
 
     ctrl_log_check([])
     app_log_check(client, ["CLEAR", "FAIL_READ"])
+    check_notify_slack("スケジュール設定の読み出しに失敗しました。")
 
 
 def test_schedule_ctrl_read_fail_2(client):
@@ -1084,6 +1135,7 @@ def test_schedule_ctrl_read_fail_2(client):
 
     ctrl_log_check([])
     app_log_check(client, ["CLEAR"])
+    check_notify_slack(None)
 
 
 def test_schedule_ctrl_read_fail_3(client, mocker):
@@ -1108,6 +1160,7 @@ def test_schedule_ctrl_read_fail_3(client, mocker):
 
     ctrl_log_check([])
     app_log_check(client, ["CLEAR"])
+    check_notify_slack(None)
 
 
 def test_schedule_ctrl_write_fail(client, mocker):
@@ -1133,6 +1186,7 @@ def test_schedule_ctrl_write_fail(client, mocker):
 
     ctrl_log_check([])
     app_log_check(client, ["FAIL_WRITE"], False)
+    check_notify_slack("スケジュール設定の保存に失敗しました。")
 
 
 def test_schedule_ctrl_validate_fail(client, mocker):
@@ -1146,6 +1200,7 @@ def test_schedule_ctrl_validate_fail(client, mocker):
 
     ctrl_log_check([])
     app_log_check(client, ["CLEAR"])
+    check_notify_slack(None)
 
 
 def test_log_view(client):
@@ -1162,6 +1217,7 @@ def test_log_view(client):
 
     ctrl_log_check([])
     app_log_check(client, ["CLEAR"])
+    check_notify_slack(None)
 
 
 def test_log_clear(client):
@@ -1181,6 +1237,7 @@ def test_log_clear(client):
 
     ctrl_log_check([])
     app_log_check(client, ["CLEAR"])
+    check_notify_slack(None)
 
 
 def test_sysinfo(client):

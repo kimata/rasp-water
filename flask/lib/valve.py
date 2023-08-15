@@ -271,7 +271,7 @@ def control_worker(config, queue):
 
                 if count_over > TIME_OVER_FAIL:
                     set_state(VALVE_STATE.CLOSE)
-                    queue.put({"type": "error", "message": "😵水が流れすぎています．"})
+                    queue.put({"type": "error", "message": "😵水が流れすぎています。"})
 
                 if count_zero > TIME_ZERO_TAIL:
                     # NOTE: 流量(L/min)の平均を求めてから期間(min)を掛ける
@@ -286,12 +286,12 @@ def control_worker(config, queue):
                     )
 
                     if (period_sec > TIME_CLOSE_FAIL) and (total < 1):
-                        queue.put({"type": "error", "message": "😵 元栓が閉まっている可能性があります．"})
+                        queue.put({"type": "error", "message": "😵 元栓が閉まっている可能性があります。"})
 
                     stop_measure = True
                 elif (valve_time() - time_close) > TIME_OPEN_FAIL:
                     set_state(VALVE_STATE.CLOSE)
-                    queue.put({"type": "error", "message": "😵 バルブを閉めても水が流れ続けています．"})
+                    queue.put({"type": "error", "message": "😵 バルブを閉めても水が流れ続けています。"})
                     stop_measure = True
 
                 if stop_measure:
