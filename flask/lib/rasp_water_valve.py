@@ -91,6 +91,8 @@ def flow_notify_worker(config, queue):
             if not queue.empty():
                 stat = queue.get()
 
+                logging.debug("flow notify = {stat}".format(stat=str(stat)))
+
                 if stat["type"] == "total":
                     app_log(
                         "🚿 {time_str}間，約 {water:.2f}L の水やりを行いました。".format(

@@ -434,7 +434,6 @@ def test_valve_ctrl_auto_forecast(client, mocker):
 
     time.sleep(period + 2)
 
-    ctrl_log_check([{"state": "open"}, {"period": period, "state": "close"}], is_strict=False)
     # NOTE: 天気次第で結果が変わるのでログのチェックは行わない
     check_notify_slack(None)
 
@@ -860,9 +859,17 @@ def test_valve_flow_read_command_fail(client, mocker):
     app_log_check(client, ["CLEAR", "START_AUTO"])
     check_notify_slack(None)
 
+    # NOTE: 後始末をしておく
     valve.STAT_PATH_VALVE_CONTROL_COMMAND.unlink(missing_ok=True)
-
-    time.sleep(1)
+    response = client.get(
+        "/rasp-water/api/valve_ctrl",
+        query_string={
+            "cmd": 1,
+            "state": 0,
+        },
+    )
+    assert response.status_code == 200
+    assert response.json["result"] == "success"
 
 
 def test_schedule_ctrl_execute(client, mocker, freezer):
@@ -907,8 +914,7 @@ def test_schedule_ctrl_execute(client, mocker, freezer):
     assert response.status_code == 200
     assert "flow" in response.json
 
-    ctrl_log_check([{"state": "open"}, {"state": "close", "period": 60}])
-    app_log_check(client, ["CLEAR", "SCHEDULE", "START_AUTO", "STOP_AUTO"])
+    # NOTE: 天気次第で結果が変わるのでログのチェックは行わない
     check_notify_slack(None)
 
 
