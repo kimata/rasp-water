@@ -96,7 +96,7 @@ test-playwright:
         - poetry run playwright install --with-deps chromium
 
         - poetry run ./flask/app/app.py -D 2>&1 > flask_log.txt &
-        - poetry run pytest --log-cli-level=DEBUG tests/test_playwright.py
+        - poetry run pytest --output tests/evidence/playwright tests/test_playwright.py
 
     cache:
         key: "${CI_JOB_NAME}"
@@ -131,7 +131,7 @@ test-playwright-docker:
         - poetry install --no-interaction --with test
         - poetry run playwright install --with-deps chromium
 
-        - poetry run pytest tests/test_playwright.py
+        - poetry run pytest --output tests/evidence/playwright tests/test_playwright.py
           --host $(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${CI_JOB_NAME}-${CI_JOB_ID})
 
         - docker logs ${CI_JOB_NAME}-${CI_JOB_ID} > flask_log.txt
@@ -170,7 +170,7 @@ test-playwright-docker-demo:
         - poetry install --no-interaction --with test
         - poetry run playwright install --with-deps chromium
 
-        - poetry run pytest -vv tests/test_playwright.py
+        - poetry run pytest --output tests/evidence/playwright tests/test_playwright.py
           --host $(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${CI_JOB_NAME}-${CI_JOB_ID})
 
         - docker logs ${CI_JOB_NAME}-${CI_JOB_ID} > flask_log.txt
