@@ -36,22 +36,27 @@ GPIO_PIN_DEFAULT = 18
 
 # 流量計の A/D 値が 5V の時の流量
 FLOW_SCALE_MAX = 12
+
 # 異常とみなす流量
 FLOW_ERROR_TH = 20
 
 # 流量計をモニタする ADC の設定 (ADS1015 のドライバ ti_ads1015 が公開)
 ADC_SCALE_PATH = "/sys/bus/iio/devices/iio:device0/in_voltage0_scale"
 ADC_SCALE_VALUE = 3
+
 # 流量計のアナログ出力値 (ADS1015 のドライバ ti_ads1015 が公開)
 ADC_VALUE_PATH = "/sys/bus/iio/devices/iio:device0/in_voltage0_raw"
 
 # 電磁弁を開いてからこの時間経過しても，水が流れていなかったらエラーにする
 TIME_CLOSE_FAIL = 45
+
 # 電磁弁を閉じてからこの時間経過しても，水が流れていたらエラーにする
 # (テストで freezegun を使って分単位で制御する関係上，60 より大きい値にしておく)
 TIME_OPEN_FAIL = 61
+
 # この時間の間，異常な流量になっていたらエラーにする
 TIME_OVER_FAIL = 5
+
 # この時間の間，流量が 0 だったら，今回の計測を停止する．
 TIME_ZERO_TAIL = 5
 
