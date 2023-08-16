@@ -138,7 +138,10 @@ def set_schedule(config, schedule_data):
     for job in schedule.get_jobs():
         logging.info("Next run: {next_run}".format(next_run=job.next_run))
 
-    logging.info("Time to next jobs is {idle} sec".format(idle=schedule.idle_seconds()))
+    idle_sec = schedule.idle_seconds()
+    logging.info("Time to next jobs is {idle} sec".format(idle=idle_sec))
+
+    return idle_sec
 
 
 def schedule_worker(config, queue):

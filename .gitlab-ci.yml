@@ -95,9 +95,7 @@ test-playwright:
         - poetry install --no-interaction --with test
         - poetry run playwright install --with-deps chromium
 
-        - sleep 3600
-
-        - poetry run ./flask/app/app.py -D > flask_log.txt 2>&1 &
+        - poetry run ./flask/app/app.py -D | tee flask_log.txt 2>&1 > /dev/null
         - poetry run pytest -vv tests/test_playwright.py
 
     cache:
