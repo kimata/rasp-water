@@ -265,11 +265,13 @@ def test_time(freezer):
     move_to(freezer, time_test(0))
 
     schedule.clear()
-    logging.error("set schedule at {time}".format(time=time_str(time_test(1))))
-    schedule.every().day.at(time_str(time_test(1)), TIMEZONE_PYTZ).do(lambda: True)
+    job_time_str = time_str(time_test(1))
+    logging.error("set schedule at {time}".format(time=job_time_str))
+    job = schedule.every().day.at(job_time_str, TIMEZONE_PYTZ).do(lambda: True)
 
     idle_sec = schedule.idle_seconds()
     logging.error("Time to next jobs is {idle} sec".format(idle=idle_sec))
+    logging.error("Next run is {time}".format(time=job.next_run))
 
     assert abs(idle_sec - 60) < 2
 
@@ -354,11 +356,11 @@ def test_valve_ctrl_mismatch(client):
     )
     assert response.status_code == 200
     assert response.json["result"] == "success"
-    time.sleep(2)
+    time.sleep(5)
 
     ctrl_log_check([{"state": "open"}, {"period": 0, "state": "close"}])
     # NOTE: 強引にバルブを開いているのでアプリのログには記録されない
-    app_log_check(client, ["CLEAR"])
+    app_log_check(client, ["CLEAR", "STOP_AUTO"])
     check_notify_slack(None)
 
 

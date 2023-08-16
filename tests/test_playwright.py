@@ -2,13 +2,22 @@
 # -*- coding: utf-8 -*-
 
 import datetime
+import pathlib
 import random
+import sys
 import time
 
 # from flaky import flaky
 from playwright.sync_api import expect
 
+sys.path.append(str(pathlib.Path(__file__).parent.parent / "flask" / "lib"))
+
+from webapp_config import TIMEZONE, TIMEZONE_PYTZ
+
 APP_URL_TMPL = "http://{host}:{port}/rasp-water/"
+
+SCHEDULE_AFTER_MIN = 1
+PERIOD_MIN = 1
 
 
 def check_log(page, message, timeout_sec=2):
@@ -26,9 +35,7 @@ def time_str_random():
 
 
 def time_str_after(min):
-    return (
-        datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=+9), "JST")) + datetime.timedelta(minutes=min)
-    ).strftime("%H:%M")
+    return (datetime.datetime.now(TIMEZONE) + datetime.timedelta(minutes=min)).strftime("%H:%M")
 
 
 def bool_random():
@@ -65,6 +72,38 @@ def init(page):
 
 
 ######################################################################
+def test_time(freezer):
+    import logging
+
+    import schedule
+
+    logging.error(
+        "datetime.now()                 = {date}".format(date=datetime.datetime.now()),
+    )
+    logging.error("datetime.now(JST)              = {date}".format(date=datetime.datetime.now(TIMEZONE)))
+    logging.error(
+        "datetime.now().replace(...)    = {date}".format(
+            date=datetime.datetime.now().replace(hour=0, minute=0, second=0)
+        )
+    )
+    logging.error(
+        "datetime.now(JST).replace(...) = {date}".format(
+            date=datetime.datetime.now(TIMEZONE).replace(hour=0, minute=0, second=0)
+        )
+    )
+
+    schedule.clear()
+    job_time_str = time_str_after(SCHEDULE_AFTER_MIN)
+    logging.error("set schedule at {time}".format(time=job_time_str))
+    job = schedule.every().day.at(job_time_str, TIMEZONE_PYTZ).do(lambda: True)
+
+    idle_sec = schedule.idle_seconds()
+    logging.error("Time to next jobs is {idle} sec".format(idle=idle_sec))
+    logging.error("Next run is {time}".format(time=job.next_run))
+
+    assert abs(idle_sec - 60) < 2
+
+
 def test_valve(page, host, port):
     init(page)
     page.goto(app_url(host, port))
@@ -126,9 +165,6 @@ def test_schedule(page, host, port):
 
 
 def test_schedule_run(page, host, port):
-    SCHEDULE_AFTER_MIN = 1
-    PERIOD_MIN = 1
-
     init(page)
     page.goto(app_url(host, port))
 
@@ -171,9 +207,6 @@ def test_schedule_run(page, host, port):
 
 
 def test_schedule_disable(page, host, port):
-    SCHEDULE_AFTER_MIN = 1
-    PERIOD_MIN = 1
-
     init(page)
     page.goto(app_url(host, port))
 
