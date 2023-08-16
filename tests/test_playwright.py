@@ -5,7 +5,7 @@ import datetime
 import random
 import time
 
-from flaky import flaky
+# from flaky import flaky
 from playwright.sync_api import expect
 
 APP_URL_TMPL = "http://{host}:{port}/rasp-water/"
@@ -65,7 +65,6 @@ def init(page):
 
 
 ######################################################################
-@flaky(max_runs=3)
 def test_valve(page, host, port):
     init(page)
     page.goto(app_url(host, port))
@@ -84,7 +83,6 @@ def test_valve(page, host, port):
     check_log(page, "水やりを行いました", period * 60 + 10)
 
 
-@flaky(max_runs=3)
 def test_schedule(page, host, port):
     init(page)
     page.goto(app_url(host, port))
@@ -127,7 +125,6 @@ def test_schedule(page, host, port):
     check_schedule(page, enable_schedule_index, schedule_time, enable_wday_index)
 
 
-@flaky(max_runs=3)
 def test_schedule_run(page, host, port):
     SCHEDULE_AFTER_MIN = 1
     PERIOD_MIN = 1
@@ -173,7 +170,6 @@ def test_schedule_run(page, host, port):
     check_log(page, "水やりを行いました", (PERIOD_MIN * 60) + 10)
 
 
-@flaky(max_runs=3)
 def test_schedule_disable(page, host, port):
     init(page)
     page.goto(app_url(host, port))
