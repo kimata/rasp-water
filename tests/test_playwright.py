@@ -26,7 +26,9 @@ def time_str_random():
 
 
 def time_str_after(min):
-    return (datetime.datetime.now() + datetime.timedelta(minutes=min)).strftime("%H:%M")
+    return (
+        datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=+9), "JST")) + datetime.timedelta(minutes=min)
+    ).strftime("%H:%M")
 
 
 def bool_random():
