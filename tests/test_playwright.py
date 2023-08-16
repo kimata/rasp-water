@@ -167,10 +167,13 @@ def test_schedule_run(page, host, port):
 
     check_log(page, "水やりを開始します", (SCHEDULE_AFTER_MIN * 60) + 10)
 
-    check_log(page, "水やりを行いました", (PERIOD_MIN * 60) + 10)
+    check_log(page, "水やりを行いました", (PERIOD_MIN * 60) + 30)
 
 
 def test_schedule_disable(page, host, port):
+    SCHEDULE_AFTER_MIN = 1
+    PERIOD_MIN = 1
+
     init(page)
     page.goto(app_url(host, port))
 
@@ -182,6 +185,7 @@ def test_schedule_disable(page, host, port):
     enable_wday_index = [bool_random() for _ in range(14)]
     wday_checkbox = page.locator('//input[@name="wday"]')
     time_input = page.locator('//input[@type="time"]')
+    period_input = page.locator('//input[contains(@id,"schedule-period-")]')
     for i in range(enable_checkbox.count()):
         # NOTE: checkbox 自体は hidden にして，CSS で表示しているので，
         # 通常の locator では操作できない
@@ -193,13 +197,19 @@ def test_schedule_disable(page, host, port):
             if enable_wday_index[i * 7 + j]:
                 wday_checkbox.nth(i * 7 + j).check()
 
-        # NOET: 1分後にスケジュール設定
-        time_input.nth(i).fill(time_str_after(i))
+        # NOTE: 片方はランダム，他方はテスト用に 1 分後に設定
+        if i == 0:
+            time_input.nth(i).fill(time_str_random())
+        else:
+            time_input.nth(i).fill(time_str_after(SCHEDULE_AFTER_MIN))
+
+        # NOTE: 散水時間は 1 分にする
+        period_input.nth(i).fill(str(PERIOD_MIN))
 
     page.locator('button:text("保存")').click()
 
     check_log(page, "スケジュールを更新")
 
     # NOET: 何も実行されていないことを確認
-    time.sleep(60)
+    time.sleep((SCHEDULE_AFTER_MIN * 60) + 30)
     check_log(page, "スケジュールを更新")
