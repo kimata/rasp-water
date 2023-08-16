@@ -86,6 +86,7 @@ def client(app, mocker):
 
     test_client = app.test_client()
 
+    time.sleep(1)
     schedule_clear(test_client)
     time.sleep(1)
     app_log_clear(test_client)
