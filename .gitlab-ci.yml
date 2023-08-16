@@ -74,7 +74,7 @@ test-walk-through:
 
 test-playwright:
     stage: test
-    needs: ["build-angular", "test-walk-through"]
+    needs: ["build-angular"]
     dependencies:
         - build-angular
 
@@ -112,7 +112,7 @@ test-playwright:
 
 test-playwright-docker:
     stage: test
-    needs: ["build-image", "test-walk-through"]
+    needs: ["build-image"]
 
     image: registry.green-rabbit.net:5000/kimata/local_ubuntu:230805D
 
@@ -151,7 +151,7 @@ test-playwright-docker:
 
 test-playwright-docker-demo:
     stage: test
-    needs: ["build-image", "test-walk-through"]
+    needs: ["build-image"]
 
     image: registry.green-rabbit.net:5000/kimata/local_ubuntu:230805D
 
