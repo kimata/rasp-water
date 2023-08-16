@@ -128,8 +128,10 @@ test-playwright-docker:
         - poetry run playwright install --with-deps chromium
 
         - docker pull ${CI_REGISTRY_IMAGE}
-        - echo docker run --rm --detach=true --tty=true --name ${CI_JOB_NAME}-${CI_JOB_ID} --label job=${CI_JOB_NAME} ${CI_REGISTRY_IMAGE}
-          ./flask/app/app.py -D
+        - docker run --tty=true --name ${CI_JOB_NAME}-${CI_JOB_ID} --label job=${CI_JOB_NAME} ${CI_REGISTRY_IMAGE}
+          ./flask/app/app.py -D &
+        # - docker run --rm --detach=true --tty=true --name ${CI_JOB_NAME}-${CI_JOB_ID} --label job=${CI_JOB_NAME} ${CI_REGISTRY_IMAGE}
+        #   ./flask/app/app.py -D
 
         - echo poetry run pytest --output tests/evidence/playwright tests/test_playwright.py
           --host $(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${CI_JOB_NAME}-${CI_JOB_ID})
