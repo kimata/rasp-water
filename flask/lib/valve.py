@@ -250,21 +250,23 @@ def control_worker(config, queue):
                     # NOTE: バルブコマンドが存在したら，閉じる時間をチェックして，必要に応じて閉じる
                     try:
                         with valve_open(STAT_PATH_VALVE_CONTROL_COMMAND, "r") as f:
-                            time_close = float(f.read())
+                            time_to_close = float(f.read())
 
                             # NOTE: テストの際に freezegun 使う関係で，単純な大小比較だけではなく差分絶対値の比較も行う
-                            if (valve_time() > time_close) or (abs(valve_time() - time_close) < 0.01):
+                            if (valve_time() > time_to_close) or (abs(valve_time() - time_to_close) < 0.01):
                                 logging.info("Times is up, close valve")
                                 # NOTE: 下記の関数の中で
                                 # STAT_PATH_VALVE_CONTROL_COMMAND は削除される
                                 set_state(VALVE_STATE.CLOSE)
+                                time_close = valve_time()
                     except:
                         logging.warning(traceback.format_exc())
                 if (time_close is None) and STAT_PATH_VALVE_CLOSE.exists():
                     # NOTE: 常にバルブコマンドで制御するので，基本的にここには来ない
+                    logging.warning("BUG?")
                     time_close = valve_time()
 
-            if (not STAT_PATH_VALVE_OPEN.exists()) and (time_open_start is not None):
+            if (time_close is not None) and (time_open_start is not None):
                 period_sec = valve_time() - time_open_start
 
                 # NOTE: バルブが閉じられた後，流量が 0 になっていたらトータル流量を報告する
