@@ -796,7 +796,7 @@ def test_valve_flow_open_over_2(client, mocker):
 def test_valve_flow_close_fail(client, mocker):
     # NOTE: Fault injection
     flow_mock = mocker.patch("valve.get_flow")
-    flow_mock.return_value = {"flow": 10, "result": "success"}
+    flow_mock.return_value = {"flow": 0.1, "result": "success"}
     mocker.patch("valve.TIME_OPEN_FAIL", 1)
 
     period = 3
