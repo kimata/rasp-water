@@ -1046,7 +1046,6 @@ def test_schedule_ctrl_execute_pending(client, mocker, freezer):
 
 def test_schedule_ctrl_error(client, mocker, freezer):
     import rasp_water_valve
-    import valve
     from config import load_config
 
     valve_state_moch = mocker.patch("rasp_water_valve.set_valve_state")
@@ -1089,18 +1088,6 @@ def test_schedule_ctrl_error(client, mocker, freezer):
     ctrl_log_check([])
     app_log_check(client, ["CLEAR", "SCHEDULE", "FAIL_AUTO"])
     check_notify_slack(None)
-
-    # NOTE: 後始末をしておく
-    valve.STAT_PATH_VALVE_CONTROL_COMMAND.unlink(missing_ok=True)
-    response = client.get(
-        "/rasp-water/api/valve_ctrl",
-        query_string={
-            "cmd": 1,
-            "state": 0,
-        },
-    )
-    assert response.status_code == 200
-    assert response.json["result"] == "success"
 
 
 def test_schedule_ctrl_execute_fail(client, mocker, freezer):
