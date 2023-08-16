@@ -206,6 +206,9 @@ def test_schedule_disable(page, host, port):
         # NOTE: 散水時間は 1 分にする
         period_input.nth(i).fill(str(PERIOD_MIN))
 
+        # NOTE: 無効にする
+        enable_checkbox.nth(i).evaluate("node => node.click()")
+
     page.locator('button:text("保存")').click()
 
     check_log(page, "スケジュールを更新")
