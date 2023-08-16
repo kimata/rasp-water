@@ -122,16 +122,16 @@ test-playwright-docker:
 
         - apt-get update
 
-        - poetry config --local virtualenvs.in-project true
-        - poetry config --local cache-dir $PWD/.poetry/cache
-        - poetry install --no-interaction --with test
-        - poetry run playwright install --with-deps chromium
-
         - docker pull ${CI_REGISTRY_IMAGE}
         - docker run --tty=true --name ${CI_JOB_NAME}-${CI_JOB_ID} --label job=${CI_JOB_NAME} ${CI_REGISTRY_IMAGE}
           ./flask/app/app.py -D &
         # - docker run --rm --detach=true --tty=true --name ${CI_JOB_NAME}-${CI_JOB_ID} --label job=${CI_JOB_NAME} ${CI_REGISTRY_IMAGE}
         #   ./flask/app/app.py -D
+
+        - poetry config --local virtualenvs.in-project true
+        - poetry config --local cache-dir $PWD/.poetry/cache
+        - poetry install --no-interaction --with test
+        - poetry run playwright install --with-deps chromium
 
         - poetry run pytest --output tests/evidence/playwright tests/test_playwright.py
           --host $(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${CI_JOB_NAME}-${CI_JOB_ID})
@@ -158,19 +158,19 @@ test-playwright-docker-demo:
     image: registry.green-rabbit.net:5000/kimata/local_ubuntu:230805D
 
     script:
-        - apt-get update
-
         # NOTE: テストに失敗するとテスト用のコンテナが残るので削除する
         - docker ps  --filter "label=job=${CI_JOB_NAME}" | grep hours | cut -d " " -f1 | while read id; do docker stop -t 5 $id; done || true
+
+        - apt-get update
+
+        - docker pull ${CI_REGISTRY_IMAGE}
+        - docker run --rm --detach=true --tty=true --name ${CI_JOB_NAME}-${CI_JOB_ID} --label job=${CI_JOB_NAME} ${CI_REGISTRY_IMAGE}
+          ./flask/app/app.py -D -c config.example.yaml
 
         - poetry config --local virtualenvs.in-project true
         - poetry config --local cache-dir $PWD/.poetry/cache
         - poetry install --no-interaction --with test
         - poetry run playwright install --with-deps chromium
-
-        - docker pull ${CI_REGISTRY_IMAGE}
-        - docker run --rm --detach=true --tty=true --name ${CI_JOB_NAME}-${CI_JOB_ID} --label job=${CI_JOB_NAME} ${CI_REGISTRY_IMAGE}
-          ./flask/app/app.py -D -c config.example.yaml
 
         - poetry run pytest --output tests/evidence/playwright tests/test_playwright.py
           --host $(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${CI_JOB_NAME}-${CI_JOB_ID})
