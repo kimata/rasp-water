@@ -97,7 +97,9 @@ def client(app, mocker):
 
 
 def time_test(offset_min=0):
-    return datetime.datetime.now().replace(hour=0, minute=0 + offset_min, second=0)
+    return datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=+9), "JST")).replace(
+        hour=0, minute=0 + offset_min, second=0
+    )
 
 
 def time_str(time):
