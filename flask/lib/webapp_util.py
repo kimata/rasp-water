@@ -7,7 +7,7 @@ import tracemalloc
 import psutil
 import uptime
 from flask_util import support_jsonp
-from webapp_config import APP_URL_PREFIX
+from webapp_config import APP_URL_PREFIX, TIMEZONE
 
 from flask import Blueprint, jsonify
 
@@ -50,7 +50,7 @@ def snap():
 def api_sysinfo():
     return jsonify(
         {
-            "date": datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=+9), "JST")).isoformat(),
+            "date": datetime.datetime.now(TIMEZONE).isoformat(),
             "uptime": uptime.boottime().isoformat(),
             "loadAverage": "%.2f, %.2f, %.2f" % os.getloadavg(),
         }

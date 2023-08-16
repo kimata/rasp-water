@@ -16,6 +16,7 @@ sys.path.append(str(pathlib.Path(__file__).parent.parent / "flask" / "app"))
 sys.path.append(str(pathlib.Path(__file__).parent.parent / "flask" / "lib"))
 
 from weather_forecast import get_rain_fall as get_rain_fall_orig
+from webapp_config import TIMEZONE, TIMEZONE_PYTZ
 
 from app import create_app
 
@@ -97,13 +98,16 @@ def client(app, mocker):
 
 
 def time_test(offset_min=0):
-    return datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=+9), "JST")).replace(
-        hour=0, minute=0 + offset_min, second=0
-    )
+    return datetime.datetime.now(TIMEZONE).replace(hour=0, minute=0 + offset_min, second=0)
 
 
 def time_str(time):
     return time.strftime("%H:%M")
+
+
+def move_to(freezer, target_time):
+    # NOTE: freezer はタイムゾーンを考慮できないので補正する
+    freezer.move_to(target_time + datetime.timedelta(hours=+9))
 
 
 def gen_schedule_data(offset_min=1):
@@ -237,6 +241,38 @@ def check_notify_slack(message, index=-1):
 
 
 ######################################################################
+def test_time(freezer):
+    import logging
+
+    import schedule
+
+    logging.error(
+        "datetime.now()                 = {date}".format(date=datetime.datetime.now()),
+    )
+    logging.error("datetime.now(JST)              = {date}".format(date=datetime.datetime.now(TIMEZONE)))
+    logging.error(
+        "datetime.now().replace(...)    = {date}".format(
+            date=datetime.datetime.now().replace(hour=0, minute=0, second=0)
+        )
+    )
+    logging.error(
+        "datetime.now(JST).replace(...) = {date}".format(
+            date=datetime.datetime.now(TIMEZONE).replace(hour=0, minute=0, second=0)
+        )
+    )
+
+    move_to(freezer, time_test(0))
+
+    schedule.clear()
+    logging.error("set schedule at {time}".format(time=time_str(time_test(1))))
+    schedule.every().day.at(time_str(time_test(1)), TIMEZONE_PYTZ).do(lambda: True)
+
+    idle_sec = schedule.idle_seconds()
+    logging.error("Time to next jobs is {idle} sec".format(idle=idle_sec))
+
+    assert abs(idle_sec - 60) < 2
+
+
 def test_redirect(client):
     response = client.get("/")
     assert response.status_code == 302
@@ -588,7 +624,7 @@ def test_event(client):
 
 
 def test_schedule_ctrl_inactive(client, freezer):
-    freezer.move_to(time_test(0))
+    move_to(freezer, time_test(0))
     time.sleep(0.6)
 
     schedule_data = gen_schedule_data()
@@ -600,10 +636,10 @@ def test_schedule_ctrl_inactive(client, freezer):
     )
     assert response.status_code == 200
 
-    freezer.move_to(time_test(1))
+    move_to(freezer, time_test(1))
     time.sleep(0.6)
 
-    freezer.move_to(time_test(2))
+    move_to(freezer, time_test(2))
     time.sleep(0.6)
 
     schedule_data = gen_schedule_data(3)
@@ -615,10 +651,10 @@ def test_schedule_ctrl_inactive(client, freezer):
     )
     assert response.status_code == 200
 
-    freezer.move_to(time_test(3))
+    move_to(freezer, time_test(3))
     time.sleep(0.6)
 
-    freezer.move_to(time_test(4))
+    move_to(freezer, time_test(4))
     time.sleep(0.6)
 
     ctrl_log_check([])
@@ -884,7 +920,7 @@ def test_schedule_ctrl_execute(client, mocker, freezer):
 
     time_mock = mocker.patch("valve.valve_time")
 
-    freezer.move_to(time_test(0))
+    move_to(freezer, time_test(0))
     time_mock.return_value = time.time()
     time.sleep(1)
 
@@ -900,15 +936,15 @@ def test_schedule_ctrl_execute(client, mocker, freezer):
     assert response.status_code == 200
     time.sleep(1)
 
-    freezer.move_to(time_test(1))
+    move_to(freezer, time_test(1))
     time_mock.return_value = time.time()
     time.sleep(2)
 
-    freezer.move_to(time_test(2))
+    move_to(freezer, time_test(2))
     time_mock.return_value = time.time()
     time.sleep(20)
 
-    freezer.move_to(time_test(3))
+    move_to(freezer, time_test(3))
     time_mock.return_value = time.time()
     time.sleep(20)
 
@@ -931,7 +967,7 @@ def test_schedule_ctrl_execute_force(client, mocker, freezer):
     mocker.patch("rasp_water_valve.judge_execute", return_value=True)
     time_mock = mocker.patch("valve.valve_time")
 
-    freezer.move_to(time_test(0))
+    move_to(freezer, time_test(0))
     time_mock.return_value = time.time()
     time.sleep(1)
 
@@ -947,15 +983,15 @@ def test_schedule_ctrl_execute_force(client, mocker, freezer):
     assert response.status_code == 200
     time.sleep(1)
 
-    freezer.move_to(time_test(1))
+    move_to(freezer, time_test(1))
     time_mock.return_value = time.time()
     time.sleep(2)
 
-    freezer.move_to(time_test(2))
+    move_to(freezer, time_test(2))
     time_mock.return_value = time.time()
     time.sleep(20)
 
-    freezer.move_to(time_test(3))
+    move_to(freezer, time_test(3))
     time_mock.return_value = time.time()
     time.sleep(20)
 
@@ -975,7 +1011,7 @@ def test_schedule_ctrl_execute_pending(client, mocker, freezer):
     mocker.patch("rasp_water_valve.judge_execute", return_value=False)
     time_mock = mocker.patch("valve.valve_time")
 
-    freezer.move_to(time_test(0))
+    move_to(freezer, time_test(0))
     time_mock.return_value = time.time()
     time.sleep(1)
 
@@ -991,15 +1027,15 @@ def test_schedule_ctrl_execute_pending(client, mocker, freezer):
     assert response.status_code == 200
     time.sleep(1)
 
-    freezer.move_to(time_test(1))
+    move_to(freezer, time_test(1))
     time_mock.return_value = time.time()
     time.sleep(2)
 
-    freezer.move_to(time_test(2))
+    move_to(freezer, time_test(2))
     time_mock.return_value = time.time()
     time.sleep(20)
 
-    freezer.move_to(time_test(3))
+    move_to(freezer, time_test(3))
     time_mock.return_value = time.time()
     time.sleep(20)
 
@@ -1010,6 +1046,7 @@ def test_schedule_ctrl_execute_pending(client, mocker, freezer):
 
 def test_schedule_ctrl_error(client, mocker, freezer):
     import rasp_water_valve
+    import valve
     from config import load_config
 
     valve_state_moch = mocker.patch("rasp_water_valve.set_valve_state")
@@ -1021,7 +1058,7 @@ def test_schedule_ctrl_error(client, mocker, freezer):
 
     time.sleep(3)
 
-    freezer.move_to(time_test(0))
+    move_to(freezer, time_test(0))
     time_mock.return_value = time.time()
     time.sleep(0.6)
 
@@ -1037,21 +1074,33 @@ def test_schedule_ctrl_error(client, mocker, freezer):
     assert response.status_code == 200
     time.sleep(0.6)
 
-    freezer.move_to(time_test(1))
+    move_to(freezer, time_test(1))
     time_mock.return_value = time.time()
     time.sleep(2)
 
-    freezer.move_to(time_test(2))
+    move_to(freezer, time_test(2))
     time_mock.return_value = time.time()
     time.sleep(4)
 
-    freezer.move_to(time_test(3))
+    move_to(freezer, time_test(3))
     time_mock.return_value = time.time()
     time.sleep(1)
 
     ctrl_log_check([])
     app_log_check(client, ["CLEAR", "SCHEDULE", "FAIL_AUTO"])
     check_notify_slack(None)
+
+    # NOTE: 後始末をしておく
+    valve.STAT_PATH_VALVE_CONTROL_COMMAND.unlink(missing_ok=True)
+    response = client.get(
+        "/rasp-water/api/valve_ctrl",
+        query_string={
+            "cmd": 1,
+            "state": 0,
+        },
+    )
+    assert response.status_code == 200
+    assert response.json["result"] == "success"
 
 
 def test_schedule_ctrl_execute_fail(client, mocker, freezer):
@@ -1067,7 +1116,7 @@ def test_schedule_ctrl_execute_fail(client, mocker, freezer):
 
     time.sleep(3)
 
-    freezer.move_to(time_test(0))
+    move_to(freezer, time_test(0))
     time_mock.return_value = time.time()
     time.sleep(0.6)
 
@@ -1083,15 +1132,15 @@ def test_schedule_ctrl_execute_fail(client, mocker, freezer):
     assert response.status_code == 200
     time.sleep(0.6)
 
-    freezer.move_to(time_test(1))
+    move_to(freezer, time_test(1))
     time_mock.return_value = time.time()
     time.sleep(2)
 
-    freezer.move_to(time_test(2))
+    move_to(freezer, time_test(2))
     time_mock.return_value = time.time()
     time.sleep(4)
 
-    freezer.move_to(time_test(3))
+    move_to(freezer, time_test(3))
     time_mock.return_value = time.time()
     time.sleep(1)
 
