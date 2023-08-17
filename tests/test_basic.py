@@ -263,7 +263,7 @@ def test_time(freezer):
         )
     )
 
-    logging.debug("Freeze time at {time}".format(time=time_str(time_test(1))))
+    logging.debug("Freeze time at {time}".format(time=time_str(time_test(0))))
     move_to(freezer, time_test(0))
 
     logging.debug(
