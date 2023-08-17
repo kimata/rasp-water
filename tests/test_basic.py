@@ -16,7 +16,7 @@ sys.path.append(str(pathlib.Path(__file__).parent.parent / "flask" / "app"))
 sys.path.append(str(pathlib.Path(__file__).parent.parent / "flask" / "lib"))
 
 from weather_forecast import get_rain_fall as get_rain_fall_orig
-from webapp_config import TIMEZONE, TIMEZONE_PYTZ
+from webapp_config import TIMEZONE, TIMEZONE_OFFSET, TIMEZONE_PYTZ
 
 from app import create_app
 
@@ -107,8 +107,7 @@ def time_str(time):
 
 
 def move_to(freezer, target_time):
-    # NOTE: freezer はタイムゾーンを考慮できないので補正する
-    freezer.move_to(target_time + datetime.timedelta(hours=+9))
+    freezer.move_to(target_time)
 
 
 def gen_schedule_data(offset_min=1):
@@ -249,33 +248,43 @@ def test_time(freezer):
 
     import schedule
 
-    logging.error(
+    logging.debug(
         "datetime.now()                 = {date}".format(date=datetime.datetime.now()),
     )
-    logging.error("datetime.now(JST)              = {date}".format(date=datetime.datetime.now(TIMEZONE)))
-    logging.error(
+    logging.debug("datetime.now(JST)              = {date}".format(date=datetime.datetime.now(TIMEZONE)))
+    logging.debug(
         "datetime.now().replace(...)    = {date}".format(
             date=datetime.datetime.now().replace(hour=0, minute=0, second=0)
         )
     )
-    logging.error(
+    logging.debug(
         "datetime.now(JST).replace(...) = {date}".format(
             date=datetime.datetime.now(TIMEZONE).replace(hour=0, minute=0, second=0)
         )
     )
 
+    logging.debug("Freeze time at {time}".format(time=time_str(time_test(1))))
     move_to(freezer, time_test(0))
+
+    logging.debug(
+        "datetime.now()                 = {date}".format(date=datetime.datetime.now()),
+    )
+    logging.debug("datetime.now(JST)              = {date}".format(date=datetime.datetime.now(TIMEZONE)))
 
     schedule.clear()
     job_time_str = time_str(time_test(1))
-    logging.error("set schedule at {time}".format(time=job_time_str))
+    logging.debug("set schedule at {time}".format(time=job_time_str))
     job = schedule.every().day.at(job_time_str, TIMEZONE_PYTZ).do(lambda: True)
 
     idle_sec = schedule.idle_seconds()
-    logging.error("Time to next jobs is {idle} sec".format(idle=idle_sec))
-    logging.error("Next run is {time}".format(time=job.next_run))
+    logging.error(
+        "Time to next jobs is {idle:.1f} sec ({idle_corrected:.1f} sec)".format(
+            idle=idle_sec, idle_corrected=idle_sec - int(TIMEZONE_OFFSET) * 60 * 60
+        )
+    )
+    logging.debug("Next run is {time}".format(time=job.next_run))
 
-    assert abs(idle_sec - 60) < 5
+    assert abs(idle_sec - int(TIMEZONE_OFFSET) * 60 * 60) < 60
 
 
 def test_redirect(client):
