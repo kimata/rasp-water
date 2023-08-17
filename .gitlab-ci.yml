@@ -78,7 +78,7 @@ test-playwright:
     dependencies:
         - build-angular
 
-    image: registry.green-rabbit.net:5000/kimata/local_ubuntu:230805D
+    image: registry.green-rabbit.net:5000/kimata/local_ubuntu:230812D
 
     script:
         # NOTE: テストに失敗するとテスト用のコンテナが残るので削除する
@@ -114,7 +114,7 @@ test-playwright-docker:
     stage: test
     needs: ["build-image"]
 
-    image: registry.green-rabbit.net:5000/kimata/local_ubuntu:230805D
+    image: registry.green-rabbit.net:5000/kimata/local_ubuntu:230812D
 
     script:
         # NOTE: テストに失敗するとテスト用のコンテナが残るので削除する
@@ -153,7 +153,7 @@ test-playwright-docker-demo:
     stage: test
     needs: ["build-image"]
 
-    image: registry.green-rabbit.net:5000/kimata/local_ubuntu:230805D
+    image: registry.green-rabbit.net:5000/kimata/local_ubuntu:230812D
 
     script:
         # NOTE: テストに失敗するとテスト用のコンテナが残るので削除する
@@ -222,7 +222,7 @@ deploy-webapp:
         - kubectl --insecure-skip-tls-verify=true rollout restart -n hems deployment rasp-water
     rules:
         # NOTE: 自動実行ではデプロイしない
-        - if: $CI_PIPELINE_SOURCE == "schedule"
+        - if: '$CI_PIPELINE_SOURCE == "schedule"'
           when: never
         - changes:
               - flask/**/*
@@ -241,7 +241,7 @@ deploy-webapp-demo:
         - kubectl --insecure-skip-tls-verify=true rollout restart -n hems deployment rasp-water-demo
     rules:
         # NOTE: 自動実行ではデプロイしない
-        - if: $CI_PIPELINE_SOURCE == "schedule"
+        - if: '$CI_PIPELINE_SOURCE == "schedule"'
           when: never
         - changes:
               - flask/**/*
@@ -250,7 +250,7 @@ deploy-webapp-demo:
 renovate:
     stage: renovate
     image:
-        name: registry.green-rabbit.net:5000/kimata/local_renovate:35
+        name: registry.green-rabbit.net:5000/kimata/local_renovate:36
 
         entrypoint: [""]
     script:
@@ -259,6 +259,5 @@ renovate:
         - if: '$CI_COMMIT_BRANCH != "master"'
           when: never
         - if: '$CI_PIPELINE_SOURCE == "schedule"'
-          when: always
         - changes:
               - renovate.json
