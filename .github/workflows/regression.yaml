@@ -15,6 +15,9 @@ jobs:
             matrix:
                 node-version: [18.x]
 
+        env:
+            TZ: "Asia/Tokyo"
+
         steps:
             - uses: actions/checkout@v3
 
