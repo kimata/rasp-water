@@ -280,7 +280,7 @@ def test_time(freezer):
     logging.error("Time to next jobs is {idle:.1f} sec".format(idle=idle_sec))
     logging.debug("Next run is {time}".format(time=job.next_run))
 
-    assert idle_sec < 60
+    assert abs(idle_sec - 60) < 5
 
 
 def test_redirect(client):
