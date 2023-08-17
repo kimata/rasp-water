@@ -7,9 +7,9 @@ import pytz
 
 APP_URL_PREFIX = "/rasp-water"
 
-TIMEZONE = datetime.timezone(datetime.timedelta(hours=+9), "JST")
-TIMEZONE_PYTZ = pytz.timezone("Asia/Tokyo")  # schedule 用
 TIMEZONE_OFFSET = "+9"
+TIMEZONE = datetime.timezone(datetime.timedelta(hours=int(TIMEZONE_OFFSET)), "JST")
+TIMEZONE_PYTZ = pytz.timezone("Asia/Tokyo")  # schedule 用
 
 STATIC_FILE_PATH = pathlib.Path(__file__).parent.parent.parent / "dist" / "rasp-water"
 

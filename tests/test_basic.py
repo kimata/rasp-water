@@ -107,7 +107,7 @@ def time_str(time):
 
 
 def move_to(freezer, target_time):
-    freezer.move_to(target_time)
+    freezer.move_to(target_time + datetime.timedelta(hours=+9))
 
 
 def gen_schedule_data(offset_min=1):
