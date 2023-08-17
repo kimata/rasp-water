@@ -13,7 +13,7 @@ from wsgiref.handlers import format_date_time
 
 import notify_slack
 from flask_util import gzipped, support_jsonp
-from webapp_config import APP_URL_PREFIX, LOG_DB_PATH, TIMEZONE_OFFSET
+from webapp_config import APP_URL_PREFIX, LOG_DB_PATH, TIMEZONE, TIMEZONE_OFFSET
 from webapp_event import EVENT_TYPE, notify_event
 
 from flask import Blueprint, g, jsonify, request
@@ -191,7 +191,11 @@ def api_log_view():
     if len(log) == 0:
         last_time = time.time()
     else:
-        last_time = datetime.datetime.strptime(log[0]["date"], "%Y-%m-%d %H:%M:%S").timestamp()
+        last_time = (
+            datetime.datetime.strptime(log[0]["date"], "%Y-%m-%d %H:%M:%S")
+            .replace(tzinfo=TIMEZONE)
+            .timestamp()
+        )
 
     response = jsonify({"data": log, "last_time": last_time})
 
