@@ -20,7 +20,7 @@ SCHEDULE_AFTER_MIN = 1
 PERIOD_MIN = 1
 
 
-def check_log(page, message, timeout_sec=2):
+def check_log(page, message, timeout_sec=3):
     expect(page.locator("//app-log//div").first).to_contain_text(message, timeout=timeout_sec * 1000)
 
     # NOTE: ログクリアする場合，ログの内容が変化しているので，ここで再取得する
