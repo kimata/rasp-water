@@ -131,6 +131,9 @@ def test_schedule(page, host, port):
     time.sleep(1)
     check_log(page, "ログがクリアされました")
 
+    # NOTE: 次の分で実行させるにあたって，秒数を調整する
+    time.sleep((90 - datetime.datetime.now(TIMEZONE).second) % 60)
+
     # NOTE: ランダムなスケジュール設定を準備
     schedule_time = [time_str_random(), time_str_random()]
     enable_schedule_index = int(2 * random.random())
