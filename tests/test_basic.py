@@ -16,7 +16,7 @@ sys.path.append(str(pathlib.Path(__file__).parent.parent / "flask" / "app"))
 sys.path.append(str(pathlib.Path(__file__).parent.parent / "flask" / "lib"))
 
 from weather_forecast import get_rain_fall as get_rain_fall_orig
-from webapp_config import TIMEZONE, TIMEZONE_OFFSET, TIMEZONE_PYTZ
+from webapp_config import TIMEZONE, TIMEZONE_PYTZ
 
 from app import create_app
 
@@ -277,14 +277,10 @@ def test_time(freezer):
     job = schedule.every().day.at(job_time_str, TIMEZONE_PYTZ).do(lambda: True)
 
     idle_sec = schedule.idle_seconds()
-    logging.error(
-        "Time to next jobs is {idle:.1f} sec ({idle_corrected:.1f} sec)".format(
-            idle=idle_sec, idle_corrected=idle_sec - int(TIMEZONE_OFFSET) * 60 * 60
-        )
-    )
+    logging.error("Time to next jobs is {idle:.1f} sec".format(idle=idle_sec))
     logging.debug("Next run is {time}".format(time=job.next_run))
 
-    assert abs(idle_sec - int(TIMEZONE_OFFSET) * 60 * 60) < 60
+    assert idle_sec < 60
 
 
 def test_redirect(client):
