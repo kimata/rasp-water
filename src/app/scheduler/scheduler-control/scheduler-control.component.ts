@@ -72,26 +72,28 @@ export class SchedulerControlComponent implements OnInit {
             param = param.set('cmd', 'set');
             param = param.set('data', JSON.stringify(sendState));
         }
-        this.http.jsonp<ScheduleEntry[]>(`${this.API_URL}/schedule_ctrl?${param.toString()}`, 'callback').subscribe(
-            (res: ScheduleEntry[]) => {
-                if (this.savedState == null) {
-                    this.savedState = JSON.parse(JSON.stringify(res)); // NOTE: deep copy
-                    for (const item of this.savedState!) {
-                        item['time'] = this.convertTime(item['time']);
+        this.http
+            .jsonp<ScheduleEntry[]>(`${this.API_URL}/schedule_ctrl?${param.toString()}`, 'callback')
+            .subscribe(
+                (res: ScheduleEntry[]) => {
+                    if (this.savedState == null) {
+                        this.savedState = JSON.parse(JSON.stringify(res)); // NOTE: deep copy
+                        for (const item of this.savedState!) {
+                            item['time'] = this.convertTime(item['time']);
+                        }
                     }
+                    if (state != null) {
+                        this.toast.show_sccess('正常に保存できました。', {
+                            title: '成功',
+                        });
+                    }
+                    this.state = res;
+                    this.error = false;
+                },
+                (error) => {
+                    this.error = true;
                 }
-                if (state != null) {
-                    this.toast.show_sccess('正常に保存できました。', {
-                        title: '成功',
-                    });
-                }
-                this.state = res;
-                this.error = false;
-            },
-            (error) => {
-                this.error = true;
-            }
-        );
+            );
     }
 
     onChange() {

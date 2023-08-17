@@ -121,19 +121,33 @@ def set_schedule(config, schedule_data):
             continue
 
         if entry["wday"][0]:
-            schedule.every().sunday.at(entry["time"], TIMEZONE_PYTZ).do(valve_auto_control, config, entry["period"])
+            schedule.every().sunday.at(entry["time"], TIMEZONE_PYTZ).do(
+                valve_auto_control, config, entry["period"]
+            )
         if entry["wday"][1]:
-            schedule.every().monday.at(entry["time"], TIMEZONE_PYTZ).do(valve_auto_control, config, entry["period"])
+            schedule.every().monday.at(entry["time"], TIMEZONE_PYTZ).do(
+                valve_auto_control, config, entry["period"]
+            )
         if entry["wday"][2]:
-            schedule.every().tuesday.at(entry["time"], TIMEZONE_PYTZ).do(valve_auto_control, config, entry["period"])
+            schedule.every().tuesday.at(entry["time"], TIMEZONE_PYTZ).do(
+                valve_auto_control, config, entry["period"]
+            )
         if entry["wday"][3]:
-            schedule.every().wednesday.at(entry["time"], TIMEZONE_PYTZ).do(valve_auto_control, config, entry["period"])
+            schedule.every().wednesday.at(entry["time"], TIMEZONE_PYTZ).do(
+                valve_auto_control, config, entry["period"]
+            )
         if entry["wday"][4]:
-            schedule.every().thursday.at(entry["time"], TIMEZONE_PYTZ).do(valve_auto_control, config, entry["period"])
+            schedule.every().thursday.at(entry["time"], TIMEZONE_PYTZ).do(
+                valve_auto_control, config, entry["period"]
+            )
         if entry["wday"][5]:
-            schedule.every().friday.at(entry["time"], TIMEZONE_PYTZ).do(valve_auto_control, config, entry["period"])
+            schedule.every().friday.at(entry["time"], TIMEZONE_PYTZ).do(
+                valve_auto_control, config, entry["period"]
+            )
         if entry["wday"][6]:
-            schedule.every().saturday.at(entry["time"], TIMEZONE_PYTZ).do(valve_auto_control, config, entry["period"])
+            schedule.every().saturday.at(entry["time"], TIMEZONE_PYTZ).do(
+                valve_auto_control, config, entry["period"]
+            )
 
     for job in schedule.get_jobs():
         logging.info("Next run: {next_run}".format(next_run=job.next_run))

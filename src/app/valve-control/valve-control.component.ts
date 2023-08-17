@@ -77,21 +77,23 @@ export class ValveControlComponent implements OnInit {
             param = param.set('state', state ? 1 : 0);
             param = param.set('period', String(this.period * 60));
         }
-        this.http.jsonp<ControlResponse>(`${this.API_URL}/valve_ctrl?${param.toString()}`, 'callback').subscribe(
-            (res: ControlResponse) => {
-                if (res['state'] == '1') {
-                    this.watchFlow();
+        this.http
+            .jsonp<ControlResponse>(`${this.API_URL}/valve_ctrl?${param.toString()}`, 'callback')
+            .subscribe(
+                (res: ControlResponse) => {
+                    if (res['state'] == '1') {
+                        this.watchFlow();
+                    }
+                    this.state = res['state'] == '1';
+                    this.remain = Number(res['remain']);
+                    this.error['ctrl'] = false;
+                    this.loading = false;
+                },
+                (error) => {
+                    this.error['ctrl'] = true;
+                    this.loading = false;
                 }
-                this.state = res['state'] == '1';
-                this.remain = Number(res['remain']);
-                this.error['ctrl'] = false;
-                this.loading = false;
-            },
-            (error) => {
-                this.error['ctrl'] = true;
-                this.loading = false;
-            }
-        );
+            );
     }
 
     watchFlow() {

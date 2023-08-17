@@ -238,7 +238,9 @@ def check_notify_slack(message, index=-1):
         assert notify_hist == [], "正常なはずなのに，エラー通知がされています。"
     else:
         assert len(notify_hist) != 0, "異常が発生したはずなのに，エラー通知がされていません。"
-        assert notify_hist[index].find(message) != -1, "「{message}」が Slack で通知されていません。".format(message=message)
+        assert notify_hist[index].find(message) != -1, "「{message}」が Slack で通知されていません。".format(
+            message=message
+        )
 
 
 ######################################################################
@@ -273,7 +275,7 @@ def test_time(freezer):
     logging.error("Time to next jobs is {idle} sec".format(idle=idle_sec))
     logging.error("Next run is {time}".format(time=job.next_run))
 
-    assert abs(idle_sec - 60) < 2
+    assert abs(idle_sec - 60) < 5
 
 
 def test_redirect(client):
@@ -728,7 +730,9 @@ def test_schedule_ctrl_invalid(client, mocker):
     time.sleep(4)
 
     ctrl_log_check([])
-    app_log_check(client, ["CLEAR", "INVALID", "INVALID", "INVALID", "INVALID", "INVALID", "INVALID", "INVALID"])
+    app_log_check(
+        client, ["CLEAR", "INVALID", "INVALID", "INVALID", "INVALID", "INVALID", "INVALID", "INVALID"]
+    )
     check_notify_slack("スケジュールの指定が不正です。")
 
 

@@ -374,7 +374,9 @@ def set_state(valve_state):
 
     if valve_state != curr_state:
         logging.info(
-            "VALVE: {curr_state} -> {valve_state}".format(curr_state=curr_state.name, valve_state=valve_state.name)
+            "VALVE: {curr_state} -> {valve_state}".format(
+                curr_state=curr_state.name, valve_state=valve_state.name
+            )
         )
 
     GPIO.setwarnings(False)

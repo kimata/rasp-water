@@ -12,7 +12,7 @@ from playwright.sync_api import expect
 
 sys.path.append(str(pathlib.Path(__file__).parent.parent / "flask" / "lib"))
 
-from webapp_config import TIMEZONE, TIMEZONE_PYTZ
+from webapp_config import TIMEZONE, TIMEZONE_OFFSET, TIMEZONE_PYTZ
 
 APP_URL_TMPL = "http://{host}:{port}/rasp-water/"
 
@@ -98,11 +98,14 @@ def test_time(freezer):
     job = schedule.every().day.at(job_time_str, TIMEZONE_PYTZ).do(lambda: True)
 
     idle_sec = schedule.idle_seconds()
-    logging.error("Time to next jobs is {idle} sec".format(idle=idle_sec))
+    logging.error(
+        "Time to next jobs is {idle:.1f} sec ({idle_corrected:.1f} sec)".format(
+            idle=idle_sec, idle_corrected=idle_sec - int(TIMEZONE_OFFSET) * 60 * 60
+        )
+    )
     logging.error("Next run is {time}".format(time=job.next_run))
 
-    # NOTE: schedule.idle_seconds() がバグっている気がするので，一旦コメントアウト
-    # assert abs(idle_sec - 60) < 2
+    assert abs(idle_sec - int(TIMEZONE_OFFSET) * 60 * 60) < 60
 
 
 def test_valve(page, host, port):

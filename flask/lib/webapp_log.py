@@ -48,7 +48,9 @@ def init(config_):
     assert sqlite is None
 
     sqlite = sqlite3.connect(LOG_DB_PATH, check_same_thread=False)
-    sqlite.execute("CREATE TABLE IF NOT EXISTS log(id INTEGER primary key autoincrement, date INTEGER, message TEXT)")
+    sqlite.execute(
+        "CREATE TABLE IF NOT EXISTS log(id INTEGER primary key autoincrement, date INTEGER, message TEXT)"
+    )
     sqlite.commit()
     sqlite.row_factory = lambda c, r: dict(zip([col[0] for col in c.description], r))
 
