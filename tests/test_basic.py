@@ -229,9 +229,12 @@ def app_log_clear(client):
 
 
 def check_notify_slack(message, index=-1):
+    import logging
+
     import notify_slack
 
     notify_hist = notify_slack.hist_get()
+    logging.debug(notify_hist)
 
     if message is None:
         assert notify_hist == [], "正常なはずなのに，エラー通知がされています。"
