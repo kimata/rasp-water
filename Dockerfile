@@ -21,7 +21,10 @@ RUN poetry config virtualenvs.create false \
 
 FROM python:3.11.4-slim-bookworm as prod
 
+ARG IMAGE_BUILD_DATE
+
 ENV TZ=Asia/Tokyo
+ENV IMAGE_BUILD_DATE=${IMAGE_BUILD_DATE}
 
 COPY --from=build /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
 

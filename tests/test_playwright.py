@@ -179,7 +179,7 @@ def test_schedule_run(page, host, port):
     time.sleep(1)
     check_log(page, "ログがクリアされました")
 
-    # NOTE: 次の分で実行させるにあたって，秒数を調整する
+    # NOTE: 次の「分」で実行させるにあたって，秒数を調整する
     time.sleep((90 - datetime.datetime.now(TIMEZONE).second) % 60)
 
     enable_checkbox = page.locator('//input[contains(@id,"schedule-entry-")]')

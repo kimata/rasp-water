@@ -51,6 +51,7 @@ def api_sysinfo():
     return jsonify(
         {
             "date": datetime.datetime.now(TIMEZONE).isoformat(),
+            "image_build_date": os.environ.get("IMAGE_BUILD_DATE", ""),
             "uptime": uptime.boottime().isoformat(),
             "loadAverage": "%.2f, %.2f, %.2f" % os.getloadavg(),
         }
