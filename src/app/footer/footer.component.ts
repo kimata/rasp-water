@@ -6,8 +6,10 @@ import build from '../../build';
 import 'dayjs/locale/ja';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
+import localizedFormat from 'dayjs/plugin/localizedFormat';
 dayjs.locale('ja');
 dayjs.extend(relativeTime);
+dayjs.extend(localizedFormat);
 
 export interface SysinfoResponse {
     image_build_date: string;
