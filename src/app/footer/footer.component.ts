@@ -4,10 +4,10 @@ import { HttpClient } from '@angular/common/http';
 import build from '../../build';
 
 import 'dayjs/locale/ja';
-import dayjs, { locale, extend } from 'dayjs';
+import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
-locale('ja');
-extend(relativeTime);
+dayjs.locale('ja');
+dayjs.extend(relativeTime);
 
 export interface SysinfoResponse {
     date: string;
