@@ -44,7 +44,18 @@ export class FooterComponent implements OnInit {
             (res: SysinfoResponse) => {
                 const date = dayjs(res['date']);
                 const uptime = dayjs(res['uptime']);
+
+                if (response.data['image_build_date'] !== '') {
+                    const imageBuildDate = moment(response.data['image_build_date']);
+                    this.imageBuildDate = imageBuildDate.format('llll');
+                    this.imageBuildDateFrom = imageBuildDate.fromNow();
+                } else {
+                    this.imageBuildDate = '?';
+                    this.imageBuildDateFrom = '?';
+                }
+
                 this.date = date.format('llll');
+                this.timezone = res['timezone'];
                 this.uptime = uptime.format('llll');
                 this.uptimeFrom = uptime.fromNow();
                 this.loadAverage = res['loadAverage'];

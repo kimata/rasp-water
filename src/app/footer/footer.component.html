@@ -2,13 +2,16 @@
     <div class="p-1">
         <small>
             <p class="text-muted m-0">
-                <small>ビルド日時: {{ buildDate }} [{{ buildDateFrom }}]</small>
+                <small>イメージ: {{ imageBuildDate }} [{{ imageBuildDateFrom }}]</small>
+            </p>
+            <p class="text-muted m-0">
+                <small>Angular: {{ buildDate }} [{{ buildDateFrom }}]</small>
             </p>
             <p class="text-muted m-0">
                 <small>起動日時: {{ uptime }} [{{ uptimeFrom }}]</small>
             </p>
             <p class="text-muted m-0">
-                <small>サーバ時刻: {{ date }}</small>
+                <small>サーバ時刻: {{ date }} [{{ timezone }}]</small>
             </p>
             <p class="text-muted m-0">
                 <small>load average: {{ loadAverage }}</small>
