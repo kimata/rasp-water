@@ -19,6 +19,7 @@ pytz = "^2023.3"
 schedule = "^1.2.0"
 slack-sdk = "^3.21.3"
 uptime = "^3.0.1"
+tzlocal = "^5.0.1"
 
 [tool.poetry.group.test.dependencies]
 flaky = "^3.7.0"
