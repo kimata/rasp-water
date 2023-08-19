@@ -1222,6 +1222,8 @@ def test_schedule_ctrl_read_fail_3(client, mocker):
 
 
 def test_schedule_ctrl_write_fail(client, mocker):
+    from pickle import dump as dump_orig
+
     mocker.patch("pickle.dump", side_effect=RuntimeError())
 
     schedule_data = gen_schedule_data(1)
@@ -1231,6 +1233,8 @@ def test_schedule_ctrl_write_fail(client, mocker):
     )
     assert response.status_code == 200
 
+    mocker.patch("pickle.dump", side_effect=dump_orig)
+
     # NOTE: 次回のテストに向けて，正常なものに戻しておく
     schedule_data = gen_schedule_data()
     response = client.get(
@@ -1238,13 +1242,11 @@ def test_schedule_ctrl_write_fail(client, mocker):
         query_string={"cmd": "set", "data": json.dumps(schedule_data)},
     )
     assert response.status_code == 200
-    time.sleep(1)
-
-    time.sleep(1)
+    time.sleep(2)
 
     ctrl_log_check([])
-    app_log_check(client, ["FAIL_WRITE"], False)
-    check_notify_slack("スケジュール設定の保存に失敗しました。")
+    app_log_check(client, ["CLEAR", "FAIL_WRITE", "SCHEDULE", "FAIL_READ", "SCHEDULE"], False)
+    check_notify_slack("スケジュール設定の保存に失敗しました。", 0)
 
 
 def test_schedule_ctrl_validate_fail(client, mocker):
