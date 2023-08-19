@@ -10,7 +10,9 @@ dayjs.locale('ja');
 dayjs.extend(relativeTime);
 
 export interface SysinfoResponse {
+    image_build_date: string;
     date: string;
+    timezone: string;
     uptime: string;
     loadAverage: string;
 }
@@ -22,9 +24,12 @@ export interface SysinfoResponse {
     standalone: true,
 })
 export class FooterComponent implements OnInit {
+    imageBuildDate = '';
+    imageBuildDateFrom = '';
     buildDate = dayjs(build.timestamp).format('llll');
     buildDateFrom = dayjs(build.timestamp).fromNow();
     date = '';
+    timezone = '';
     uptime = '';
     uptimeFrom = '';
     loadAverage = '';
@@ -45,8 +50,8 @@ export class FooterComponent implements OnInit {
                 const date = dayjs(res['date']);
                 const uptime = dayjs(res['uptime']);
 
-                if (response.data['image_build_date'] !== '') {
-                    const imageBuildDate = moment(response.data['image_build_date']);
+                if (res['image_build_date'] !== '') {
+                    const imageBuildDate = dayjs(res['image_build_date']);
                     this.imageBuildDate = imageBuildDate.format('llll');
                     this.imageBuildDateFrom = imageBuildDate.fromNow();
                 } else {
