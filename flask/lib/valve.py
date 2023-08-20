@@ -196,6 +196,8 @@ should_terminate = False
 def control_worker(config, queue):
     global should_terminate
 
+    sleep_sec = 0.1
+
     liveness_file = pathlib.Path(config["liveness"]["file"]["valve_control"])
     liveness_file.parent.mkdir(parents=True, exist_ok=True)
 
@@ -238,8 +240,6 @@ def control_worker(config, queue):
 
         # NOTE: 以下の処理はファイルシステムへのアクセスが発生するので，実施頻度を落とす
         if i % 5 == 0:
-            liveness_file.touch()
-
             if time_open_start is None:
                 if STAT_PATH_VALVE_OPEN.exists():
                     # NOTE: バルブが開かれていたら，状態を変更してトータルの水量の集計を開始する
@@ -314,7 +314,10 @@ def control_worker(config, queue):
                     notify_last_flow_sum = 0
                     notify_last_count = 0
 
-        time.sleep(0.1)
+        time.sleep(sleep_sec)
+
+        if i % (10 / sleep_sec) == 0:
+            liveness_file.touch()
         i += 1
 
     logging.info("Terminate valve control worker")
