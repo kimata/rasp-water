@@ -32,8 +32,6 @@ WORKDIR /opt/rasp-water
 
 COPY . .
 
-ENV PATH="/root/.local/bin:$PATH"
-
 EXPOSE 5000
 
 CMD ["./flask/app/app.py"]

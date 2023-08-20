@@ -78,11 +78,13 @@ def second_str(sec):
 def flow_notify_worker(config, queue):
     global should_terminate
 
+    sleep_sec = 0.1
+
     liveness_file = pathlib.Path(config["liveness"]["file"]["flow_notify"])
     liveness_file.parent.mkdir(parents=True, exist_ok=True)
 
     logging.info("Start flow notify worker")
-
+    i = 0
     while True:
         if should_terminate:
             break
@@ -105,15 +107,15 @@ def flow_notify_worker(config, queue):
                     app_log(stat["message"], APP_LOG_LEVEL.ERROR)
                 else:  # pragma: no cover
                     pass
-            time.sleep(0.1)
+            time.sleep(sleep_sec)
         except OverflowError:  # pragma: no cover
             # NOTE: テストする際，freezer 使って日付をいじるとこの例外が発生する
             logging.debug(traceback.format_exc())
             pass
 
-        liveness_file.touch()
-
-        time.sleep(0.20)
+        if i % (10 / sleep_sec) == 0:
+            liveness_file.touch()
+        i += 1
 
     logging.info("Terminate flow notify worker")
 
