@@ -132,6 +132,8 @@ test-playwright-docker:
         - poetry install --no-interaction --with test
         - poetry run playwright install --with-deps chromium
 
+        - echo "Target: $(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${CI_JOB_NAME}-${CI_JOB_ID})"
+
         - poetry run pytest --tracing on --output tests/evidence/playwright tests/test_playwright.py
           --host $(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${CI_JOB_NAME}-${CI_JOB_ID})
 
@@ -170,6 +172,8 @@ test-playwright-docker-demo:
         - poetry config --local cache-dir $PWD/.poetry/cache
         - poetry install --no-interaction --with test
         - poetry run playwright install --with-deps chromium
+
+        - echo "Target: $(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${CI_JOB_NAME}-${CI_JOB_ID})"
 
         - poetry run pytest --tracing on --output tests/evidence/playwright tests/test_playwright.py
           --host $(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${CI_JOB_NAME}-${CI_JOB_ID})
