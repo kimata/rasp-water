@@ -975,6 +975,8 @@ def test_schedule_ctrl_execute_force(client, mocker, freezer):
     import rasp_water_valve
     from config import load_config
 
+    # NOTE: 一旦初期化を終わらせてから、胡椒注入のために rasp_water_valve を止める
+    time.sleep(3)
     rasp_water_valve.term()
 
     time.sleep(1)
