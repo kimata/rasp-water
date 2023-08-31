@@ -20,42 +20,36 @@ from flask import Blueprint, current_app, jsonify, request
 
 blueprint = Blueprint("rasp-water-valve", __name__, url_prefix=APP_URL_PREFIX)
 
-lock = threading.Lock()
-
 worker = None
 should_terminate = False
 
 
 def init(config):
-    global lock
     global worker
     global should_terminate
 
-    with lock:
-        assert worker is None
+    assert worker is None
 
-        should_terminate = False
+    should_terminate = False
 
-        flow_stat_queue = Queue()
-        valve.init(config, flow_stat_queue)
-        worker = threading.Thread(target=flow_notify_worker, args=(config, flow_stat_queue))
-        worker.start()
+    flow_stat_queue = Queue()
+    valve.init(config, flow_stat_queue)
+    worker = threading.Thread(target=flow_notify_worker, args=(config, flow_stat_queue))
+    worker.start()
 
 
 def term():
-    global lock
     global should_terminate
     global worker
 
-    with lock:
-        if worker is None:
-            return
+    if worker is None:
+        return
 
-        should_terminate = True
-        worker.join()
-        worker = None
+    should_terminate = True
+    worker.join()
+    worker = None
 
-        valve.term()
+    valve.term()
 
 
 def send_data(config, flow):
