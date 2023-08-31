@@ -929,10 +929,7 @@ def test_schedule_ctrl_execute(client, mocker, freezer):
     import rasp_water_valve
     from config import load_config
 
-    # NOTE: 一旦初期化を終わらせてから、胡椒注入のために rasp_water_valve を止める
-    time.sleep(3)
     rasp_water_valve.term()
-
     time.sleep(1)
 
     time_mock = mocker.patch("valve.valve_time")
@@ -977,10 +974,7 @@ def test_schedule_ctrl_execute_force(client, mocker, freezer):
     import rasp_water_valve
     from config import load_config
 
-    # NOTE: 一旦初期化を終わらせてから、胡椒注入のために rasp_water_valve を止める
-    time.sleep(3)
     rasp_water_valve.term()
-
     time.sleep(1)
 
     mocker.patch("rasp_water_valve.judge_execute", return_value=True)
@@ -1023,10 +1017,7 @@ def test_schedule_ctrl_execute_pending(client, mocker, freezer):
     import rasp_water_valve
     from config import load_config
 
-    # NOTE: 一旦初期化を終わらせてから、胡椒注入のために rasp_water_valve を止める
-    time.sleep(3)
     rasp_water_valve.term()
-
     time.sleep(1)
 
     mocker.patch("rasp_water_valve.judge_execute", return_value=False)
@@ -1072,10 +1063,7 @@ def test_schedule_ctrl_error(client, mocker, freezer):
     valve_state_moch = mocker.patch("rasp_water_valve.set_valve_state")
     valve_state_moch.side_effect = RuntimeError()
 
-    # NOTE: 一旦初期化を終わらせてから、胡椒注入のために rasp_water_valve を止める
-    time.sleep(3)
     rasp_water_valve.term()
-
     time.sleep(1)
 
     time_mock = mocker.patch("valve.valve_time")
@@ -1120,10 +1108,7 @@ def test_schedule_ctrl_execute_fail(client, mocker, freezer):
     mocker.patch("weather_forecast.get_rain_fall", return_value=False)
     mocker.patch("app_scheduler.valve_auto_control_impl", return_value=False)
 
-    # NOTE: 一旦初期化を終わらせてから、胡椒注入のために rasp_water_valve を止める
-    time.sleep(3)
     rasp_water_valve.term()
-
     time.sleep(1)
 
     time_mock = mocker.patch("valve.valve_time")
@@ -1347,10 +1332,7 @@ def test_valve_init(client, mocker):
     import valve
     from config import load_config
 
-    # NOTE: 一旦初期化を終わらせてから、胡椒注入のために rasp_water_valve を止める
-    time.sleep(3)
     rasp_water_valve.term()
-
     time.sleep(1)
 
     mocker.patch("pathlib.Path.exists", return_value=True)
