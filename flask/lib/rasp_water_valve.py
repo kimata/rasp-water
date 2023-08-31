@@ -20,7 +20,7 @@ from flask import Blueprint, current_app, jsonify, request
 
 blueprint = Blueprint("rasp-water-valve", __name__, url_prefix=APP_URL_PREFIX)
 
-init_lock = threading.Lock()
+lock = threading.Lock()
 
 worker = None
 should_terminate = False
