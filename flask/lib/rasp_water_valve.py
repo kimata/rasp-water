@@ -53,7 +53,7 @@ def term():
 
 
 def send_data(config, flow):
-    logging.info("Send fluentd: flow = {flow:.1f}".format(flow=flow))
+    logging.info("Send fluentd: flow = {flow:.2f}".format(flow=flow))
     sender = fluent.sender.FluentSender(config["fluent"]["data"]["tag"], host=config["fluent"]["host"])
     sender.emit("rasp", {"hostname": config["fluent"]["data"]["hostname"], "flow": flow})
     sender.close()
