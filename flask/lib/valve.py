@@ -270,7 +270,7 @@ def control_worker(config, queue):
                 period_sec = valve_time() - time_open_start
 
                 # NOTE: バルブが閉じられた後，流量が 0 になっていたらトータル流量を報告する
-                if flow < 0.03:
+                if flow < 0.15:
                     count_zero += 1
 
                 if flow > FLOW_ERROR_TH:
