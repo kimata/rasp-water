@@ -3,6 +3,7 @@
 
 import datetime
 import json
+import logging
 import os
 import pathlib
 import re
@@ -107,6 +108,7 @@ def time_str(time):
 
 
 def move_to(freezer, target_time):
+    logging.debug("Freeze time at {time}".format(time=time_str(target_time)))
     # NOTE: schedule と freezeer を組み合わせた場合，タイムゾーンの調整が必要
     freezer.move_to(target_time + datetime.timedelta(hours=+9))
 
@@ -124,8 +126,6 @@ def gen_schedule_data(offset_min=1):
 
 
 def ctrl_log_check(expect_list, is_strict=True, is_error=True):
-    import logging
-
     import valve
 
     hist_list = valve.GPIO.hist_get()
@@ -164,8 +164,6 @@ def app_log_check(
     expect_list,
     is_strict=True,
 ):
-    import logging
-
     response = client.get("/rasp-water/api/log_view")
 
     log_list = response.json["data"]
@@ -230,8 +228,6 @@ def app_log_clear(client):
 
 
 def check_notify_slack(message, index=-1):
-    import logging
-
     import notify_slack
 
     notify_hist = notify_slack.hist_get()
@@ -248,8 +244,6 @@ def check_notify_slack(message, index=-1):
 
 ######################################################################
 def test_time(freezer):
-    import logging
-
     import schedule
 
     logging.debug(
@@ -267,9 +261,7 @@ def test_time(freezer):
         )
     )
 
-    logging.debug("Freeze time at {time}".format(time=time_str(time_test(0))))
     move_to(freezer, time_test(0))
-    time.sleep(0.6)
 
     logging.debug(
         "datetime.now()                 = {date}".format(date=datetime.datetime.now()),
@@ -281,8 +273,6 @@ def test_time(freezer):
     logging.debug("set schedule at {time}".format(time=job_time_str))
 
     job_add = schedule.every().day.at(job_time_str, TIMEZONE_PYTZ).do(lambda: True)
-    schedule.every().day.at(time_str(time_test(10)), TIMEZONE_PYTZ).do(lambda: True)
-    schedule.every().day.at(time_str(time_test(20)), TIMEZONE_PYTZ).do(lambda: True)
 
     for i, job in enumerate(schedule.get_jobs()):
         logging.debug("Current schedule [{i}]: {next_run}".format(i=i, next_run=job.next_run))
