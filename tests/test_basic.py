@@ -277,7 +277,7 @@ def test_time(freezer):
     logging.debug("datetime.now(JST)              = {date}".format(date=datetime.datetime.now(TIMEZONE)))
 
     schedule.clear()
-    job_time_str = time_str(time_test(1))
+    job_time_str = time_str(time_test(2))
     logging.debug("set schedule at {time}".format(time=job_time_str))
     job = schedule.every().day.at(job_time_str, TIMEZONE_PYTZ).do(lambda: True)
 
@@ -288,7 +288,7 @@ def test_time(freezer):
     logging.error("Time to next jobs is {idle:.1f} sec".format(idle=idle_sec))
     logging.debug("Next run is {time}".format(time=job.next_run))
 
-    assert abs(idle_sec - 60) < 5
+    assert abs(idle_sec - 60 * 2) < 5
 
 
 def test_redirect(client):
