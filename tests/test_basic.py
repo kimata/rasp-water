@@ -107,7 +107,8 @@ def time_str(time):
 
 
 def move_to(freezer, target_time):
-    freezer.move_to(target_time)
+    # NOTE: schedule と freezeer を組み合わせた場合，タイムゾーンの調整が必要
+    freezer.move_to(target_time + datetime.timedelta(hours=+9))
 
 
 def gen_schedule_data(offset_min=1):
