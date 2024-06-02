@@ -99,7 +99,7 @@ def client(app, mocker):
 
 
 def time_test(offset_min=0):
-    return datetime.datetime.now(TIMEZONE).replace(hour=0, minute=0 + offset_min, second=0)
+    return TIMEZONE_PYTZ.localize(datetime.datetime.now().replace(hour=0, minute=0 + offset_min, second=0))
 
 
 def time_str(time):
@@ -107,7 +107,7 @@ def time_str(time):
 
 
 def move_to(freezer, target_time):
-    freezer.move_to(target_time + datetime.timedelta(hours=+9))
+    freezer.move_to(target_time)
 
 
 def gen_schedule_data(offset_min=1):
