@@ -16,7 +16,9 @@ influxdb-client = {extras = ["ciso"], version = "^1.36.1"}
 psutil = "^5.9.5"
 python = "^3.10"
 pytz = "^2023.3"
-schedule = "^1.2.0"
+# NOTE: 1.2.2 とかだと動きがよくわからないので，一旦 1.2.0 に固定する．
+# 1.2.2 移行にする場合，おそらくテストコードも修正必要．
+schedule = "1.2.0"
 slack-sdk = "^3.21.3"
 uptime = "^3.0.1"
 tzlocal = "^5.0.1"
