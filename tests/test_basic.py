@@ -268,6 +268,7 @@ def test_time(freezer):
 
     logging.debug("Freeze time at {time}".format(time=time_str(time_test(0))))
     move_to(freezer, time_test(0))
+    time.sleep(0.6)
 
     logging.debug(
         "datetime.now()                 = {date}".format(date=datetime.datetime.now()),
