@@ -7,7 +7,7 @@ import json
 import logging
 
 import requests
-from webapp_config import TIMEZONE
+from webapp_config import TIMEZONE, TIMEZONE_PYTZ
 
 YAHOO_API_ENDPOINT = "https://map.yahooapis.jp/weather/V1/place"
 
@@ -54,7 +54,7 @@ def get_rain_fall(config):
             filter(
                 lambda x: (
                     datetime.datetime.now(TIMEZONE)
-                    - TIMEZONE.localize(datetime.datetime.strptime(x["Date"], "%Y%m%d%H%M"))
+                    - TIMEZONE_PYTZ.localize(datetime.datetime.strptime(x["Date"], "%Y%m%d%H%M"))
                 ).total_seconds()
                 / (60 * 60)
                 < config["weather"]["rain_fall"]["before_hour"],
