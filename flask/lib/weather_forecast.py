@@ -47,14 +47,14 @@ def get_rain_fall(config):
     if weather_info is None:
         return False
 
-    # NOTE: YAhoo の場合，1 時間後までしか情報がとれないので，4 時間前以降を参考にする
+    # NOTE: YAhoo の場合，1 時間後までしか情報がとれないことに注意
     rainfall_list = list(
         map(
             lambda x: x["Rainfall"],
             filter(
                 lambda x: (
                     datetime.datetime.now(TIMEZONE)
-                    - datetime.datetime.strptime(x["Date"], "%Y%m%d%H%M").replace(tzinfo=TIMEZONE)
+                    - TIMEZONE.localize(datetime.datetime.strptime(x["Date"], "%Y%m%d%H%M"))
                 ).total_seconds()
                 / (60 * 60)
                 < config["weather"]["rain_fall"]["before_hour"],
