@@ -77,16 +77,16 @@ def test_time(freezer):
 
     import schedule
 
-    logging.error(
+    logging.debug(
         "datetime.now()                 = {date}".format(date=datetime.datetime.now()),
     )
-    logging.error("datetime.now(JST)              = {date}".format(date=datetime.datetime.now(TIMEZONE)))
-    logging.error(
+    logging.debug("datetime.now(JST)              = {date}".format(date=datetime.datetime.now(TIMEZONE)))
+    logging.debug(
         "datetime.now().replace(...)    = {date}".format(
             date=datetime.datetime.now().replace(hour=0, minute=0, second=0)
         )
     )
-    logging.error(
+    logging.debug(
         "datetime.now(JST).replace(...) = {date}".format(
             date=datetime.datetime.now(TIMEZONE).replace(hour=0, minute=0, second=0)
         )
@@ -94,16 +94,16 @@ def test_time(freezer):
 
     schedule.clear()
     job_time_str = time_str_after(SCHEDULE_AFTER_MIN)
-    logging.error("set schedule at {time}".format(time=job_time_str))
+    logging.debug("set schedule at {time}".format(time=job_time_str))
     job = schedule.every().day.at(job_time_str, TIMEZONE_PYTZ).do(lambda: True)
 
     idle_sec = schedule.idle_seconds()
-    logging.error(
+    logging.debug(
         "Time to next jobs is {idle:.1f} sec ({idle_corrected:.1f} sec)".format(
             idle=idle_sec, idle_corrected=idle_sec - int(TIMEZONE_OFFSET) * 60 * 60
         )
     )
-    logging.error("Next run is {time}".format(time=job.next_run))
+    logging.debug("Next run is {time}".format(time=job.next_run))
 
     assert abs(idle_sec - int(TIMEZONE_OFFSET) * 60 * 60) < 60
 
