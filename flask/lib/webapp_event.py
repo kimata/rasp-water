@@ -9,7 +9,7 @@ from enum import Enum
 
 from webapp_config import APP_URL_PREFIX
 
-from flask import Blueprint, Response, request
+from flask import Blueprint, Response, request, stream_with_context
 
 blueprint = Blueprint("webapp-event", __name__, url_prefix=APP_URL_PREFIX)
 
@@ -77,18 +77,19 @@ def notify_event(event_type):
 
 @blueprint.route("/api/event", methods=["GET"])
 def api_event():
-    global event_count
-
     count = request.args.get("count", 0, type=int)
 
     def event_stream():
+        global event_count
+
         last_count = []
         for i in range(len(event_count)):
             last_count.append(event_count[i])
 
         i = 0
+        j = 0
         while True:
-            time.sleep(1)
+            time.sleep(0.5)
             for name, event_type in EVENT_TYPE.__members__.items():
                 index = event_index(event_type)
 
@@ -96,12 +97,18 @@ def api_event():
                     logging.debug("notify event: {name}".format(name=event_type.value))
                     yield "data: {}\n\n".format(event_type.value)
                     last_count[index] = event_count[index]
-            i += 1
 
-            if i == count:
-                return
+                    i += 1
+                    if i == count:
+                        return
 
-    res = Response(event_stream(), mimetype="text/event-stream")
+            # NOTE: クライアントが切断された時にソケットを解放するため，定期的に yield を呼ぶ
+            j += 1
+            if j == 100:
+                yield "data: dummy\n\n"
+                j = 0
+
+    res = Response(stream_with_context(event_stream()), mimetype="text/event-stream")
     res.headers.add("Access-Control-Allow-Origin", "*")
     res.headers.add("Cache-Control", "no-cache")
     res.headers.add("X-Accel-Buffering", "no")
