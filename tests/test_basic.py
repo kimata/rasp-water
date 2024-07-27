@@ -876,20 +876,11 @@ def test_valve_flow_read_command_fail(client, mocker):
 
     orig_open = builtins.open
 
-    def open_mock(
-        file,
-        mode="r",
-        buffering=-1,
-        encoding=None,
-        errors=None,
-        newline=None,
-        closefd=True,
-        opener=None,
-    ):
+    def open_mock(file, mode="r", *args, **kwargs):
         if (file == valve.STAT_PATH_VALVE_CONTROL_COMMAND) and (mode == "r"):
-            return RuntimeError()
+            raise RuntimeError()
         else:
-            return orig_open(file, mode, buffering, encoding, errors, newline, closefd, opener)
+            return orig_open(file, mode, *args, **kwargs)
 
     mocker.patch("valve.valve_open", side_effect=open_mock)
 
