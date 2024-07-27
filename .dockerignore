@@ -1,5 +1,5 @@
 .git/
 .angular/
-flask/data/
-tests/evidence/
+flask/data/*
+tests/evidence/*
 node_modules/
