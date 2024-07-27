@@ -7,7 +7,7 @@ import { AppComponent } from './app/app.component';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 
 import { BrowserModule, bootstrapApplication } from '@angular/platform-browser';
-import { withInterceptorsFromDi, provideHttpClient, HttpClientJsonpModule } from '@angular/common/http';
+import { provideHttpClient, withInterceptorsFromDi, withJsonpSupport } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 
 if (environment.production) {
@@ -16,7 +16,7 @@ if (environment.production) {
 
 bootstrapApplication(AppComponent, {
     providers: [
-        importProvidersFrom(FormsModule, HttpClientJsonpModule, BrowserModule, NgbModule),
+        importProvidersFrom(FormsModule, BrowserModule, NgbModule),
         { provide: 'ApiEndpoint', useValue: '/rasp-water/api' },
         provideHttpClient(withInterceptorsFromDi()),
     ],
