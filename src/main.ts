@@ -18,6 +18,6 @@ bootstrapApplication(AppComponent, {
     providers: [
         importProvidersFrom(FormsModule, BrowserModule, NgbModule),
         { provide: 'ApiEndpoint', useValue: '/rasp-water/api' },
-        provideHttpClient(withInterceptorsFromDi()),
+        provideHttpClient(withInterceptorsFromDi(), withJsonpSupport()),
     ],
 }).catch((err) => console.error(err));
