@@ -98,9 +98,9 @@ def api_event():
                     yield "data: {}\n\n".format(event_type.value)
                     last_count[index] = event_count[index]
 
-            i += 1
-            if i == count:
-                return
+                    i += 1
+                    if i == count:
+                        return
 
             # NOTE: クライアントが切断された時にソケットを解放するため，定期的に yield を呼ぶ
             j += 1

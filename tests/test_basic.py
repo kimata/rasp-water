@@ -623,7 +623,7 @@ def test_valve_flow(client):
 
 
 def test_event(client):
-    response = client.get("/rasp-water/api/event", query_string={"count": "2"})
+    response = client.get("/rasp-water/api/event", query_string={"count": "1"})
     assert response.status_code == 200
     assert response.data.decode()
 
