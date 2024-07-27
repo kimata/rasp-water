@@ -193,9 +193,9 @@ def test_schedule_run(page, host, port):
         enable_checkbox.nth(i).evaluate("node => node.checked = false")
         enable_checkbox.nth(i).evaluate("node => node.click()")
 
-        # NOTE: 曜日は全てチェック
+        # NOTE: 片方はランダム，他方はテスト用に全てチェック
         for j in range(7):
-            if enable_wday_index[i * 7 + j]:
+            if enable_wday_index[i * 7 + j] or (i == 1):
                 wday_checkbox.nth(i * 7 + j).check()
 
         # NOTE: 片方はランダム，他方はテスト用に 1 分後に設定
