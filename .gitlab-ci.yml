@@ -96,6 +96,8 @@ test-playwright:
         - poetry install --no-interaction --with test
         - poetry run playwright install --with-deps chromium
 
+        - export TZ=Asia/Tokyo
+
         - poetry run ./flask/app/app.py -D 2>&1 > flask_log.txt &
         - poetry run pytest --tracing on --output tests/evidence/playwright tests/test_playwright.py
 
