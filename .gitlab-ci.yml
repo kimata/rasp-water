@@ -234,6 +234,8 @@ deploy-webapp:
         - if: '$CI_PIPELINE_SOURCE == "schedule"'
           when: never
         - changes:
+              - package.json
+              - package-lock.json
               - flask/**/*
               - src/**/*
 
@@ -253,6 +255,8 @@ deploy-webapp-demo:
         - if: '$CI_PIPELINE_SOURCE == "schedule"'
           when: never
         - changes:
+              - package.json
+              - package-lock.json
               - flask/**/*
               - src/**/*
 
