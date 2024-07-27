@@ -2,7 +2,7 @@ FROM python:3.11.4-bookworm AS build
 
 RUN --mount=type=cache,target=/var/lib/apt,sharing=locked \
     --mount=type=cache,target=/var/cache/apt,sharing=locked \
-    apt-get update && apt-get install --assume-yes \
+    apt-get update && apt-get install --no-install-recommends --assume-yes \
     gcc \
     curl \
     python3 \
