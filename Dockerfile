@@ -1,25 +1,26 @@
-FROM python:3.11.4-bookworm as build
+FROM python:3.11.4-bookworm AS build
 
-RUN apt-get update && apt-get install --assume-yes \
+RUN --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    apt-get update && apt-get install --assume-yes \
     gcc \
     curl \
     python3 \
-    python3-dev \
- && apt-get clean \
- && rm -rf /var/lib/apt/lists/*
+    python3-dev
 
 WORKDIR /opt/rasp-water
 
-RUN curl -sSL https://install.python-poetry.org | python3 -
+ENV PYTHONDONTWRITEBYTECODE=1
 ENV PATH="/root/.local/bin:$PATH"
 
-COPY pyproject.toml .
+RUN curl -sSL https://install.python-poetry.org | python3 - \
+    && poetry config virtualenvs.create false
 
-RUN poetry config virtualenvs.create false \
- && poetry install \
- && rm -rf ~/.cache
+RUN --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
+    --mount=type=cache,target=/root/.cache/pypoetry,sharing=locked \
+    poetry install --no-interaction
 
-FROM python:3.11.4-slim-bookworm as prod
+FROM python:3.11.4-slim-bookworm AS prod
 
 ARG IMAGE_BUILD_DATE
 
