@@ -9,7 +9,7 @@ stages:
 
 build-angular:
     stage: build-webapp
-    image: node:20.16
+    image: node:22.5
     script:
         - npm ci --cache .npm --prefer-offline
         - npm run build
