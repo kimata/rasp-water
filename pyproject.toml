@@ -1,3 +1,7 @@
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
 [tool.poetry]
 name = "rasp-water"
 version = "0.1.0"
@@ -85,16 +89,3 @@ exclude_lines = [
 
 [tool.coverage.html]
 directory = "tests/evidence/coverage"
-
-[tool.black]
-target-version = ['py310']
-line-length = 110
-
-[tool.isort]
-profile = "black"
-line_length = 110
-include_trailing_comma = true
-
-[build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
