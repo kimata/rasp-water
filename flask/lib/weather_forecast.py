@@ -1,6 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
 import datetime
 import functools
 import json
@@ -29,14 +27,14 @@ def get_weather_info_yahoo(config):
             "past": 2,
         }
 
-        res = requests.get(YAHOO_API_ENDPOINT, params=params)
+        res = requests.get(YAHOO_API_ENDPOINT, params=params, timeout=5)
 
         if res.status_code != 200:
             logging.warning("Failed to fetch weather info from Yahoo")
             return None
 
         return json.loads(res.content)["Feature"][0]["Property"]["WeatherList"]["Weather"]
-    except:
+    except Exception:
         logging.warning("Failed to fetch weather info from Yahoo")
         return None
 
@@ -48,31 +46,27 @@ def get_rain_fall(config):
         return False
 
     # NOTE: YAhoo の場合，1 時間後までしか情報がとれないことに注意
-    rainfall_list = list(
-        map(
-            lambda x: x["Rainfall"],
-            filter(
-                lambda x: (
-                    datetime.datetime.now(TIMEZONE)
-                    - TIMEZONE_PYTZ.localize(datetime.datetime.strptime(x["Date"], "%Y%m%d%H%M"))
-                ).total_seconds()
-                / (60 * 60)
-                < config["weather"]["rain_fall"]["before_hour"],
-                weather_info,
-            ),
+    rainfall_list = [
+        x["Rainfall"]
+        for x in filter(
+            lambda x: (
+                datetime.datetime.now(TIMEZONE)
+                - TIMEZONE_PYTZ.localize(
+                    datetime.datetime.strptime(x["Date"], "%Y%m%d%H%M").astimezone(TIMEZONE_PYTZ)
+                )
+            ).total_seconds()
+            / (60 * 60)
+            < config["weather"]["rain_fall"]["before_hour"],
+            weather_info,
         )
-    )
+    ]
 
     rainfall_total = functools.reduce(lambda x, y: x + y, rainfall_list)
 
-    logging.info(
-        "Rain fall total: {rainfall_total} ({rainfall_list})".format(
-            rainfall_total=rainfall_total, rainfall_list=rainfall_list
-        )
-    )
+    logging.info("Rain fall total: %d (%s)", rainfall_total, ", ".join(rainfall_list))
 
     rainfall_judge = rainfall_total > config["weather"]["rain_fall"]["threshold"]
-    logging.info("Rain fall judge: {rainfall_judge}".format(rainfall_judge=rainfall_judge))
+    logging.info("Rain fall judge: %s", rainfall_judge)
 
     return rainfall_judge
 
@@ -84,4 +78,4 @@ if __name__ == "__main__":
     logger.init("test", level=logging.INFO)
 
     config = load_config()
-    print(get_rain_fall(config))
+    print(get_rain_fall(config))  # noqa: T201

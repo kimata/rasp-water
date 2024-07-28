@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 水やりを自動化するアプリのサーバーです
 
@@ -30,11 +29,8 @@ import logger
 from config import load_config
 
 
-def create_app(config_file, port=5000, dummy_mode=False, debug_mode=False):
-    if debug_mode:  # pragma: no cover
-        log_level = logging.DEBUG
-    else:
-        log_level = logging.INFO
+def create_app(config_file, dummy_mode=False, debug_mode=False):
+    log_level = logging.DEBUG if debug_mode else logging.INFO
 
     logger.init("hems.rasp-water", level=log_level)
 
@@ -107,7 +103,7 @@ if __name__ == "__main__":
     dummy_mode = args["-D"]
     debug_mode = args["-d"]
 
-    app = create_app(config_file, port, dummy_mode, debug_mode)
+    app = create_app(config_file, dummy_mode, debug_mode)
 
     # NOTE: スクリプトの自動リロード停止したい場合は use_reloader=False にする
-    app.run(host="0.0.0.0", port=port, threaded=True, use_reloader=True)
+    app.run(host="0.0.0.0", port=port, threaded=True, use_reloader=True)  # noqa: S104

@@ -1,7 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
-import os
 import pathlib
 
 import yaml
@@ -10,7 +7,7 @@ CONFIG_PATH = "config.yaml"
 
 
 def abs_path(config_path=CONFIG_PATH):
-    return pathlib.Path(os.getcwd(), config_path)
+    return pathlib.Path(pathlib.Path.getcwd(), config_path)
 
 
 # NOTE: プロジェクトによって，大文字と小文字が異なるのでここで吸収する
@@ -33,5 +30,5 @@ def get_db_config(config):
 
 def load_config(config_path=CONFIG_PATH):
     path = str(abs_path(config_path))
-    with open(path, "r") as file:
+    with pathlib.Path.open(path, "r") as file:
         return yaml.load(file, Loader=yaml.SafeLoader)

@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 import pytest
 
 
@@ -8,17 +7,17 @@ def pytest_addoption(parser):
     parser.addoption("--port", default="5000")
 
 
-@pytest.fixture
+@pytest.fixture()
 def host(request):
     return request.config.getoption("--host")
 
 
-@pytest.fixture
+@pytest.fixture()
 def port(request):
     return request.config.getoption("--port")
 
 
-@pytest.fixture
+@pytest.fixture()
 def page(page):
     from playwright.sync_api import expect
 
@@ -27,13 +26,13 @@ def page(page):
     page.set_default_timeout(timeout)
     expect.set_options(timeout=timeout)
 
-    yield page
+    return page
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture()
 def browser_context_args(browser_context_args, request):
     return {
         **browser_context_args,
-        "record_video_dir": "tests/evidence/{test_name}".format(test_name=request.node.name),
+        "record_video_dir": f"tests/evidence/{request.node.name}",
         "record_video_size": {"width": 2400, "height": 1600},
     }

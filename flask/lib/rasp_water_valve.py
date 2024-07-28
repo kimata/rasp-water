@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python3
 import logging
 import os
 import pathlib
@@ -25,10 +25,11 @@ should_terminate = False
 
 
 def init(config):
-    global worker
-    global should_terminate
+    global worker  # noqa: PLW0603
+    global should_terminate  # noqa: PLW0603
 
-    assert worker is None
+    if worker is not None:
+        raise ValueError("worker should be None")  # noqa: TRY003, EM101
 
     should_terminate = False
 
@@ -39,8 +40,8 @@ def init(config):
 
 
 def term():
-    global should_terminate
-    global worker
+    global should_terminate  # noqa: PLW0603
+    global worker  # noqa: PLW0603
 
     if worker is None:
         return
@@ -53,26 +54,26 @@ def term():
 
 
 def send_data(config, flow):
-    logging.info("Send fluentd: flow = {flow:.2f}".format(flow=flow))
+    logging.info("Send fluentd: flow = %.2f", flow)
     sender = fluent.sender.FluentSender(config["fluent"]["data"]["tag"], host=config["fluent"]["host"])
     sender.emit("rasp", {"hostname": config["fluent"]["data"]["hostname"], "flow": flow})
     sender.close()
 
 
 def second_str(sec):
-    min = 0
+    minute = 0
     if sec >= 60:
-        min = int(sec / 60)
-        sec -= min * 60
+        minute = int(sec / 60)
+        sec -= minute * 60
     sec = int(sec)
 
-    if min != 0:
+    if minute != 0:
         if sec == 0:
-            return "{min}分".format(min=min)
+            return f"{minute}分"
         else:
-            return "{min}分{sec}秒".format(min=min, sec=sec)
+            return f"{minute}分{sec}秒"
     else:
-        return "{sec}秒".format(sec=sec)
+        return f"{sec}秒"
 
 
 def flow_notify_worker(config, queue):
@@ -93,7 +94,7 @@ def flow_notify_worker(config, queue):
             if not queue.empty():
                 stat = queue.get()
 
-                logging.debug("flow notify = {stat}".format(stat=str(stat)))
+                logging.debug("flow notify = %s", str(stat))
 
                 if stat["type"] == "total":
                     app_log(
@@ -111,7 +112,6 @@ def flow_notify_worker(config, queue):
         except OverflowError:  # pragma: no cover
             # NOTE: テストする際，freezer 使って日付をいじるとこの例外が発生する
             logging.debug(traceback.format_exc())
-            pass
 
         if i % (10 / sleep_sec) == 0:
             liveness_file.touch()
@@ -129,7 +129,7 @@ def get_valve_state():
             "remain": state["remain"],
             "result": "success",
         }
-    except:
+    except Exception:
         logging.warning("Failed to get valve control mode")
 
         return {"state": 0, "remain": 0, "result": "fail"}
@@ -162,7 +162,7 @@ def set_valve_state(config, state, period, auto, host=""):
             "{auto}で{period_str}間の水やりを開始します。{by}".format(
                 auto="🕑 自動" if auto else "🔧 手動",
                 period_str=second_str(period),
-                by="(by {})".format(host) if host != "" else "",
+                by=f"(by {host})" if host != "" else "",
             )
         )
         valve.set_control_mode(period)
@@ -170,7 +170,7 @@ def set_valve_state(config, state, period, auto, host=""):
         app_log(
             "{auto}で水やりを終了します。{by}".format(
                 auto="🕑 自動" if auto else "🔧 手動",
-                by="(by {})".format(host) if host != "" else "",
+                by=f"(by {host})" if host != "" else "",
             )
         )
         valve.set_state(valve.VALVE_STATE.CLOSE)

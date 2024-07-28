@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
 # NOTE: 現時点で使われていない
 
-import os
-from datetime import datetime
+import datetime
+import logging
+import pathlib
 
 from influxdb import InfluxDBClient
 
@@ -29,20 +28,24 @@ def is_soil_wet_1():
         client = InfluxDBClient(host=INFLUXDB_ADDR, port=INFLUXDB_PORT, database=INFLUXDB_DB)
         result = client.query(INFLUXDB_QUERY1)
 
-        points = list(filter(lambda x: x is not None, map(lambda x: x["mean"], result.get_points())))
+        points = list(filter(lambda x: x is not None, (x["sum"] for x in result.get_points())))
 
-        with open(
-            os.path.join(os.path.dirname(os.path.abspath(__file__)), "soilwet.log"),
+        with pathlib.Path.open(
+            pathlib.Path.resolve(__file__).parent / "soilwet.log",
             mode="a",
         ) as f:
-            print("{} wet1 {}".format(datetime.now(), list(points)), file=f)
+            now = datetime.datetime.now(tz=datetime.timezone(datetime.timedelta(hours=9)))
+            print(
+                f"{now} wet1 {list(points)}",
+                file=f,
+            )
 
         val = points[0]
         if val is None:
             return False
         return val < WET_THRESHOLD1
-    except:
-        pass
+    except Exception:
+        logging.exception("Failed to judge soil wet")
 
     return False
 
@@ -52,20 +55,24 @@ def is_soil_wet_2():
         client = InfluxDBClient(host=INFLUXDB_ADDR, port=INFLUXDB_PORT, database=INFLUXDB_DB)
         result = client.query(INFLUXDB_QUERY2)
 
-        points = list(filter(lambda x: x is not None, map(lambda x: x["sum"], result.get_points())))
+        points = list(filter(lambda x: x is not None, (x["sum"] for x in result.get_points())))
 
-        with open(
-            os.path.join(os.path.dirname(os.path.abspath(__file__)), "soilwet.log"),
+        with pathlib.Path.open(
+            pathlib.Path.resolve(__file__).parent / "soilwet.log",
             mode="a",
         ) as f:
-            print("{} wet2 {}".format(datetime.now(), list(points)), file=f)
+            now = datetime.now(tz=datetime.timezone(datetime.timedelta(hours=9)))
+            print(
+                f"{now} wet2 {list(points)}",
+                file=f,
+            )
 
         val = points[0]
         if val is None:
             return False
         return val > WET_THRESHOLD2
-    except:
-        pass
+    except Exception:
+        logging.exception("Failed to judge soil wet")
 
     return False
 
@@ -75,4 +82,4 @@ def is_soil_wet():
 
 
 if __name__ == "__main__":
-    print(is_soil_wet())
+    print(is_soil_wet())  # noqa: T201

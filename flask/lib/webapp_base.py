@@ -1,6 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
 from flask_util import gzipped
 from webapp_config import APP_URL_PREFIX, STATIC_FILE_PATH
 
@@ -22,4 +20,4 @@ blueprint_default = Blueprint("webapp-default", __name__)
 @blueprint_default.route("/")
 @gzipped
 def root():
-    return redirect("{webapp_prefix}/".format(webapp_prefix=APP_URL_PREFIX))
+    return redirect(f"{APP_URL_PREFIX}/")

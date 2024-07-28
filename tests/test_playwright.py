@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
+
+# ruff: noqa: S101, S311
 
 import datetime
 import pathlib
@@ -31,11 +32,11 @@ def check_log(page, message, timeout_sec=3):
 
 
 def time_str_random():
-    return "{hour:02d}:{min:02d}".format(hour=int(24 * random.random()), min=int(60 * random.random()))
+    return f"{int(24 * random.random()):02d}:{int(60 * random.random()):02d}"
 
 
-def time_str_after(min):
-    return (datetime.datetime.now(TIMEZONE) + datetime.timedelta(minutes=min)).strftime("%H:%M")
+def time_str_after(minute):
+    return (datetime.datetime.now(TIMEZONE) + datetime.timedelta(minutes=minute)).strftime("%H:%M")
 
 
 def bool_random():
@@ -67,43 +68,37 @@ def app_url(server, port):
 
 
 def init(page):
-    page.on("console", lambda msg: print(msg.text))
+    page.on("console", lambda msg: print(msg.text))  # noqa: T201
     page.set_viewport_size({"width": 2400, "height": 1600})
 
 
 ######################################################################
-def test_time(freezer):
+def test_time():
     import logging
 
     import schedule
 
+    logging.debug("datetime.now()                 = %s", datetime.datetime.now())  # noqa: DTZ005
+    logging.debug("datetime.now(JST)              = %s", datetime.datetime.now(tz=TIMEZONE))
     logging.debug(
-        "datetime.now()                 = {date}".format(date=datetime.datetime.now()),
-    )
-    logging.debug("datetime.now(JST)              = {date}".format(date=datetime.datetime.now(TIMEZONE)))
-    logging.debug(
-        "datetime.now().replace(...)    = {date}".format(
-            date=datetime.datetime.now().replace(hour=0, minute=0, second=0)
-        )
+        "datetime.now().replace(...)    = %s",
+        datetime.datetime.now().replace(hour=0, minute=0, second=0),  # noqa: DTZ005
     )
     logging.debug(
-        "datetime.now(JST).replace(...) = {date}".format(
-            date=datetime.datetime.now(TIMEZONE).replace(hour=0, minute=0, second=0)
-        )
+        "datetime.now(JST).replace(...) = %s",
+        datetime.datetime.now(TIMEZONE).replace(hour=0, minute=0, second=0),
     )
 
     schedule.clear()
     job_time_str = time_str_after(SCHEDULE_AFTER_MIN)
-    logging.debug("set schedule at {time}".format(time=job_time_str))
+    logging.debug("set schedule at %s", job_time_str)
     job = schedule.every().day.at(job_time_str, TIMEZONE_PYTZ).do(lambda: True)
 
     idle_sec = schedule.idle_seconds()
     logging.debug(
-        "Time to next jobs is {idle:.1f} sec ({idle_corrected:.1f} sec)".format(
-            idle=idle_sec, idle_corrected=idle_sec - int(TIMEZONE_OFFSET) * 60 * 60
-        )
+        "Time to next jobs is %.1f sec (%.1f sec)", idle_sec, idle_sec - int(TIMEZONE_OFFSET) * 60 * 60
     )
-    logging.debug("Next run is {time}".format(time=job.next_run))
+    logging.debug("Next run is %s", job.next_run)
 
     assert abs(idle_sec - int(TIMEZONE_OFFSET) * 60 * 60) < 60
 

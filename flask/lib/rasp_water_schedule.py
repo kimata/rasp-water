@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 import json
 import threading
 import urllib.parse
@@ -24,10 +23,11 @@ WDAY_STR = ["日", "月", "火", "水", "木", "金", "土"]
 
 
 def init(config):
-    global worker
-    global schedule_queue
+    global worker  # noqa: PLW0603
+    global schedule_queue  # noqa: PLW0603
 
-    assert worker is None
+    if worker is not None:
+        raise ValueError("worker should be None")  # noqa: TRY003, EM101
 
     schedule_queue = Queue()
     app_scheduler.init()
@@ -42,7 +42,7 @@ def init(config):
 
 
 def term():
-    global worker
+    global worker  # noqa: PLW0603
 
     if worker is None:
         return
@@ -54,7 +54,7 @@ def term():
 
 def wday_str_list(wday_list):
     wday_str = WDAY_STR
-    return map(lambda i: wday_str[i], (i for i in range(len(wday_list)) if wday_list[i]))
+    return [wday_str[i] for i in range(len(wday_list)) if wday_list[i]]
 
 
 def schedule_entry_str(entry):
@@ -62,16 +62,16 @@ def schedule_entry_str(entry):
 
 
 def schedule_str(schedule):
-    str = []
+    str_buf = []
     for entry in schedule:
         if not entry["is_active"]:
             continue
-        str.append(schedule_entry_str(entry))
+        str_buf.append(schedule_entry_str(entry))
 
-    if len(str) == 0:
+    if len(str_buf) == 0:
         return "∅ 全て無効"
 
-    return "、\n".join(str)
+    return "、\n".join(str_buf)
 
 
 @blueprint.route("/api/schedule_ctrl", methods=["GET", "POST"])
@@ -110,7 +110,7 @@ def api_schedule_ctrl():
             app_log(
                 "📅 スケジュールを更新しました。\n{schedule}\n{by}".format(
                     schedule=schedule_str(schedule_data),
-                    by="by {}".format(user) if user != "" else "",
+                    by=f"by {user}" if user != "" else "",
                 )
             )
 

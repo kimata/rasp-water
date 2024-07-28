@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 import logging
 import multiprocessing
 import threading
@@ -14,7 +13,7 @@ from flask import Blueprint, Response, request, stream_with_context
 blueprint = Blueprint("webapp-event", __name__, url_prefix=APP_URL_PREFIX)
 
 
-class EVENT_TYPE(Enum):
+class EVENT_TYPE(Enum):  # noqa: N801
     CONTROL = "control"
     SCHEDULE = "schedule"
     LOG = "log"
@@ -41,20 +40,19 @@ def notify_watch_impl(queue):
         except OverflowError:  # pragma: no cover
             # NOTE: テストする際，freezer 使って日付をいじるとこの例外が発生する
             logging.debug(traceback.format_exc())
-            pass
 
     logging.info("Stop notify watch thread")
 
 
 def notify_watch(queue):
-    global is_stop_watch
+    global is_stop_watch  # noqa: PLW0603
 
     is_stop_watch = False
     threading.Thread(target=notify_watch_impl, args=(queue,)).start()
 
 
 def stop_watch():
-    global is_stop_watch
+    global is_stop_watch  # noqa: PLW0603
 
     is_stop_watch = True
 
@@ -82,20 +80,18 @@ def api_event():
     def event_stream():
         global event_count
 
-        last_count = []
-        for i in range(len(event_count)):
-            last_count.append(event_count[i])
+        last_count = event_count[:]
 
         i = 0
         j = 0
         while True:
             time.sleep(0.5)
-            for name, event_type in EVENT_TYPE.__members__.items():
+            for event_type in EVENT_TYPE.__members__.values():
                 index = event_index(event_type)
 
                 if last_count[index] != event_count[index]:
-                    logging.debug("notify event: {name}".format(name=event_type.value))
-                    yield "data: {}\n\n".format(event_type.value)
+                    logging.debug("notify event: %s", event_type.value)
+                    yield f"data: {event_type.value}\n\n"
                     last_count[index] = event_count[index]
 
                     i += 1

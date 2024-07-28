@@ -1,9 +1,6 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
 import json
 import logging
-import os
 import pathlib
 import tempfile
 import threading
@@ -14,7 +11,7 @@ import slack_sdk
 # NOTE: テスト用
 notify_hist = []
 
-ERROR_NOTIFY_FOOTPRINT = pathlib.Path(os.path.dirname(__file__)).parent / "data" / "error_notify"
+ERROR_NOTIFY_FOOTPRINT = pathlib.Path(__file__).parent.parent / "data" / "error_notify"
 
 SIMPLE_TMPL = """\
 [
@@ -60,7 +57,7 @@ def send(token, ch_name, message):
 def split_send(token, ch_name, title, message, formatter=format_simple):
     LINE_SPLIT = 20
 
-    logging.info("Post slack channel: {ch_name}".format(ch_name=ch_name))
+    logging.info("Post slack channel: %s", ch_name)
 
     message_lines = message.splitlines()
     for i in range(0, len(message_lines), LINE_SPLIT):
@@ -88,7 +85,7 @@ def error_img(token, ch_id, title, img, text):
     client = slack_sdk.WebClient(token=token)
 
     with tempfile.TemporaryDirectory() as dname:
-        img_path = os.path.join(dname, "error.png")
+        img_path = pathlib.Path(dname) / "error.png"
         img.save(img_path)
 
         try:
@@ -97,7 +94,7 @@ def error_img(token, ch_id, title, img, text):
             logging.warning(e.response["error"])
 
 
-def error(
+def error(  # noqa: PLR0913
     token,
     ch_name,
     name,
@@ -118,7 +115,7 @@ def error(
     footprint.update(ERROR_NOTIFY_FOOTPRINT)
 
 
-def error_with_image(
+def error_with_image(  # noqa: PLR0913
     token,
     ch_name,
     ch_id,
@@ -139,7 +136,9 @@ def error_with_image(
     split_send(token, ch_name, title, message, formatter)
 
     if attatch_img is not None:
-        assert ch_id is not None
+        if ch_id is None:
+            raise ValueError("ch_is is None")  # noqa: TRY003, EM101
+
         error_img(token, ch_id, title, attatch_img["data"], attatch_img["text"])
 
     footprint.update(ERROR_NOTIFY_FOOTPRINT)
@@ -147,7 +146,7 @@ def error_with_image(
 
 # NOTE: テスト用
 def hist_clear():
-    global notify_hist
+    global notify_hist  # noqa: PLW0603
 
     notify_hist = []
 
@@ -167,7 +166,6 @@ def hist_get():
 
 
 if __name__ == "__main__":
-    import os
     import sys
 
     import logger
@@ -188,12 +186,12 @@ if __name__ == "__main__":
 
     client = slack_sdk.WebClient(token=config["SLACK"]["BOT_TOKEN"])
 
-    img = PIL.Image.open(pathlib.Path(os.path.dirname(__file__), config["WEATHER"]["ICON"]["THERMO"]["PATH"]))
+    img = PIL.Image.open(pathlib.Path(__file__).parent / config["WEATHER"]["ICON"]["THERMO"]["PATH"])
     if "INFO" in config["SLACK"]:
         info(
             config["SLACK"]["BOT_TOKEN"],
             test_ch_name,
-            os.path.basename(__file__),
+            pathlib.Path(__file__).name,
             "メッセージ\nメッセージ",
         )
 
@@ -201,7 +199,7 @@ if __name__ == "__main__":
         error(
             config["SLACK"]["BOT_TOKEN"],
             test_ch_name,
-            os.path.basename(__file__),
+            pathlib.Path(__file__).name,
             "エラーメッセージ",
             0,
         )
@@ -211,7 +209,7 @@ if __name__ == "__main__":
             config["SLACK"]["BOT_TOKEN"],
             test_ch_name,
             test_ch_id,
-            os.path.basename(__file__),
+            pathlib.Path(__file__).name,
             "エラーメッセージ",
             {"data": img, "text": "エラー時のスクリーンショット"},
             0,

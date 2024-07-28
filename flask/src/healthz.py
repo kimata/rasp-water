@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Liveness のチェックを行います
 
@@ -28,17 +27,13 @@ from config import load_config
 
 def check_liveness_impl(name, liveness_file, interval):
     if not liveness_file.exists():
-        logging.warning("{name} is not executed.".format(name=name))
+        logging.warning("%s is not executed.", name)
         return False
 
     elapsed = time.time() - liveness_file.stat().st_mtime
     # NOTE: 少なくとも1分は様子を見る
     if elapsed > max(interval * 2, 60):
-        logging.warning(
-            "Execution interval of {name} is too long. ({elapsed:,} sec)".format(
-                name=name, elapsed=elapsed.seconds
-            )
-        )
+        logging.warning("Execution interval of %s is too long. %s sec)", name, f"{elapsed.seconds:,}")
         return False
 
     return True
@@ -46,12 +41,15 @@ def check_liveness_impl(name, liveness_file, interval):
 
 def check_port(port):
     try:
-        if requests.get("http://{address}:{port}/".format(address="127.0.0.1", port=port)).status_code == 200:
+        if (
+            requests.get(
+                "http://{address}:{port}/".format(address="127.0.0.1", port=port), timeout=5
+            ).status_code
+            == 200
+        ):
             return True
-    except:
-        pass
-
-    logging.warning("Failed to access Flask web server")
+    except Exception:
+        logging.exception("Failed to access Flask web server")
 
     return False
 
@@ -60,10 +58,8 @@ def check_liveness(target_list, port):
     for target in target_list:
         if not check_liveness_impl(target["name"], target["liveness_file"], target["interval"]):
             return False
-    if not check_port(port):
-        return False
 
-    return True
+    return check_port(port)
 
 
 ######################################################################
@@ -73,28 +69,24 @@ config_file = args["-c"]
 port = args["-p"]
 debug_mode = args["-d"]
 
-if debug_mode:
-    log_level = logging.DEBUG
-else:
-    log_level = logging.INFO
+log_level = logging.DEBUG if debug_mode else logging.INFO
 
 logger.init(
     "hems.rasp-water",
     level=log_level,
 )
 
-logging.info("Using config config: {config_file}".format(config_file=config_file))
+logging.info("Using config config: %s", config_file)
 config = load_config(config_file)
 
-target_list = []
-for name in ["scheduler", "valve_control", "flow_notify"]:
-    target_list.append(
-        {
-            "name": name,
-            "liveness_file": pathlib.Path(config["liveness"]["file"][name]),
-            "interval": 10,
-        }
-    )
+target_list = [
+    {
+        "name": name,
+        "liveness_file": pathlib.Path(config["liveness"]["file"][name]),
+        "interval": 10,
+    }
+    for name in ["scheduler", "valve_control", "flow_notify"]
+]
 
 if check_liveness(target_list, port):
     logging.info("OK.")

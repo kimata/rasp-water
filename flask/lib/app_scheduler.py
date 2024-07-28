@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 import logging
 import pathlib
 import pickle
@@ -20,7 +19,7 @@ should_terminate = False
 
 
 def init():
-    global schedule_lock
+    global schedule_lock  # noqa: PLW0603
     schedule_lock = threading.Lock()
 
 
@@ -36,9 +35,8 @@ def valve_auto_control_impl(config, period):
         # )
         # logging.debug(res.text)
         # return res.status_code == 200
-    except:
-        logging.warning(traceback.format_exc())
-        pass
+    except Exception:
+        logging.exception("Failed to control valve automatically")
 
     return False
 
@@ -46,7 +44,7 @@ def valve_auto_control_impl(config, period):
 def valve_auto_control(config, period):
     logging.info("Starts automatic control of the valve")
 
-    for i in range(RETRY_COUNT):
+    for _ in range(RETRY_COUNT):
         if valve_auto_control_impl(config, period):
             return True
 
@@ -54,7 +52,7 @@ def valve_auto_control(config, period):
     return False
 
 
-def schedule_validate(schedule_data):
+def schedule_validate(schedule_data):  # noqa: C901, PLR0911
     if len(schedule_data) != 2:
         return False
 
@@ -62,16 +60,16 @@ def schedule_validate(schedule_data):
         for key in ["is_active", "time", "period", "wday"]:
             if key not in entry:
                 return False
-        if type(entry["is_active"]) != bool:
+        if type(entry["is_active"]) is not bool:
             return False
         if not re.compile(r"\d{2}:\d{2}").search(entry["time"]):
             return False
-        if type(entry["period"]) != int:
+        if type(entry["period"]) is not int:
             return False
         if len(entry["wday"]) != 7:
             return False
         for wday_flag in entry["wday"]:
-            if type(wday_flag) != bool:
+            if type(wday_flag) is not bool:
                 return False
     return True
 
@@ -81,27 +79,24 @@ def schedule_store(schedule_data):
     try:
         with schedule_lock:
             SCHEDULE_DATA_PATH.parent.mkdir(parents=True, exist_ok=True)
-            with open(SCHEDULE_DATA_PATH, "wb") as f:
+            with pathlib.Path.open(SCHEDULE_DATA_PATH, "wb") as f:
                 pickle.dump(schedule_data, f)
-    except:
-        logging.error(traceback.format_exc())
+    except Exception:
+        logging.exception("Failed to save schedule settings.")
         app_log("😵 スケジュール設定の保存に失敗しました。", APP_LOG_LEVEL.ERROR)
-        pass
 
 
 def schedule_load():
     global schedule_lock
     if SCHEDULE_DATA_PATH.exists():
         try:
-            with schedule_lock:
-                with open(SCHEDULE_DATA_PATH, "rb") as f:
-                    schedule_data = pickle.load(f)
-                    if schedule_validate(schedule_data):
-                        return schedule_data
-        except:
-            logging.error(traceback.format_exc())
+            with schedule_lock, pathlib.Path.open(SCHEDULE_DATA_PATH, "rb") as f:
+                schedule_data = pickle.load(f)  # noqa: S301
+                if schedule_validate(schedule_data):
+                    return schedule_data
+        except Exception:
+            logging.exception("Failed to load schedule settings.")
             app_log("😵 スケジュール設定の読み出しに失敗しました。", APP_LOG_LEVEL.ERROR)
-            pass
 
     return [
         {
@@ -113,7 +108,7 @@ def schedule_load():
     ] * 2
 
 
-def set_schedule(config, schedule_data):
+def set_schedule(config, schedule_data):  # noqa: C901
     schedule.clear()
 
     for entry in schedule_data:
@@ -150,10 +145,10 @@ def set_schedule(config, schedule_data):
             )
 
     for job in schedule.get_jobs():
-        logging.info("Next run: {next_run}".format(next_run=job.next_run))
+        logging.info("Next run: %s", job.next_run)
 
     idle_sec = schedule.idle_seconds()
-    logging.info("Time to next jobs is {idle} sec".format(idle=idle_sec))
+    logging.info("Time to next jobs is %d sec", idle_sec)
 
     return idle_sec
 
@@ -182,12 +177,11 @@ def schedule_worker(config, queue):
                 schedule_store(schedule_data)
 
             schedule.run_pending()
-            logging.debug("Sleep {sleep_sec} sec...".format(sleep_sec=sleep_sec))
+            logging.debug("Sleep %d sec...", sleep_sec)
             time.sleep(sleep_sec)
         except OverflowError:  # pragma: no cover
             # NOTE: テストする際，freezer 使って日付をいじるとこの例外が発生する
             logging.debug(traceback.format_exc())
-            pass
 
         if i % (10 / sleep_sec) == 0:
             liveness_file.touch()
@@ -207,7 +201,7 @@ if __name__ == "__main__":
     logger.init("test", level=logging.DEBUG)
 
     def test_func():
-        global should_terminate
+        global should_terminate  # noqa: PLW0603
         logging.info("TEST")
 
         should_terminate = True

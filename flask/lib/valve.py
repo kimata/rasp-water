@@ -1,6 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
 import inspect
 import logging
 import os
@@ -61,12 +59,12 @@ TIME_OVER_FAIL = 5
 TIME_ZERO_TAIL = 5
 
 
-class VALVE_STATE(IntEnum):
+class VALVE_STATE(IntEnum):  # noqa: N801
     OPEN = 1
     CLOSE = 0
 
 
-class CONTROL_MODE(IntEnum):
+class CONTROL_MODE(IntEnum):  # noqa: N801
     TIMER = 1
     IDLE = 0
 
@@ -74,7 +72,7 @@ class CONTROL_MODE(IntEnum):
 if (os.environ.get("DUMMY_MODE", "false") != "true") and (
     os.environ.get("TEST", "false") != "true"
 ):  # pragma: no cover
-    import RPi.GPIO as GPIO
+    from RPi import GPIO
 
     def conv_rawadc_to_flow(adc):
         flow = (adc * ADC_SCALE_VALUE * FLOW_SCALE_MAX) / 5000.0
@@ -85,9 +83,9 @@ if (os.environ.get("DUMMY_MODE", "false") != "true") and (
 
     def get_flow():
         try:
-            with open(ADC_VALUE_PATH, "r") as f:
+            with pathlib.Path.open(ADC_VALUE_PATH, "r") as f:
                 return {"flow": conv_rawadc_to_flow(int(f.read())), "result": "success"}
-        except:
+        except Exception:
             return {"flow": 0, "result": "fail"}
 
 else:
@@ -106,23 +104,29 @@ else:
         time_stop = None
         gpio_hist = []
 
-        def setmode(mode):
+        @staticmethod
+        def setmode(mode):  # noqa: ARG004
             return
 
-        def setup(gpio, direction):
+        @staticmethod
+        def setup(gpio, direction):  # noqa: ARG004
             return
 
+        @staticmethod
         def hist_get():
             return GPIO.gpio_hist
 
+        @staticmethod
         def hist_clear():
             GPIO.gpio_hist = []
 
+        @staticmethod
         def hist_add(hist):
             GPIO.gpio_hist.append(hist)
 
-        def output(gpio, value):
-            logging.debug("set GPIO.output = {state}".format(state="open" if value == 1 else "close"))
+        @staticmethod
+        def output(gpio, value):  # noqa: ARG004
+            logging.debug("set GPIO.output = %s", "open" if value == 1 else "close")
             if value == 0:
                 if GPIO.time_start is not None:
                     GPIO.hist_add(
@@ -149,12 +153,13 @@ else:
                 )
 
             GPIO.state = value
-            return
 
-        def input(gpio):
+        @staticmethod
+        def input(gpio):  # noqa: ARG004
             return GPIO.state
 
-        def setwarnings(warnings):
+        @staticmethod
+        def setwarnings(warnings):  # noqa: ARG004
             return
 
     def get_flow():
@@ -165,7 +170,7 @@ else:
                 flow = max(
                     0,
                     min(
-                        get_flow.prev_flow + (random.random() - 0.5) * (FLOW_SCALE_MAX / 5.0),
+                        get_flow.prev_flow + (random.random() - 0.5) * (FLOW_SCALE_MAX / 5.0),  # noqa: S311
                         FLOW_SCALE_MAX,
                     ),
                 )
@@ -193,7 +198,7 @@ should_terminate = False
 # バルブを一定時間開けます．
 # freezegun を使ったテストのため，この関数の中では，
 # time.time() の代わりに valve_time() を使う．
-def control_worker(config, queue):
+def control_worker(config, queue):  # noqa: PLR0912, PLR0915, C901
     global should_terminate
 
     sleep_sec = 0.1
@@ -249,17 +254,18 @@ def control_worker(config, queue):
                 if STAT_PATH_VALVE_CONTROL_COMMAND.exists():
                     # NOTE: バルブコマンドが存在したら，閉じる時間をチェックして，必要に応じて閉じる
                     try:
-                        with valve_open(STAT_PATH_VALVE_CONTROL_COMMAND, "r") as f:
+                        with valve_open(STAT_PATH_VALVE_CONTROL_COMMAND) as f:
                             time_to_close = float(f.read())
 
-                            # NOTE: テストの際に freezegun 使う関係で，単純な大小比較だけではなく差分絶対値の比較も行う
+                            # NOTE: テストの際に freezegun 使う関係で，
+                            # 単純な大小比較だけではなく差分絶対値の比較も行う
                             if (valve_time() > time_to_close) or (abs(valve_time() - time_to_close) < 0.01):
                                 logging.info("Times is up, close valve")
                                 # NOTE: 下記の関数の中で
                                 # STAT_PATH_VALVE_CONTROL_COMMAND は削除される
                                 set_state(VALVE_STATE.CLOSE)
                                 time_close = valve_time()
-                    except:
+                    except Exception:
                         logging.warning(traceback.format_exc())
                 if (time_close is None) and STAT_PATH_VALVE_CLOSE.exists():
                     # NOTE: 常にバルブコマンドで制御するので，基本的にここには来ない
@@ -293,12 +299,22 @@ def control_worker(config, queue):
                     )
 
                     if (period_sec > TIME_CLOSE_FAIL) and (total < 1):
-                        queue.put({"type": "error", "message": "😵 元栓が閉まっている可能性があります。"})
+                        queue.put(
+                            {
+                                "type": "error",
+                                "message": "😵 元栓が閉まっている可能性があります。",
+                            }
+                        )
 
                     stop_measure = True
                 elif (valve_time() - time_close) > TIME_OPEN_FAIL:
                     set_state(VALVE_STATE.CLOSE)
-                    queue.put({"type": "error", "message": "😵 バルブを閉めても水が流れ続けています。"})
+                    queue.put(
+                        {
+                            "type": "error",
+                            "message": "😵 バルブを閉めても水が流れ続けています。",
+                        }
+                    )
                     stop_measure = True
 
                 if stop_measure:
@@ -324,11 +340,12 @@ def control_worker(config, queue):
 
 
 def init(config, queue, pin=GPIO_PIN_DEFAULT):
-    global should_terminate
-    global worker
-    global pin_no
+    global should_terminate  # noqa: PLW0603
+    global worker  # noqa: PLW0603
+    global pin_no  # noqa: PLW0603
 
-    assert worker is None
+    if worker is not None:
+        raise ValueError("worker should be None")  # noqa: TRY003, EM101
 
     should_terminate = False
 
@@ -338,7 +355,7 @@ def init(config, queue, pin=GPIO_PIN_DEFAULT):
 
     logging.info("Setting scale of ADC")
     if pathlib.Path(ADC_SCALE_PATH).exists():
-        with open(ADC_SCALE_PATH, "w") as f:
+        with pathlib.Path.open(ADC_SCALE_PATH, "w") as f:
             f.write(str(ADC_SCALE_VALUE))
 
     worker = threading.Thread(
@@ -352,8 +369,8 @@ def init(config, queue, pin=GPIO_PIN_DEFAULT):
 
 
 def term():
-    global worker
-    global should_terminate
+    global worker  # noqa: PLW0603
+    global should_terminate  # noqa: PLW0603
 
     should_terminate = True
     worker.join()
@@ -365,22 +382,17 @@ def set_state(valve_state):
     global pin_no
 
     logging.debug(
-        "set_state = {state} from {caller_func} at {caller_file}:{caller_line}".format(
-            state=valve_state,
-            caller_func=inspect.stack()[1].function,
-            caller_file=inspect.stack()[1].filename,
-            caller_line=inspect.stack()[1].lineno,
-        )
+        "set_state = %s from %s at %s:%d",
+        valve_state,
+        inspect.stack()[1].function,
+        inspect.stack()[1].filename,
+        inspect.stack()[1].lineno,
     )
 
     curr_state = get_state()
 
     if valve_state != curr_state:
-        logging.info(
-            "VALVE: {curr_state} -> {valve_state}".format(
-                curr_state=curr_state.name, valve_state=valve_state.name
-            )
-        )
+        logging.info("VALVE: %s -> %s", curr_state.name, valve_state.name)
 
     GPIO.setwarnings(False)
     GPIO.setmode(GPIO.BCM)
@@ -418,7 +430,7 @@ def get_state():
 
 
 def set_control_mode(open_sec):
-    logging.info("Open valve for {open_sec} sec".format(open_sec=open_sec))
+    logging.info("Open valve for %d sec", open_sec)
 
     set_state(VALVE_STATE.OPEN)
 
@@ -426,13 +438,13 @@ def set_control_mode(open_sec):
 
     STAT_PATH_VALVE_CONTROL_COMMAND.parent.mkdir(parents=True, exist_ok=True)
 
-    with open(STAT_PATH_VALVE_CONTROL_COMMAND, "w") as f:
-        f.write("{time_close:.3f}".format(time_close=time_close))
+    with pathlib.Path.open(STAT_PATH_VALVE_CONTROL_COMMAND, "w") as f:
+        f.write(f"{time_close:.3f}")
 
 
 def get_control_mode():
     if STAT_PATH_VALVE_CONTROL_COMMAND.exists():
-        with open(STAT_PATH_VALVE_CONTROL_COMMAND, "r") as f:
+        with pathlib.Path.open(STAT_PATH_VALVE_CONTROL_COMMAND) as f:
             time_close = float(f.read())
             time_now = valve_time()
 
@@ -463,11 +475,11 @@ if __name__ == "__main__":
 
     set_state(VALVE_STATE.OPEN)
     time.sleep(0.5)
-    logging.info("Flow: {flow:.2f}".format(flow=get_flow()["flow"]))
+    logging.info("Flow: %.2f", get_flow()["flow"])
     time.sleep(0.5)
-    logging.info("Flow: {flow:.2f}".format(flow=get_flow()["flow"]))
+    logging.info("Flow: %.2f", get_flow()["flow"])
     set_state(VALVE_STATE.CLOSE)
-    logging.info("Flow: {flow:.2f}".format(flow=get_flow()["flow"]))
+    logging.info("Flow: %.2f", get_flow()["flow"])
 
     set_control_mode(60)
     time.sleep(1)

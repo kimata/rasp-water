@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 import datetime
 import os
 import tracemalloc
@@ -27,7 +26,7 @@ def print_memory():
 @blueprint.route("/api/snapshot", methods=["GET"])
 @support_jsonp
 def snap():
-    global snapshot_prev
+    global snapshot_prev  # noqa: PLW0603
 
     if not snapshot_prev:
         tracemalloc.start()
@@ -35,15 +34,11 @@ def snap():
 
         return {"msg": "taken snapshot"}
     else:
-        lines = []
         snapshot = tracemalloc.take_snapshot()
         top_stats = snapshot.compare_to(snapshot_prev, "lineno")
         snapshot_prev = snapshot
 
-        for stat in top_stats[:10]:
-            lines.append(str(stat))
-
-        return jsonify(lines)
+        return jsonify([str(stat) for stat in top_stats[:10]])
 
 
 @blueprint.route("/api/sysinfo", methods=["GET"])
@@ -55,6 +50,6 @@ def api_sysinfo():
             "timezone": str(tzlocal.get_localzone()),
             "image_build_date": os.environ.get("IMAGE_BUILD_DATE", ""),
             "uptime": uptime.boottime().isoformat(),
-            "loadAverage": "%.2f, %.2f, %.2f" % os.getloadavg(),
+            "loadAverage": "{:.2f}, {:.2f}, {:.2f}".format(*os.getloadavg()),
         }
     )

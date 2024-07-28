@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 import datetime
 import logging
 import os
@@ -19,7 +18,7 @@ from webapp_event import EVENT_TYPE, notify_event
 from flask import Blueprint, g, jsonify, request
 
 
-class APP_LOG_LEVEL(IntEnum):
+class APP_LOG_LEVEL(IntEnum):  # noqa: N801
     INFO = 0
     WARN = 1
     ERROR = 2
@@ -36,16 +35,17 @@ should_terminate = False
 
 
 def init(config_):
-    global config
-    global sqlite
-    global log_lock
-    global log_queue
-    global log_thread
-    global should_terminate
+    global config  # noqa: PLW0603
+    global sqlite  # noqa: PLW0603
+    global log_lock  # noqa: PLW0603
+    global log_queue  # noqa: PLW0603
+    global log_thread  # noqa: PLW0603
+    global should_terminate  # noqa: PLW0603
 
     config = config_
 
-    assert sqlite is None
+    if sqlite is not None:
+        raise ValueError("sqlite should be None")  # noqa: TRY003, EM101
 
     sqlite = sqlite3.connect(LOG_DB_PATH, check_same_thread=False)
     sqlite.execute(
@@ -63,9 +63,9 @@ def init(config_):
 
 
 def term():
-    global sqlite
-    global log_thread
-    global should_terminate
+    global sqlite  # noqa: PLW0603
+    global log_thread  # noqa: PLW0603
+    global should_terminate  # noqa: PLW0603
 
     if log_thread is None:
         return
@@ -86,11 +86,11 @@ def app_log_impl(message, level):
         # NOTE: SQLite に記録する時刻はローカルタイムにする
         sqlite.execute(
             'INSERT INTO log VALUES (NULL, DATETIME("now", ?), ?)',
-            ["{offset} hours".format(offset=TIMEZONE_OFFSET), message],
+            [f"{TIMEZONE_OFFSET} hours", message],
         )
         sqlite.execute(
             'DELETE FROM log WHERE date <= DATETIME("now", ?, "-60 days")',
-            ["{offset} hours".format(offset=TIMEZONE_OFFSET)],
+            [f"{TIMEZONE_OFFSET} hours"],
         )
         sqlite.commit()
 
@@ -129,7 +129,7 @@ def app_log_worker(log_queue):
         except OverflowError:  # pragma: no cover
             # NOTE: テストする際，freezer 使って日付をいじるとこの例外が発生する
             logging.debug(traceback.format_exc())
-            pass
+
         time.sleep(sleep_sec)
 
 
@@ -154,7 +154,7 @@ def get_log(stop_day):
     cur.execute(
         'SELECT * FROM log WHERE date <= DATETIME("now", ?,?) ORDER BY id DESC LIMIT 500',
         # NOTE: デモ用に stop_day 日前までののログしか出さない指定ができるようにるす
-        ["{offset} hours".format(offset=TIMEZONE_OFFSET), "-{stop_day} days".format(stop_day=stop_day)],
+        [f"{TIMEZONE_OFFSET} hours", f"-{stop_day} days"],
     )
     return cur.fetchall()
 
@@ -213,4 +213,4 @@ if __name__ == "__main__":
 
     init(load_config())
 
-    print(get_log(1))
+    print(get_log(1))  # noqa: T201

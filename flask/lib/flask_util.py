@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 import functools
 import gzip
 import io
@@ -65,7 +64,7 @@ def support_jsonp(f):
 def remote_host(request):
     try:
         return socket.gethostbyaddr(request.remote_addr)[0]
-    except:
+    except Exception:
         return request.remote_addr
 
 

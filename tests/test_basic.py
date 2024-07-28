@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
+# ruff: noqa: S101
 import datetime
 import json
 import logging
@@ -16,10 +15,9 @@ import pytest
 sys.path.append(str(pathlib.Path(__file__).parent.parent / "flask" / "app"))
 sys.path.append(str(pathlib.Path(__file__).parent.parent / "flask" / "lib"))
 
+from app import create_app
 from weather_forecast import get_rain_fall as get_rain_fall_orig
 from webapp_config import TIMEZONE, TIMEZONE_PYTZ
-
-from app import create_app
 
 CONFIG_FILE = "config.example.yaml"
 
@@ -45,8 +43,8 @@ def slack_mock():
         yield fixture
 
 
-@pytest.fixture(scope="function", autouse=True)
-def clear():
+@pytest.fixture(autouse=True)
+def _clear():
     import notify_slack
 
     notify_slack.interval_clear()
@@ -64,7 +62,7 @@ def app():
         test_terminate()
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture()
 def client(app, mocker):
     import slack_sdk
 
@@ -100,7 +98,7 @@ def client(app, mocker):
 
 
 def time_test(offset_min=0):
-    return TIMEZONE_PYTZ.localize(datetime.datetime.now().replace(hour=0, minute=0 + offset_min, second=0))
+    return TIMEZONE_PYTZ.localize(datetime.datetime.now().replace(hour=0, minute=0 + offset_min, second=0))  # noqa: DTZ005
 
 
 def time_str(time):
@@ -108,7 +106,7 @@ def time_str(time):
 
 
 def move_to(freezer, target_time):
-    logging.debug("Freeze time at {time}".format(time=time_str(target_time)))
+    logging.debug("Freeze time at %s", time_str(target_time))
     # NOTE: schedule と freezeer を組み合わせた場合，タイムゾーンの調整が必要
     freezer.move_to(target_time + datetime.timedelta(hours=+9))
 
@@ -139,27 +137,27 @@ def ctrl_log_check(expect_list, is_strict=True, is_error=True):
             assert hist_list == expect_list
         else:
             if is_error and (len(hist_list) > len(expect_list)):
-                for i in range(len(hist_list) - len(expect_list)):
+                for _ in range(len(hist_list) - len(expect_list)):
                     expect_list.append(expect_list[-1])
 
             assert len(hist_list) == len(expect_list)
             for i in range(len(expect_list)):
                 if expect_list[i]["state"] == "open":
-                    assert hist_list[i] == expect_list[i], "{i} 番目の操作が期待値と異なります。".format(i=i)
+                    assert hist_list[i] == expect_list[i], f"{i} 番目の操作が期待値と異なります。"
+
+                if "period" in expect_list[i]:
+                    assert (hist_list[i] == expect_list[i]) or (
+                        hist_list[i]
+                        == {
+                            "period": expect_list[i]["period"] - 1,
+                            "state": expect_list[i]["state"],
+                        }
+                    ), f"{i} 番目の操作が期待値と異なります。"
                 else:
-                    if "period" in expect_list[i]:
-                        assert (hist_list[i] == expect_list[i]) or (
-                            hist_list[i]
-                            == {
-                                "period": expect_list[i]["period"] - 1,
-                                "state": expect_list[i]["state"],
-                            }
-                        ), "{i} 番目の操作が期待値と異なります。".format(i=i)
-                    else:
-                        assert hist_list[i] == expect_list[i], "{i} 番目の操作が期待値と異なります。".format(i=i)
+                    assert hist_list[i] == expect_list[i], f"{i} 番目の操作が期待値と異なります。"
 
 
-def app_log_check(
+def app_log_check(  # noqa: PLR0912, C901
     client,
     expect_list,
     is_strict=True,
@@ -174,7 +172,7 @@ def app_log_check(
         # NOTE: クリアする直前のログが残っている可能性があるので，+1 でも OK とする
         assert (len(log_list) == len(expect_list)) or (len(log_list) == (len(expect_list) + 1))
 
-    for (i, expect) in enumerate(reversed(expect_list)):
+    for i, expect in enumerate(reversed(expect_list)):
         if expect == "START_AUTO":
             assert "水やりを開始" in log_list[i]["message"]
         elif expect == "STOP_AUTO":
@@ -202,7 +200,7 @@ def app_log_check(
         elif expect == "CLEAR":
             assert "クリアされました" in log_list[i]["message"]
         else:
-            assert False, "テストコードのバグです．({expect})".format(expect=expect)
+            raise AssertionError(f"テストコードのバグです．({expect})")  # noqa: EM102
 
 
 def ctrl_log_clear():
@@ -237,49 +235,44 @@ def check_notify_slack(message, index=-1):
         assert notify_hist == [], "正常なはずなのに，エラー通知がされています。"
     else:
         assert len(notify_hist) != 0, "異常が発生したはずなのに，エラー通知がされていません。"
-        assert notify_hist[index].find(message) != -1, "「{message}」が Slack で通知されていません。".format(
-            message=message
-        )
+        assert notify_hist[index].find(message) != -1, f"「{message}」が Slack で通知されていません。"
 
 
 ######################################################################
 def test_time(freezer):
     import schedule
 
+    logging.debug("datetime.now()                 = %s", datetime.datetime.now())  # noqa: DTZ005
+    logging.debug("datetime.now(JST)              = %s", datetime.datetime.now(TIMEZONE))
     logging.debug(
-        "datetime.now()                 = {date}".format(date=datetime.datetime.now()),
-    )
-    logging.debug("datetime.now(JST)              = {date}".format(date=datetime.datetime.now(TIMEZONE)))
-    logging.debug(
-        "datetime.now().replace(...)    = {date}".format(
-            date=datetime.datetime.now().replace(hour=0, minute=0, second=0)
-        )
+        "datetime.now().replace(...)    = %s",
+        datetime.datetime.now().replace(hour=0, minute=0, second=0),  # noqa: DTZ005
     )
     logging.debug(
-        "datetime.now(JST).replace(...) = {date}".format(
-            date=datetime.datetime.now(TIMEZONE).replace(hour=0, minute=0, second=0)
-        )
+        "datetime.now(JST).replace(...) = %s",
+        datetime.datetime.now(TIMEZONE).replace(hour=0, minute=0, second=0),
     )
 
     move_to(freezer, time_test(0))
 
     logging.debug(
-        "datetime.now()                 = {date}".format(date=datetime.datetime.now()),
+        "datetime.now()                 = %s",
+        datetime.datetime.now(),  # noqa: DTZ005
     )
-    logging.debug("datetime.now(JST)              = {date}".format(date=datetime.datetime.now(TIMEZONE)))
+    logging.debug("datetime.now(JST)              = %s", datetime.datetime.now(TIMEZONE))
 
     schedule.clear()
     job_time_str = time_str(time_test(1))
-    logging.debug("set schedule at {time}".format(time=job_time_str))
+    logging.debug("set schedule at %s", job_time_str)
 
     job_add = schedule.every().day.at(job_time_str, TIMEZONE_PYTZ).do(lambda: True)
 
     for i, job in enumerate(schedule.get_jobs()):
-        logging.debug("Current schedule [{i}]: {next_run}".format(i=i, next_run=job.next_run))
+        logging.debug("Current schedule [%d]: %s", i, job.next_run)
 
     idle_sec = schedule.idle_seconds()
-    logging.error("Time to next jobs is {idle:.1f} sec".format(idle=idle_sec))
-    logging.debug("Next run is {time}".format(time=job_add.next_run))
+    logging.info("Time to next jobs is %.1f sec", idle_sec)
+    logging.debug("Next run is %s", job_add.next_run)
 
     assert abs(idle_sec - 60) < 5
 
@@ -673,7 +666,7 @@ def test_schedule_ctrl_inactive(client, freezer):
     check_notify_slack(None)
 
 
-def test_schedule_ctrl_invalid(client, mocker):
+def test_schedule_ctrl_invalid(client):
     import notify_slack
 
     notify_slack.interval_clear()
@@ -737,7 +730,17 @@ def test_schedule_ctrl_invalid(client, mocker):
 
     ctrl_log_check([])
     app_log_check(
-        client, ["CLEAR", "INVALID", "INVALID", "INVALID", "INVALID", "INVALID", "INVALID", "INVALID"]
+        client,
+        [
+            "CLEAR",
+            "INVALID",
+            "INVALID",
+            "INVALID",
+            "INVALID",
+            "INVALID",
+            "INVALID",
+            "INVALID",
+        ],
     )
     check_notify_slack("スケジュールの指定が不正です。")
 
@@ -878,9 +881,9 @@ def test_valve_flow_read_command_fail(client, mocker):
 
     def open_mock(file, mode="r", *args, **kwargs):
         if (file == valve.STAT_PATH_VALVE_CONTROL_COMMAND) and (mode == "r"):
-            raise RuntimeError()
-        else:
-            return orig_open(file, mode, *args, **kwargs)
+            raise RuntimeError("Failed to open (Test)")  # noqa: EM101, TRY003
+
+        return orig_open(file, mode, *args, **kwargs)
 
     mocker.patch("valve.valve_open", side_effect=open_mock)
 
@@ -1150,7 +1153,7 @@ def test_schedule_ctrl_read(client):
 def test_schedule_ctrl_read_fail_1(client):
     import webapp_config
 
-    with open(webapp_config.SCHEDULE_DATA_PATH, "wb") as f:
+    with pathlib.Path.open(webapp_config.SCHEDULE_DATA_PATH, "wb") as f:
         f.write(b"TEST")
 
     response = client.get("/rasp-water/api/schedule_ctrl")
@@ -1314,7 +1317,7 @@ def test_second_str():
     assert rasp_water_valve.second_str(61) == "1分1秒"
 
 
-def test_valve_init(client, mocker):
+def test_valve_init(mocker):
     import builtins
 
     import rasp_water_valve
@@ -1329,20 +1332,11 @@ def test_valve_init(client, mocker):
     file_mock.write.return_value = True
     orig_open = builtins.open
 
-    def open_mock(
-        file,
-        mode="r",
-        buffering=-1,
-        encoding=None,
-        errors=None,
-        newline=None,
-        closefd=True,
-        opener=None,
-    ):
+    def open_mock(file, mode="r", *args, **kwargs):
         if file == valve.ADC_SCALE_PATH:
             return file_mock
         else:
-            return orig_open(file, mode, buffering, encoding, errors, newline, closefd, opener)
+            return orig_open(file, mode, *args, **kwargs)
 
     mocker.patch("builtins.open", side_effect=open_mock)
 

@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 import datetime
 import pathlib
 
@@ -16,4 +15,4 @@ STATIC_FILE_PATH = pathlib.Path(__file__).parent.parent.parent / "dist" / "rasp-
 SCHEDULE_DATA_PATH = pathlib.Path(__file__).parent.parent / "data" / "schedule.dat"
 LOG_DB_PATH = pathlib.Path(__file__).parent.parent / "data" / "log.db"
 
-STAT_DIR_PATH = pathlib.Path("/dev/shm") / "rasp-water"
+STAT_DIR_PATH = pathlib.Path("/dev/shm") / "rasp-water"  # noqa: S108

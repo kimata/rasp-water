@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 import bz2
 import io
 import logging
@@ -20,14 +19,15 @@ def log_formatter(name):
 
 
 class GZipRotator:
+    @staticmethod
     def namer(name):
         return name + ".bz2"
 
+    @staticmethod
     def rotator(source, dest):
-        with open(source, "rb") as fs:
-            with bz2.open(dest, "wb") as fd:
-                fd.writelines(fs)
-        os.remove(source)
+        with pathlib.Path.open(source, "rb") as fs, bz2.open(dest, "wb") as fd:
+            fd.writelines(fs)
+        pathlib.Path.unlink(source)
 
 
 def init(name, level=logging.WARNING, log_dir_path=None, log_queue=None, is_str_log=False):
@@ -38,9 +38,9 @@ def init(name, level=logging.WARNING, log_dir_path=None, log_queue=None, is_str_
         log_dir_path = pathlib.Path(log_dir_path)
         log_dir_path.mkdir(exist_ok=True, parents=True)
 
-        log_file_path = str(log_dir_path / "{name}.log".format(name=name))
+        log_file_path = str(log_dir_path / f"{name}.log")
 
-        logging.info("Log to {log_file_path}".format(log_file_path=log_file_path))
+        logging.info("Log to %s", log_file_path)
 
         logger = logging.getLogger()
         log_handler = logging.handlers.RotatingFileHandler(
@@ -66,6 +66,8 @@ def init(name, level=logging.WARNING, log_dir_path=None, log_queue=None, is_str_
         logging.getLogger().addHandler(handler)
 
         return str_io
+
+    return None
 
 
 if __name__ == "__main__":

@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
+import pathlib
 import time
 
 
@@ -10,7 +9,7 @@ def exists(path):
 
 def update(path):
     path.parent.mkdir(parents=True, exist_ok=True)
-    with open(path, mode="w") as f:
+    with pathlib.Path.open(path, mode="w") as f:
         f.write(str(time.time()))
 
 
@@ -19,7 +18,7 @@ def elapsed(path):
     if not path.exists():
         return diff_sec
 
-    with open(path, mode="r") as f:
+    with pathlib.Path.open(path) as f:
         diff_sec -= float(f.read())
 
     return diff_sec
