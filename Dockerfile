@@ -20,7 +20,6 @@ RUN --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
     --mount=type=cache,target=/root/.cache/pypoetry,sharing=locked \
     poetry install --no-interaction
 
-
 FROM python:3.12.4-slim-bookworm AS prod
 
 ARG IMAGE_BUILD_DATE
