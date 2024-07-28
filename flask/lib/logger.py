@@ -25,7 +25,7 @@ class GZipRotator:
 
     @staticmethod
     def rotator(source, dest):
-        with pathlib.Path.open(source, "rb") as fs, bz2.open(dest, "wb") as fd:
+        with pathlib.Path(source).open(mode="rb") as fs, bz2.open(dest, "wb") as fd:
             fd.writelines(fs)
         pathlib.Path.unlink(source)
 

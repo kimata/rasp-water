@@ -83,7 +83,7 @@ if (os.environ.get("DUMMY_MODE", "false") != "true") and (
 
     def get_flow():
         try:
-            with pathlib.Path.open(ADC_VALUE_PATH, "r") as f:
+            with pathlib.Path(ADC_VALUE_PATH).open(mode="r") as f:
                 return {"flow": conv_rawadc_to_flow(int(f.read())), "result": "success"}
         except Exception:
             return {"flow": 0, "result": "fail"}
@@ -355,7 +355,7 @@ def init(config, queue, pin=GPIO_PIN_DEFAULT):
 
     logging.info("Setting scale of ADC")
     if pathlib.Path(ADC_SCALE_PATH).exists():
-        with pathlib.Path.open(ADC_SCALE_PATH, "w") as f:
+        with pathlib.Path(ADC_SCALE_PATH).open(mode="w") as f:
             f.write(str(ADC_SCALE_VALUE))
 
     worker = threading.Thread(
@@ -438,13 +438,13 @@ def set_control_mode(open_sec):
 
     STAT_PATH_VALVE_CONTROL_COMMAND.parent.mkdir(parents=True, exist_ok=True)
 
-    with pathlib.Path.open(STAT_PATH_VALVE_CONTROL_COMMAND, "w") as f:
+    with pathlib.Path(STAT_PATH_VALVE_CONTROL_COMMAND).open(mode="w") as f:
         f.write(f"{time_close:.3f}")
 
 
 def get_control_mode():
     if STAT_PATH_VALVE_CONTROL_COMMAND.exists():
-        with pathlib.Path.open(STAT_PATH_VALVE_CONTROL_COMMAND) as f:
+        with pathlib.Path(STAT_PATH_VALVE_CONTROL_COMMAND).open() as f:
             time_close = float(f.read())
             time_now = valve_time()
 

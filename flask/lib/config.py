@@ -29,6 +29,5 @@ def get_db_config(config):
 
 
 def load_config(config_path=CONFIG_PATH):
-    path = str(abs_path(config_path))
-    with pathlib.Path.open(path, "r") as file:
+    with abs_path(config_path).open(mode="r") as file:
         return yaml.load(file, Loader=yaml.SafeLoader)

@@ -30,8 +30,7 @@ def is_soil_wet_1():
 
         points = list(filter(lambda x: x is not None, (x["sum"] for x in result.get_points())))
 
-        with pathlib.Path.open(
-            pathlib.Path.resolve(__file__).parent / "soilwet.log",
+        with (pathlib.Path.resolve(__file__).parent / "soilwet.log").open(
             mode="a",
         ) as f:
             now = datetime.datetime.now(tz=datetime.timezone(datetime.timedelta(hours=9)))
@@ -57,8 +56,7 @@ def is_soil_wet_2():
 
         points = list(filter(lambda x: x is not None, (x["sum"] for x in result.get_points())))
 
-        with pathlib.Path.open(
-            pathlib.Path.resolve(__file__).parent / "soilwet.log",
+        with (pathlib.Path.resolve(__file__).parent / "soilwet.log").open(
             mode="a",
         ) as f:
             now = datetime.now(tz=datetime.timezone(datetime.timedelta(hours=9)))
