@@ -51,9 +51,7 @@ def get_rain_fall(config):
         for x in filter(
             lambda x: (
                 datetime.datetime.now(TIMEZONE)
-                - TIMEZONE_PYTZ.localize(
-                    datetime.datetime.strptime(x["Date"], "%Y%m%d%H%M").astimezone(TIMEZONE_PYTZ)
-                )
+                - datetime.datetime.strptime(x["Date"], "%Y%m%d%H%M").astimezone(TIMEZONE_PYTZ)
             ).total_seconds()
             / (60 * 60)
             < config["weather"]["rain_fall"]["before_hour"],
@@ -63,7 +61,7 @@ def get_rain_fall(config):
 
     rainfall_total = functools.reduce(lambda x, y: x + y, rainfall_list)
 
-    logging.info("Rain fall total: %d (%s)", rainfall_total, ", ".join(rainfall_list))
+    logging.info("Rain fall total: %d (%s)", rainfall_total, ", ".join(f"{num:.1f}" for num in rainfall_list))
 
     rainfall_judge = rainfall_total > config["weather"]["rain_fall"]["threshold"]
     logging.info("Rain fall judge: %s", rainfall_judge)

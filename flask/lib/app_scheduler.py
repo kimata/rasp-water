@@ -79,7 +79,7 @@ def schedule_store(schedule_data):
     try:
         with schedule_lock:
             SCHEDULE_DATA_PATH.parent.mkdir(parents=True, exist_ok=True)
-            with pathlib.Path.open(SCHEDULE_DATA_PATH, "wb") as f:
+            with pathlib.Path(SCHEDULE_DATA_PATH).open(mode="wb") as f:
                 pickle.dump(schedule_data, f)
     except Exception:
         logging.exception("Failed to save schedule settings.")
@@ -90,7 +90,7 @@ def schedule_load():
     global schedule_lock
     if SCHEDULE_DATA_PATH.exists():
         try:
-            with schedule_lock, pathlib.Path.open(SCHEDULE_DATA_PATH, "rb") as f:
+            with schedule_lock, pathlib.Path(SCHEDULE_DATA_PATH).open(mode="rb") as f:
                 schedule_data = pickle.load(f)  # noqa: S301
                 if schedule_validate(schedule_data):
                     return schedule_data
@@ -148,7 +148,8 @@ def set_schedule(config, schedule_data):  # noqa: C901
         logging.info("Next run: %s", job.next_run)
 
     idle_sec = schedule.idle_seconds()
-    logging.info("Time to next jobs is %d sec", idle_sec)
+    if idle_sec is not None:
+        logging.info("Time to next jobs is %d sec", idle_sec)
 
     return idle_sec
 
@@ -177,7 +178,7 @@ def schedule_worker(config, queue):
                 schedule_store(schedule_data)
 
             schedule.run_pending()
-            logging.debug("Sleep %d sec...", sleep_sec)
+            logging.debug("Sleep %.1f sec...", sleep_sec)
             time.sleep(sleep_sec)
         except OverflowError:  # pragma: no cover
             # NOTE: テストする際，freezer 使って日付をいじるとこの例外が発生する

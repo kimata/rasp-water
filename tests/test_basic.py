@@ -1318,8 +1318,6 @@ def test_second_str():
 
 
 def test_valve_init(mocker):
-    import builtins
-
     import rasp_water_valve
     import valve
     from config import load_config
@@ -1330,15 +1328,15 @@ def test_valve_init(mocker):
     mocker.patch("pathlib.Path.exists", return_value=True)
     file_mock = mocker.MagicMock()
     file_mock.write.return_value = True
-    orig_open = builtins.open
+    orig_open = pathlib.Path.open
 
-    def open_mock(file, mode="r", *args, **kwargs):
-        if file == valve.ADC_SCALE_PATH:
+    def open_mock(self, mode="r", *args, **kwargs):
+        if str(self) == valve.ADC_SCALE_PATH:
             return file_mock
         else:
-            return orig_open(file, mode, *args, **kwargs)
+            return orig_open(self, mode, *args, **kwargs)
 
-    mocker.patch("builtins.open", side_effect=open_mock)
+    mocker.patch("pathlib.Path.open", new=open_mock)
 
     rasp_water_valve.init(load_config(CONFIG_FILE))
 
