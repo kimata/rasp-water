@@ -97,8 +97,10 @@ def client(app, mocker):
     test_client.delete()
 
 
-def time_test(offset_min=0):
-    return TIMEZONE_PYTZ.localize(datetime.datetime.now().replace(hour=0, minute=0 + offset_min, second=0))  # noqa: DTZ005
+def time_test(offset_min=0, offset_hour=0):
+    return datetime.datetime.now(tz=datetime.timezone(datetime.timedelta(hours=9))).replace(
+        hour=0 + offset_hour, minute=0 + offset_min, second=0
+    )
 
 
 def time_str(time):
@@ -107,6 +109,7 @@ def time_str(time):
 
 def move_to(freezer, target_time):
     logging.debug("Freeze time at %s", time_str(target_time))
+
     # NOTE: schedule と freezeer を組み合わせた場合，タイムゾーンの調整が必要
     freezer.move_to(target_time + datetime.timedelta(hours=+9))
 
