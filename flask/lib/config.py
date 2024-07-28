@@ -7,7 +7,7 @@ CONFIG_PATH = "config.yaml"
 
 
 def abs_path(config_path=CONFIG_PATH):
-    return pathlib.Path(pathlib.Path.getcwd(), config_path)
+    return pathlib.Path(pathlib.Path.cwd(), config_path)
 
 
 # NOTE: プロジェクトによって，大文字と小文字が異なるのでここで吸収する
