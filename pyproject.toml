@@ -24,6 +24,7 @@ dependencies = [
     "schedule==1.2.1",
     "slack-sdk>=3.31.0",
     "uptime>=3.0.1",
+    "tzlocal>=5.2",
 ]
 
 [build-system]
