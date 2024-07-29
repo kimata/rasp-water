@@ -17,7 +17,7 @@ coloredlogs = "^15.0.1"
 docopt = "^0.6.2"
 fluent-logger = "^0.11.0"
 influxdb-client = {extras = ["ciso"], version = "^1.36.1"}
-psutil = "^5.9.5"
+psutil = "^6.0.0"
 python = "^3.10"
 pytz = "^2023.3"
 # NOTE: 1.2.2 で入ったタイムゾーン周りの修正が悪さをするので，一旦 1.2.1 に固定する．
