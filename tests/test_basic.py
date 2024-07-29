@@ -280,6 +280,48 @@ def test_time(freezer):
     assert abs(idle_sec - 60) < 5
 
 
+# NOTE: schedule へのテストレポート用
+def test_time2(freezer):
+    import time
+
+    import pytz
+    import schedule
+
+    TIMEZONE = datetime.timezone(datetime.timedelta(hours=9), "JST")
+
+    logging.debug("time.localtime()               = %s", time.asctime(time.localtime(time.time())))
+    logging.debug("datetime.now()                 = %s", datetime.datetime.now())  # noqa: DTZ005
+    logging.debug("datetime.now(JST)              = %s", datetime.datetime.now(TIMEZONE))
+
+    freeze_time = datetime.datetime.now(tz=datetime.timezone(datetime.timedelta(hours=9))).replace(
+        hour=0, minute=0, second=0
+    ) + datetime.timedelta(hours=+9)  # NOTE: ここで +9 時間進める必要があるのは本来おかしい
+
+    logging.debug("Freeze time at %s", freeze_time)
+    freezer.move_to(freeze_time)
+
+    logging.debug("time.localtime()               = %s", time.asctime(time.localtime(time.time())))
+
+    logging.debug("datetime.now()                 = %s", datetime.datetime.now())  # noqa: DTZ005
+    logging.debug("datetime.now(JST)              = %s", datetime.datetime.now(TIMEZONE))
+
+    schedule.clear()
+
+    schedule_time = datetime.datetime.now(tz=datetime.timezone(datetime.timedelta(hours=9))).replace(
+        hour=0, minute=1, second=0
+    )
+    schedule_time_str = schedule_time.strftime("%H:%M")
+    logging.debug("set schedule at %s", schedule_time_str)
+
+    job_add = schedule.every().day.at(schedule_time_str, pytz.timezone("Asia/Tokyo")).do(lambda: True)
+
+    idle_sec = schedule.idle_seconds()
+    logging.info("Time to next jobs is %.1f sec", idle_sec)
+    logging.debug("Next run is %s", job_add.next_run)
+
+    assert abs(idle_sec - 60) < 5
+
+
 def test_redirect(client):
     response = client.get("/")
     assert response.status_code == 302
