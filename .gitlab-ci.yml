@@ -130,7 +130,6 @@ test-playwright-docker:
         - curl -sSf https://rye.astral.sh/get | RYE_NO_AUTO_INSTALL=1 RYE_INSTALL_OPTION="--yes" bash
         - source ~/.rye/env
         - rye add playwright
-        - CC=gcc rye sync
 
         - TARGET_IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${CI_JOB_NAME}-${CI_JOB_ID})
         - 'echo "Target: ${TARGET_IP}"'
