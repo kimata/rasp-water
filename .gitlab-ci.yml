@@ -92,7 +92,7 @@ test-playwright:
 
         - export TZ=Asia/Tokyo
 
-        - rye run ./flask/app/app.py -D 2>&1 > flask_log.txt &
+        - rye run python ./flask/app/app.py -D 2>&1 > flask_log.txt &
         - rye run pytest --tracing on --output tests/evidence/playwright tests/test_playwright.py
 
     cache:
