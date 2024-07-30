@@ -27,7 +27,7 @@ build-image:
     dependencies:
         - build-angular
 
-    # image: registry.green-rabbit.net:5000/kimata/local_ubuntu:240730C
+    image: registry.green-rabbit.net:5000/kimata/local_ubuntu:240730C
 
     variables:
         BUILDER: arm_builder
@@ -53,7 +53,7 @@ test-walk-through:
     dependencies:
         - build-angular
 
-    image: registry.green-rabbit.net:5000/kimata/local_ubuntu:240730C
+    image: registry.green-rabbit.net:5000/kimata/local_ubuntu:240730D
 
     script:
         - curl -sSf https://rye.astral.sh/get | RYE_NO_AUTO_INSTALL=1 RYE_INSTALL_OPTION="--yes" bash
@@ -77,7 +77,7 @@ test-playwright:
     dependencies:
         - build-angular
 
-    image: registry.green-rabbit.net:5000/kimata/local_ubuntu:240730C
+    image: registry.green-rabbit.net:5000/kimata/local_ubuntu:240730D
 
     script:
         # NOTE: テストに失敗するとテスト用のコンテナが残るので削除する
@@ -115,7 +115,7 @@ test-playwright-docker:
     stage: test
     needs: ["build-image"]
 
-    image: registry.green-rabbit.net:5000/kimata/local_ubuntu:240730C
+    image: registry.green-rabbit.net:5000/kimata/local_ubuntu:240730D
 
     script:
         # NOTE: テストに失敗するとテスト用のコンテナが残るので削除する
@@ -157,7 +157,7 @@ test-playwright-docker-demo:
     stage: test
     needs: ["build-image"]
 
-    image: registry.green-rabbit.net:5000/kimata/local_ubuntu:240730C
+    image: registry.green-rabbit.net:5000/kimata/local_ubuntu:240730D
 
     script:
         # NOTE: テストに失敗するとテスト用のコンテナが残るので削除する
