@@ -119,7 +119,7 @@ test-playwright-docker:
         - docker run --rm --detach=true --tty=true --name ${CI_JOB_NAME}-${CI_JOB_ID} --label job=${CI_JOB_NAME} ${CI_REGISTRY_IMAGE}
           ./flask/app/app.py -D
 
-        - CC=gcc rye sync
+        - rye sync --features=test
         - rye run playwright install --with-deps chromium
 
         - TARGET_IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${CI_JOB_NAME}-${CI_JOB_ID})
@@ -157,7 +157,7 @@ test-playwright-docker-demo:
         - docker run --rm --detach=true --tty=true --name ${CI_JOB_NAME}-${CI_JOB_ID} --label job=${CI_JOB_NAME} ${CI_REGISTRY_IMAGE}
           ./flask/app/app.py -D -c config.example.yaml
 
-        - CC=gcc rye sync
+        - rye sync --features=test
         - rye run playwright install --with-deps chromium
 
         - TARGET_IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${CI_JOB_NAME}-${CI_JOB_ID})
