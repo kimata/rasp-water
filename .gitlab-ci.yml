@@ -56,8 +56,6 @@ test-walk-through:
     image: registry.green-rabbit.net:5000/kimata/local_ubuntu:240730D
 
     script:
-        - curl -sSf https://rye.astral.sh/get | RYE_NO_AUTO_INSTALL=1 RYE_INSTALL_OPTION="--yes" bash
-        - source ~/.rye/env
         - CC=gcc rye sync
         - rye run pytest --cov=flask --cov-report=html tests/test_basic.py
 
@@ -89,9 +87,8 @@ test-playwright:
         - git clone https://gitlab.green-rabbit.net/kimata/hems_config.git
         - mv hems_config/rasp-water.yaml config.yaml
 
-        - curl -sSf https://rye.astral.sh/get | RYE_NO_AUTO_INSTALL=1 RYE_INSTALL_OPTION="--yes" bash
-        - source ~/.rye/env
-        - CC=gcc rye add playwright
+        - CC=gcc rye sync
+        - rye run playwright install --with-deps chromium
 
         - export TZ=Asia/Tokyo
 
@@ -126,9 +123,8 @@ test-playwright-docker:
         - docker run --rm --detach=true --tty=true --name ${CI_JOB_NAME}-${CI_JOB_ID} --label job=${CI_JOB_NAME} ${CI_REGISTRY_IMAGE}
           ./flask/app/app.py -D
 
-        - curl -sSf https://rye.astral.sh/get | RYE_NO_AUTO_INSTALL=1 RYE_INSTALL_OPTION="--yes" bash
-        - source ~/.rye/env
-        - CC=gcc rye add playwright
+        - CC=gcc rye sync
+        - rye run playwright install --with-deps chromium
 
         - TARGET_IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${CI_JOB_NAME}-${CI_JOB_ID})
         - 'echo "Target: ${TARGET_IP}"'
