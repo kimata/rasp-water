@@ -47,7 +47,7 @@ build-image:
 
 test-prepare:
     stage: pre-test
-    image: registry.green-rabbit.net:5000/kimata/local_ubuntu:240730D
+    image: registry.green-rabbit.net:5000/kimata/local_ubuntu:240730E
 
     script:
         - export GIT_SSL_NO_VERIFY=1
@@ -68,7 +68,7 @@ test-walk-through:
     stage: test
     needs: ["build-angular", "test-prepare"]
 
-    image: registry.green-rabbit.net:5000/kimata/local_ubuntu:240730D
+    image: registry.green-rabbit.net:5000/kimata/local_ubuntu:240730E
 
     script:
         - rye run pytest --cov=flask --cov-report=html tests/test_basic.py
@@ -87,15 +87,12 @@ test-playwright:
     stage: test
     needs: ["build-angular", "test-prepare"]
 
-    image: registry.green-rabbit.net:5000/kimata/local_ubuntu:240730D
+    image: registry.green-rabbit.net:5000/kimata/local_ubuntu:240730E
 
     script:
         # NOTE: テストに失敗するとテスト用のコンテナが残るので削除する
         - docker ps  --filter "label=job=${CI_JOB_NAME}" | grep hours | cut -d " " -f1 | while read id; do docker stop -t 5 $id; done || true
 
-        - export TZ=Asia/Tokyo
-
-        - rye run playwright install --with-deps chromium
         - rye run python ./flask/app/app.py -D 2>&1 > flask_log.txt &
         - rye run pytest --tracing on --output tests/evidence/playwright tests/test_playwright.py
 
@@ -115,7 +112,7 @@ test-playwright-docker:
     stage: test
     needs: ["build-angular", "test-prepare"]
 
-    image: registry.green-rabbit.net:5000/kimata/local_ubuntu:240730D
+    image: registry.green-rabbit.net:5000/kimata/local_ubuntu:240730E
 
     script:
         # NOTE: テストに失敗するとテスト用のコンテナが残るので削除する
@@ -128,7 +125,6 @@ test-playwright-docker:
         - TARGET_IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${CI_JOB_NAME}-${CI_JOB_ID})
         - 'echo "Target: ${TARGET_IP}"'
 
-        - rye run playwright install --with-deps chromium
         - rye run pytest --tracing on --output tests/evidence/playwright tests/test_playwright.py
           --host $(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${CI_JOB_NAME}-${CI_JOB_ID})
 
@@ -151,7 +147,7 @@ test-playwright-docker-demo:
     stage: test
     needs: ["build-angular", "test-prepare"]
 
-    image: registry.green-rabbit.net:5000/kimata/local_ubuntu:240730D
+    image: registry.green-rabbit.net:5000/kimata/local_ubuntu:240730E
 
     script:
         # NOTE: テストに失敗するとテスト用のコンテナが残るので削除する
@@ -164,7 +160,6 @@ test-playwright-docker-demo:
         - TARGET_IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${CI_JOB_NAME}-${CI_JOB_ID})
         - 'echo "Target: ${TARGET_IP}"'
 
-        - rye run playwright install --with-deps chromium
         - rye run pytest --tracing on --output tests/evidence/playwright tests/test_playwright.py
           --host $(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${CI_JOB_NAME}-${CI_JOB_ID})
 
