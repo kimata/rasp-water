@@ -50,10 +50,6 @@ test-prepare:
     image: registry.green-rabbit.net:5000/kimata/local_ubuntu:240730E
 
     script:
-        - export GIT_SSL_NO_VERIFY=1
-        - git clone https://gitlab.green-rabbit.net/kimata/hems_config.git
-        - mv hems_config/rasp-water.yaml config.yaml
-
         - CC=gcc rye sync
 
     artifacts:
@@ -92,6 +88,10 @@ test-playwright:
     script:
         # NOTE: テストに失敗するとテスト用のコンテナが残るので削除する
         - docker ps  --filter "label=job=${CI_JOB_NAME}" | grep hours | cut -d " " -f1 | while read id; do docker stop -t 5 $id; done || true
+
+        - export GIT_SSL_NO_VERIFY=1
+        - git clone https://gitlab.green-rabbit.net/kimata/hems_config.git
+        - mv hems_config/rasp-water.yaml config.yaml
 
         - rye run python ./flask/app/app.py -D 2>&1 > flask_log.txt &
         - rye run pytest --tracing on --output tests/evidence/playwright tests/test_playwright.py
