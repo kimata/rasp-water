@@ -3,6 +3,7 @@ image: docker:27.1-dind
 stages:
     - build-webapp
     - build-image
+    - pre-test
     - test
     - deploy
     - renovate
@@ -24,8 +25,6 @@ build-angular:
 build-image:
     stage: build-image
     needs: ["build-angular"]
-    dependencies:
-        - build-angular
 
     image: registry.green-rabbit.net:5000/kimata/local_ubuntu:240730C
 
@@ -47,16 +46,33 @@ build-image:
           --push --tag ${CI_REGISTRY_IMAGE} .
         # - docker buildx stop ${BUILDER}
 
+test-prepare:
+    stage: pre-test
+    image: registry.green-rabbit.net:5000/kimata/local_ubuntu:240730D
+
+    script:
+        - export GIT_SSL_NO_VERIFY=1
+        - git clone https://gitlab.green-rabbit.net/kimata/hems_config.git
+        - mv hems_config/rasp-water.yaml config.yaml
+
+        - CC=gcc rye sync
+        - rye run playwright install --with-deps chromium
+
+    artifacts:
+        paths:
+            - .venv
+    cache:
+        key: "${CI_JOB_NAME}"
+        paths:
+            - .venv/
+
 test-walk-through:
     stage: test
-    needs: ["build-angular"]
-    dependencies:
-        - build-angular
+    needs: ["build-angular", "test-prepare"]
 
     image: registry.green-rabbit.net:5000/kimata/local_ubuntu:240730D
 
     script:
-        - CC=gcc rye sync --features=test
         - rye run pytest --cov=flask --cov-report=html tests/test_basic.py
 
     cache:
@@ -71,22 +87,13 @@ test-walk-through:
 
 test-playwright:
     stage: test
-    needs: ["build-angular"]
-    dependencies:
-        - build-angular
+    needs: ["build-angular", "test-prepare"]
 
     image: registry.green-rabbit.net:5000/kimata/local_ubuntu:240730D
 
     script:
         # NOTE: テストに失敗するとテスト用のコンテナが残るので削除する
         - docker ps  --filter "label=job=${CI_JOB_NAME}" | grep hours | cut -d " " -f1 | while read id; do docker stop -t 5 $id; done || true
-
-        - export GIT_SSL_NO_VERIFY=1
-        - git clone https://gitlab.green-rabbit.net/kimata/hems_config.git
-        - mv hems_config/rasp-water.yaml config.yaml
-
-        - CC=gcc rye sync --features=test
-        - rye run playwright install --with-deps chromium
 
         - export TZ=Asia/Tokyo
 
@@ -107,7 +114,7 @@ test-playwright:
 
 test-playwright-docker:
     stage: test
-    needs: ["build-image"]
+    needs: ["build-angular", "test-prepare"]
 
     image: registry.green-rabbit.net:5000/kimata/local_ubuntu:240730D
 
@@ -118,9 +125,6 @@ test-playwright-docker:
         - docker pull ${CI_REGISTRY_IMAGE}
         - docker run --rm --detach=true --tty=true --name ${CI_JOB_NAME}-${CI_JOB_ID} --label job=${CI_JOB_NAME} ${CI_REGISTRY_IMAGE}
           ./flask/app/app.py -D
-
-        - CC=gcc rye sync --features=test
-        - rye run playwright install --with-deps chromium
 
         - TARGET_IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${CI_JOB_NAME}-${CI_JOB_ID})
         - 'echo "Target: ${TARGET_IP}"'
@@ -145,7 +149,7 @@ test-playwright-docker:
 
 test-playwright-docker-demo:
     stage: test
-    needs: ["build-image"]
+    needs: ["build-angular", "test-prepare"]
 
     image: registry.green-rabbit.net:5000/kimata/local_ubuntu:240730D
 
@@ -156,9 +160,6 @@ test-playwright-docker-demo:
         - docker pull ${CI_REGISTRY_IMAGE}
         - docker run --rm --detach=true --tty=true --name ${CI_JOB_NAME}-${CI_JOB_ID} --label job=${CI_JOB_NAME} ${CI_REGISTRY_IMAGE}
           ./flask/app/app.py -D -c config.example.yaml
-
-        - CC=gcc rye sync --features=test
-        - rye run playwright install --with-deps chromium
 
         - TARGET_IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${CI_JOB_NAME}-${CI_JOB_ID})
         - 'echo "Target: ${TARGET_IP}"'
