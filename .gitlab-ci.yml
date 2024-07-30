@@ -56,7 +56,7 @@ test-walk-through:
     image: registry.green-rabbit.net:5000/kimata/local_ubuntu:240730D
 
     script:
-        - CC=gcc rye sync
+        - CC=gcc rye sync --features=test
         - rye run pytest --cov=flask --cov-report=html tests/test_basic.py
 
     cache:
@@ -85,7 +85,7 @@ test-playwright:
         - git clone https://gitlab.green-rabbit.net/kimata/hems_config.git
         - mv hems_config/rasp-water.yaml config.yaml
 
-        - CC=gcc rye sync
+        - CC=gcc rye sync --features=test
         - rye run playwright install --with-deps chromium
 
         - export TZ=Asia/Tokyo
@@ -119,7 +119,7 @@ test-playwright-docker:
         - docker run --rm --detach=true --tty=true --name ${CI_JOB_NAME}-${CI_JOB_ID} --label job=${CI_JOB_NAME} ${CI_REGISTRY_IMAGE}
           ./flask/app/app.py -D
 
-        - rye sync --features=test
+        - CC=gcc rye sync --features=test
         - rye run playwright install --with-deps chromium
 
         - TARGET_IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${CI_JOB_NAME}-${CI_JOB_ID})
@@ -157,7 +157,7 @@ test-playwright-docker-demo:
         - docker run --rm --detach=true --tty=true --name ${CI_JOB_NAME}-${CI_JOB_ID} --label job=${CI_JOB_NAME} ${CI_REGISTRY_IMAGE}
           ./flask/app/app.py -D -c config.example.yaml
 
-        - rye sync --features=test
+        - CC=gcc rye sync --features=test
         - rye run playwright install --with-deps chromium
 
         - TARGET_IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${CI_JOB_NAME}-${CI_JOB_ID})
