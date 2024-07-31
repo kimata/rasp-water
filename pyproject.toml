@@ -26,7 +26,7 @@ dependencies = [
     "tzlocal>=5.2",
     "requests>=2.32.3",
     "docopt-ng>=0.9.0",
-    "my-py-lib @ git+https://github.com/kimata/my_py_lib",
+    "my-py-lib @ git+https://github.com/kimata/my_py_lib@1bfc12a6e05d0920734cb573d26341b74bfa069b",
 ]
 
 [build-system]
