@@ -25,17 +25,8 @@ from flask import Flask
 
 sys.path.append(str(pathlib.Path(__file__).parent.parent / "lib"))
 
-import logger
-from config import load_config
 
-
-def create_app(config_file, dummy_mode=False, debug_mode=False):
-    log_level = logging.DEBUG if debug_mode else logging.INFO
-
-    logger.init("hems.rasp-water", level=log_level)
-
-    config = load_config(config_file)
-
+def create_app(config, dummy_mode=False):
     # NOTE: オプションでダミーモードが指定された場合，環境変数もそれに揃えておく
     if dummy_mode:
         os.environ["DUMMY_MODE"] = "true"
@@ -96,6 +87,9 @@ def create_app(config_file, dummy_mode=False, debug_mode=False):
 
 
 if __name__ == "__main__":
+    import logger
+    import my_py_lib.config
+
     args = docopt(__doc__)
 
     config_file = args["-c"]
@@ -103,7 +97,11 @@ if __name__ == "__main__":
     dummy_mode = args["-D"]
     debug_mode = args["-d"]
 
-    app = create_app(config_file, dummy_mode, debug_mode)
+    logger.init("hems.rasp-water", level=logging.DEBUG if debug_mode else logging.INFO)
+
+    config = my_py_lib.config.load_config(config_file)
+
+    app = create_app(config, dummy_mode)
 
     # NOTE: スクリプトの自動リロード停止したい場合は use_reloader=False にする
     app.run(host="0.0.0.0", port=port, threaded=True, use_reloader=True)  # noqa: S104
