@@ -87,8 +87,8 @@ def create_app(config, dummy_mode=False):
 
 
 if __name__ == "__main__":
-    import logger
     import my_py_lib.config
+    import my_py_lib.logger
 
     args = docopt(__doc__)
 
@@ -97,7 +97,7 @@ if __name__ == "__main__":
     dummy_mode = args["-D"]
     debug_mode = args["-d"]
 
-    logger.init("hems.rasp-water", level=logging.DEBUG if debug_mode else logging.INFO)
+    my_py_lib.logger.init("hems.rasp-water", level=logging.DEBUG if debug_mode else logging.INFO)
 
     config = my_py_lib.config.load_config(config_file)
 
