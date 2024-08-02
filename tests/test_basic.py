@@ -37,7 +37,7 @@ def env_mock():
 @pytest.fixture(scope="session", autouse=True)
 def slack_mock():
     with mock.patch(
-        "notify_slack.slack_sdk.web.client.WebClient.chat_postMessage",
+        "my_lib.notify_slack.slack_sdk.web.client.WebClient.chat_postMessage",
         retunr_value=True,
     ) as fixture:
         yield fixture
@@ -45,10 +45,10 @@ def slack_mock():
 
 @pytest.fixture(autouse=True)
 def _clear():
-    import notify_slack
+    import my_lib.notify_slack
 
-    notify_slack.interval_clear()
-    notify_slack.hist_clear()
+    my_lib.notify_slack.interval_clear()
+    my_lib.notify_slack.hist_clear()
 
 
 @pytest.fixture(scope="session")
@@ -75,7 +75,7 @@ def client(app, mocker):
         return_value=sender_mock,
     )
     mocker.patch(
-        "notify_slack.slack_sdk.web.client.WebClient.chat_postMessage",
+        "my_lib.notify_slack.slack_sdk.web.client.WebClient.chat_postMessage",
         side_effect=slack_sdk.errors.SlackClientError(),
     )
     mocker.patch(
@@ -229,9 +229,9 @@ def app_log_clear(client):
 
 
 def check_notify_slack(message, index=-1):
-    import notify_slack
+    import my_lib.notify_slack
 
-    notify_hist = notify_slack.hist_get()
+    notify_hist = my_lib.notify_slack.hist_get()
     logging.debug(notify_hist)
 
     if message is None:
