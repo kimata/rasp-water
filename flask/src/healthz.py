@@ -19,11 +19,6 @@ import time
 import requests
 from docopt import docopt
 
-sys.path.append(str(pathlib.Path(__file__).parent.parent / "lib"))
-
-import logger
-from config import load_config
-
 
 def check_liveness_impl(name, liveness_file, interval):
     if not liveness_file.exists():
@@ -63,33 +58,31 @@ def check_liveness(target_list, port):
 
 
 ######################################################################
-args = docopt(__doc__)
+if __name__ == "__main__":
+    import my_lib.config
+    import my_lib.logger
 
-config_file = args["-c"]
-port = args["-p"]
-debug_mode = args["-d"]
+    args = docopt(__doc__)
 
-log_level = logging.DEBUG if debug_mode else logging.INFO
+    config_file = args["-c"]
+    port = args["-p"]
+    debug_mode = args["-d"]
 
-logger.init(
-    "hems.rasp-water",
-    level=log_level,
-)
+    my_lib.logger.init("hems.rasp-water", level=logging.DEBUG if debug_mode else logging.INFO)
 
-logging.info("Using config config: %s", config_file)
-config = load_config(config_file)
+    config = my_lib.config.load_config(config_file)
 
-target_list = [
-    {
-        "name": name,
-        "liveness_file": pathlib.Path(config["liveness"]["file"][name]),
-        "interval": 10,
-    }
-    for name in ["scheduler", "valve_control", "flow_notify"]
-]
+    target_list = [
+        {
+            "name": name,
+            "liveness_file": pathlib.Path(config["liveness"]["file"][name]),
+            "interval": 10,
+        }
+        for name in ["scheduler", "valve_control", "flow_notify"]
+    ]
 
-if check_liveness(target_list, port):
-    logging.info("OK.")
-    sys.exit(0)
-else:
-    sys.exit(-1)
+    if check_liveness(target_list, port):
+        logging.info("OK.")
+        sys.exit(0)
+    else:
+        sys.exit(-1)
