@@ -7,10 +7,10 @@ import threading
 import time
 import traceback
 
+import my_lib.webapp_log
 import rasp_water_valve
 import schedule
 from webapp_config import SCHEDULE_DATA_PATH, TIMEZONE_PYTZ
-from webapp_log import APP_LOG_LEVEL, app_log
 
 RETRY_COUNT = 3
 
@@ -48,7 +48,7 @@ def valve_auto_control(config, period):
         if valve_auto_control_impl(config, period):
             return True
 
-    app_log("😵 水やりの自動実行に失敗しました。")
+    my_lib.webapp_log.app_log("😵 水やりの自動実行に失敗しました。")
     return False
 
 
@@ -83,7 +83,9 @@ def schedule_store(schedule_data):
                 pickle.dump(schedule_data, f)
     except Exception:
         logging.exception("Failed to save schedule settings.")
-        app_log("😵 スケジュール設定の保存に失敗しました。", APP_LOG_LEVEL.ERROR)
+        my_lib.webapp_log.app_log(
+            "😵 スケジュール設定の保存に失敗しました。", my_lib.webapp_log.APP_LOG_LEVEL.ERROR
+        )
 
 
 def schedule_load():
@@ -96,7 +98,9 @@ def schedule_load():
                     return schedule_data
         except Exception:
             logging.exception("Failed to load schedule settings.")
-            app_log("😵 スケジュール設定の読み出しに失敗しました。", APP_LOG_LEVEL.ERROR)
+            my_lib.webapp_log.app_log(
+                "😵 スケジュール設定の読み出しに失敗しました。", my_lib.webapp_log.APP_LOG_LEVEL.ERROR
+            )
 
     return [
         {

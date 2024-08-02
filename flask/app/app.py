@@ -33,13 +33,13 @@ def create_app(config, dummy_mode=False):
     else:  # pragma: no cover
         os.environ["DUMMY_MODE"] = "false"
 
+    import my_lib.webapp_base
+    import my_lib.webapp_event
+    import my_lib.webapp_log
+    import my_lib.webapp_util
     import rasp_water_schedule
     import rasp_water_valve
     import valve
-    import webapp_base
-    import webapp_event
-    import webapp_log
-    import webapp_util
 
     app = Flask("rasp-water")
 
@@ -54,12 +54,12 @@ def create_app(config, dummy_mode=False):
 
         rasp_water_schedule.init(config)
         rasp_water_valve.init(config)
-        webapp_log.init(config)
+        my_lib.webapp_log.init(config)
 
         def notify_terminate():  # pragma: no cover
             valve.set_state(valve.VALVE_STATE.CLOSE)
-            webapp_log.app_log("🏃 アプリを再起動します．")
-            webapp_log.term()
+            my_lib.webapp_log.app_log("🏃 アプリを再起動します．")
+            my_lib.webapp_log.term()
 
         atexit.register(notify_terminate)
     else:  # pragma: no cover
@@ -75,11 +75,11 @@ def create_app(config, dummy_mode=False):
     app.register_blueprint(rasp_water_valve.blueprint)
     app.register_blueprint(rasp_water_schedule.blueprint)
 
-    app.register_blueprint(webapp_base.blueprint_default)
-    app.register_blueprint(webapp_base.blueprint)
-    app.register_blueprint(webapp_event.blueprint)
-    app.register_blueprint(webapp_log.blueprint)
-    app.register_blueprint(webapp_util.blueprint)
+    app.register_blueprint(my_lib.webapp_base.blueprint_default)
+    app.register_blueprint(my_lib.webapp_base.blueprint)
+    app.register_blueprint(my_lib.webapp_event.blueprint)
+    app.register_blueprint(my_lib.webapp_log.blueprint)
+    app.register_blueprint(my_lib.webapp_util.blueprint)
 
     # app.debug = True
 
@@ -87,8 +87,8 @@ def create_app(config, dummy_mode=False):
 
 
 if __name__ == "__main__":
-    import my_py_lib.config
-    import my_py_lib.logger
+    import my_lib.config
+    import my_lib.logger
 
     args = docopt(__doc__)
 
@@ -97,9 +97,9 @@ if __name__ == "__main__":
     dummy_mode = args["-D"]
     debug_mode = args["-d"]
 
-    my_py_lib.logger.init("hems.rasp-water", level=logging.DEBUG if debug_mode else logging.INFO)
+    my_lib.logger.init("hems.rasp-water", level=logging.DEBUG if debug_mode else logging.INFO)
 
-    config = my_py_lib.config.load_config(config_file)
+    config = my_lib.config.load_config(config_file)
 
     app = create_app(config, dummy_mode)
 
