@@ -14,47 +14,17 @@ Options:
 import logging
 import pathlib
 import sys
-import time
 
-import requests
+import my_lib.healthz
 from docopt import docopt
-
-
-def check_liveness_impl(name, liveness_file, interval):
-    if not liveness_file.exists():
-        logging.warning("%s is not executed.", name)
-        return False
-
-    elapsed = time.time() - liveness_file.stat().st_mtime
-    # NOTE: 少なくとも1分は様子を見る
-    if elapsed > max(interval * 2, 60):
-        logging.warning("Execution interval of %s is too long. %s sec)", name, f"{elapsed:,.1f}")
-        return False
-
-    return True
-
-
-def check_port(port):
-    try:
-        if (
-            requests.get(
-                "http://{address}:{port}/".format(address="127.0.0.1", port=port), timeout=5
-            ).status_code
-            == 200
-        ):
-            return True
-    except Exception:
-        logging.exception("Failed to access Flask web server")
-
-    return False
 
 
 def check_liveness(target_list, port):
     for target in target_list:
-        if not check_liveness_impl(target["name"], target["liveness_file"], target["interval"]):
+        if not my_lib.healthz.check_liveness(target["name"], target["liveness_file"], target["interval"]):
             return False
 
-    return check_port(port)
+    return my_lib.healthz.check_port(port)
 
 
 ######################################################################
