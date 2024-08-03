@@ -40,7 +40,7 @@ if __name__ == "__main__":
 
     my_lib.logger.init("hems.rasp-water", level=logging.DEBUG if debug_mode else logging.INFO)
 
-    config = my_lib.config.load_config(config_file)
+    config = my_lib.config.load(config_file)
 
     target_list = [
         {

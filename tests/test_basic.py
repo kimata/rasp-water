@@ -712,9 +712,9 @@ def test_schedule_ctrl_inactive(client, freezer):
 
 
 def test_schedule_ctrl_invalid(client):
-    import notify_slack
+    import my_lib.notify_slack
 
-    notify_slack.interval_clear()
+    my_lib.notify_slack.interval_clear()
 
     schedule_data = gen_schedule_data()
     del schedule_data[0]["period"]
