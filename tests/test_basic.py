@@ -54,7 +54,7 @@ def _clear():
 @pytest.fixture(scope="session")
 def app():
     with mock.patch.dict("os.environ", {"WERKZEUG_RUN_MAIN": "true"}):
-        app = create_app(CONFIG_FILE, dummy_mode=True)
+        app = create_app(my_lib.config.load(CONFIG_FILE), dummy_mode=True)
 
         yield app
 
@@ -974,7 +974,7 @@ def test_schedule_ctrl_execute(client, mocker, freezer):
     time_mock.return_value = time.time()
     time.sleep(1)
 
-    rasp_water_valve.init(my_lib.config.load_config(CONFIG_FILE))
+    rasp_water_valve.init(my_lib.config.load(CONFIG_FILE))
     ctrl_log_clear()
 
     schedule_data = gen_schedule_data()
@@ -1019,7 +1019,7 @@ def test_schedule_ctrl_execute_force(client, mocker, freezer):
     time_mock.return_value = time.time()
     time.sleep(1)
 
-    rasp_water_valve.init(my_lib.config.load_config(CONFIG_FILE))
+    rasp_water_valve.init(my_lib.config.load(CONFIG_FILE))
     ctrl_log_clear()
 
     schedule_data = gen_schedule_data()
@@ -1061,7 +1061,7 @@ def test_schedule_ctrl_execute_pending(client, mocker, freezer):
     time_mock.return_value = time.time()
     time.sleep(1)
 
-    rasp_water_valve.init(my_lib.config.load_config(CONFIG_FILE))
+    rasp_water_valve.init(my_lib.config.load(CONFIG_FILE))
     ctrl_log_clear()
 
     schedule_data = gen_schedule_data()
@@ -1105,7 +1105,7 @@ def test_schedule_ctrl_error(client, mocker, freezer):
     time_mock.return_value = time.time()
     time.sleep(0.6)
 
-    rasp_water_valve.init(my_lib.config.load_config(CONFIG_FILE))
+    rasp_water_valve.init(my_lib.config.load(CONFIG_FILE))
     ctrl_log_clear()
 
     schedule_data = gen_schedule_data()
@@ -1149,7 +1149,7 @@ def test_schedule_ctrl_execute_fail(client, mocker, freezer):
     time_mock.return_value = time.time()
     time.sleep(0.6)
 
-    rasp_water_valve.init(my_lib.config.load_config(CONFIG_FILE))
+    rasp_water_valve.init(my_lib.config.load(CONFIG_FILE))
     ctrl_log_clear()
 
     schedule_data = gen_schedule_data()
@@ -1360,7 +1360,6 @@ def test_second_str():
 def test_valve_init(mocker):
     import rasp_water_valve
     import valve
-    from config import load_config
 
     rasp_water_valve.term()
     time.sleep(1)
@@ -1378,19 +1377,19 @@ def test_valve_init(mocker):
 
     mocker.patch("pathlib.Path.open", new=open_mock)
 
-    rasp_water_valve.init(load_config(CONFIG_FILE))
+    rasp_water_valve.init(my_lib.config.load(CONFIG_FILE))
 
 
 def test_terminate():
+    import my_lib.webapp_log
     import rasp_water_schedule
     import rasp_water_valve
-    import webapp_log
 
-    webapp_log.term()
+    my_lib.webapp_log.term()
     rasp_water_schedule.term()
     rasp_water_valve.term()
 
     # NOTE: 二重に呼んでもエラーにならないことを確認
-    webapp_log.term()
+    my_lib.webapp_log.term()
     rasp_water_schedule.term()
     rasp_water_valve.term()

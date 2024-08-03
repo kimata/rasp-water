@@ -464,12 +464,12 @@ def get_control_mode():
 if __name__ == "__main__":
     from multiprocessing import Queue
 
-    import logger
-    from config import load_config
+    import my_lib.config
+    import my_lib.logger
 
-    logger.init("test", level=logging.INFO)
+    my_lib.logger.init("test", level=logging.INFO)
 
-    config = load_config()
+    config = my_lib.load()
     queue = Queue()
     init(config, queue)
 

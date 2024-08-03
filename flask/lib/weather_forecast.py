@@ -70,10 +70,11 @@ def get_rain_fall(config):
 
 
 if __name__ == "__main__":
-    import logger
-    from config import load_config
+    import my_lib.config
+    import my_lib.logger
 
-    logger.init("test", level=logging.INFO)
+    my_lib.logger.init("test", level=logging.INFO)
 
-    config = load_config()
+    config = my_lib.load()
+
     print(get_rain_fall(config))  # noqa: T201
