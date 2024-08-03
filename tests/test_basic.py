@@ -10,6 +10,8 @@ import sys
 import time
 from unittest import mock
 
+import my_lib.config
+import my_lib.notify_slack
 import pytest
 
 sys.path.append(str(pathlib.Path(__file__).parent.parent / "flask" / "app"))
@@ -45,8 +47,6 @@ def slack_mock():
 
 @pytest.fixture(autouse=True)
 def _clear():
-    import my_lib.notify_slack
-
     my_lib.notify_slack.interval_clear()
     my_lib.notify_slack.hist_clear()
 
@@ -964,7 +964,6 @@ def test_valve_flow_read_command_fail(client, mocker):
 
 def test_schedule_ctrl_execute(client, mocker, freezer):
     import rasp_water_valve
-    from config import load_config
 
     rasp_water_valve.term()
     time.sleep(1)
@@ -975,7 +974,7 @@ def test_schedule_ctrl_execute(client, mocker, freezer):
     time_mock.return_value = time.time()
     time.sleep(1)
 
-    rasp_water_valve.init(load_config(CONFIG_FILE))
+    rasp_water_valve.init(my_lib.config.load_config(CONFIG_FILE))
     ctrl_log_clear()
 
     schedule_data = gen_schedule_data()
@@ -1009,7 +1008,6 @@ def test_schedule_ctrl_execute(client, mocker, freezer):
 
 def test_schedule_ctrl_execute_force(client, mocker, freezer):
     import rasp_water_valve
-    from config import load_config
 
     rasp_water_valve.term()
     time.sleep(1)
@@ -1021,7 +1019,7 @@ def test_schedule_ctrl_execute_force(client, mocker, freezer):
     time_mock.return_value = time.time()
     time.sleep(1)
 
-    rasp_water_valve.init(load_config(CONFIG_FILE))
+    rasp_water_valve.init(my_lib.config.load_config(CONFIG_FILE))
     ctrl_log_clear()
 
     schedule_data = gen_schedule_data()
@@ -1052,7 +1050,6 @@ def test_schedule_ctrl_execute_force(client, mocker, freezer):
 
 def test_schedule_ctrl_execute_pending(client, mocker, freezer):
     import rasp_water_valve
-    from config import load_config
 
     rasp_water_valve.term()
     time.sleep(1)
@@ -1064,7 +1061,7 @@ def test_schedule_ctrl_execute_pending(client, mocker, freezer):
     time_mock.return_value = time.time()
     time.sleep(1)
 
-    rasp_water_valve.init(load_config(CONFIG_FILE))
+    rasp_water_valve.init(my_lib.config.load_config(CONFIG_FILE))
     ctrl_log_clear()
 
     schedule_data = gen_schedule_data()
@@ -1095,7 +1092,6 @@ def test_schedule_ctrl_execute_pending(client, mocker, freezer):
 
 def test_schedule_ctrl_error(client, mocker, freezer):
     import rasp_water_valve
-    from config import load_config
 
     valve_state_moch = mocker.patch("rasp_water_valve.set_valve_state")
     valve_state_moch.side_effect = RuntimeError()
@@ -1109,7 +1105,7 @@ def test_schedule_ctrl_error(client, mocker, freezer):
     time_mock.return_value = time.time()
     time.sleep(0.6)
 
-    rasp_water_valve.init(load_config(CONFIG_FILE))
+    rasp_water_valve.init(my_lib.config.load_config(CONFIG_FILE))
     ctrl_log_clear()
 
     schedule_data = gen_schedule_data()
@@ -1140,7 +1136,6 @@ def test_schedule_ctrl_error(client, mocker, freezer):
 
 def test_schedule_ctrl_execute_fail(client, mocker, freezer):
     import rasp_water_valve
-    from config import load_config
 
     mocker.patch("weather_forecast.get_rain_fall", return_value=False)
     mocker.patch("app_scheduler.valve_auto_control_impl", return_value=False)
@@ -1154,7 +1149,7 @@ def test_schedule_ctrl_execute_fail(client, mocker, freezer):
     time_mock.return_value = time.time()
     time.sleep(0.6)
 
-    rasp_water_valve.init(load_config(CONFIG_FILE))
+    rasp_water_valve.init(my_lib.config.load_config(CONFIG_FILE))
     ctrl_log_clear()
 
     schedule_data = gen_schedule_data()
