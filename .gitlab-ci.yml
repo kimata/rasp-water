@@ -214,6 +214,7 @@ deploy-webapp:
         - changes:
               - package.json
               - package-lock.json
+              - pyoroject.json
               - flask/**/*
               - src/**/*
 
@@ -235,6 +236,7 @@ deploy-webapp-demo:
         - changes:
               - package.json
               - package-lock.json
+              - pyoroject.json
               - flask/**/*
               - src/**/*
 
