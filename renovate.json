@@ -3,8 +3,7 @@
     "extends": ["config:base", ":timezone(Asia/Tokyo)", "group:allNonMajor"],
     "hostRules": [
         {
-            "matchHost": "registry.green-rabbit.net:5000",
-            "insecureRegistry": true
+            "matchHost": "registry.green-rabbit.net:5000"
         }
     ],
     "automerge": true,
