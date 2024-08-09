@@ -13,11 +13,13 @@ WORKDIR /opt/rasp-water
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PATH=/root/.rye/shims/:$PATH
 
-RUN curl -sSf https://rye.astral.sh/get | RYE_NO_AUTO_INSTALL=1 RYE_INSTALL_OPTION="--yes" bash
+RUN --mount=type=cache,target=/root/.rye,sharing=locked \
+    curl -sSf https://rye.astral.sh/get | RYE_NO_AUTO_INSTALL=1 RYE_INSTALL_OPTION="--yes" bash
 
 RUN --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
     --mount=type=bind,source=.python-version,target=.python-version \
     --mount=type=bind,source=README.md,target=README.md \
+    --mount=type=cache,target=/root/.rye,sharing=locked \
     rye lock
 
 RUN --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
