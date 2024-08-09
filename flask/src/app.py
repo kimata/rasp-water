@@ -18,10 +18,10 @@ import os
 import pathlib
 import sys
 
+import flask_cors
 from docopt import docopt
-from flask_cors import CORS
 
-from flask import Flask
+import flask
 
 sys.path.append(str(pathlib.Path(__file__).parent.parent / "lib"))
 
@@ -43,11 +43,11 @@ def create_app(config, dummy_mode=False):
     import my_lib.webapp.event
     import my_lib.webapp.log
     import my_lib.webapp.util
-    import rasp_water_schedule
-    import rasp_water_valve
-    import valve
+    import rasp_water.rasp_water_schedule
+    import rasp_water.rasp_water_valve
+    import rasp_water.valve
 
-    app = Flask("rasp-water")
+    app = flask.Flask("rasp-water")
 
     # NOTE: アクセスログは無効にする
     logging.getLogger("werkzeug").setLevel(logging.ERROR)
@@ -58,12 +58,12 @@ def create_app(config, dummy_mode=False):
         else:  # pragma: no cover
             pass
 
-        rasp_water_schedule.init(config)
-        rasp_water_valve.init(config)
+        rasp_water.rasp_water_schedule.init(config)
+        rasp_water.rasp_water_valve.init(config)
         my_lib.webapp.log.init(config)
 
         def notify_terminate():  # pragma: no cover
-            valve.set_state(valve.VALVE_STATE.CLOSE)
+            rasp_water.valve.set_state(rasp_water.valve.VALVE_STATE.CLOSE)
             my_lib.webapp.log.app_log("🏃 アプリを再起動します．")
             my_lib.webapp.log.term()
 
@@ -71,15 +71,15 @@ def create_app(config, dummy_mode=False):
     else:  # pragma: no cover
         pass
 
-    CORS(app)
+    flask_cors.CORS(app)
 
     app.config["CONFIG"] = config
     app.config["DUMMY_MODE"] = dummy_mode
 
     app.config["JSONIFY_PRETTYPRINT_REGULAR"] = True
 
-    app.register_blueprint(rasp_water_valve.blueprint)
-    app.register_blueprint(rasp_water_schedule.blueprint)
+    app.register_blueprint(rasp_water.rasp_water_valve.blueprint)
+    app.register_blueprint(rasp_water.rasp_water_schedule.blueprint)
 
     app.register_blueprint(my_lib.webapp.base.blueprint_default)
     app.register_blueprint(my_lib.webapp.base.blueprint)

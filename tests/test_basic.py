@@ -6,20 +6,15 @@ import logging
 import os
 import pathlib
 import re
-import sys
 import time
 from unittest import mock
 
 import my_lib.config
 import my_lib.notify_slack
-import pytest
-
-sys.path.append(str(pathlib.Path(__file__).parent.parent / "flask" / "app"))
-sys.path.append(str(pathlib.Path(__file__).parent.parent / "flask" / "lib"))
-
 import my_lib.webapp.config
+import pytest
 from app import create_app
-from weather_forecast import get_rain_fall as get_rain_fall_orig
+from rasp_water.weather_forecast import get_rain_fall as get_rain_fall_orig
 
 CONFIG_FILE = "config.example.yaml"
 
@@ -79,7 +74,7 @@ def client(app, mocker):
         side_effect=slack_sdk.errors.SlackClientError(),
     )
     mocker.patch(
-        "weather_forecast.get_rain_fall",
+        "rasp_water.weather_forecast.get_rain_fall",
         return_value=False,
     )
 
@@ -127,9 +122,9 @@ def gen_schedule_data(offset_min=1):
 
 
 def ctrl_log_check(expect_list, is_strict=True, is_error=True):
-    import valve
+    import rasp_water.valve
 
-    hist_list = valve.GPIO.hist_get()
+    hist_list = rasp_water.valve.GPIO.hist_get()
 
     logging.debug(hist_list)
 
@@ -207,9 +202,9 @@ def app_log_check(  # noqa: PLR0912, C901
 
 
 def ctrl_log_clear():
-    import valve
+    import rasp_water.valve
 
-    valve.GPIO.hist_clear()
+    rasp_water.valve.GPIO.hist_clear()
 
 
 def schedule_clear(client):
@@ -377,7 +372,7 @@ def test_valve_ctrl_read(client):
 
 
 def test_valve_ctrl_read_fail(client, mocker):
-    mocker.patch("valve.get_control_mode", side_effect=RuntimeError())
+    mocker.patch("rasp_water.valve.get_control_mode", side_effect=RuntimeError())
 
     response = client.get(
         "/rasp-water/api/valve_ctrl",
@@ -392,10 +387,10 @@ def test_valve_ctrl_read_fail(client, mocker):
 
 
 def test_valve_ctrl_mismatch(client):
-    import valve
+    import rasp_water.valve
 
     # NOTE: Fault injection
-    valve.set_control_mode(-10)
+    rasp_water.valve.set_control_mode(-10)
 
     response = client.get(
         "/rasp-water/api/valve_ctrl",
@@ -459,7 +454,7 @@ def test_valve_ctrl_auto(client, mocker):
 
 
 def test_valve_ctrl_auto_rainfall(client, mocker):
-    mocker.patch("weather_forecast.get_rain_fall", return_value=True)
+    mocker.patch("rasp_water.weather_forecast.get_rain_fall", return_value=True)
 
     period = 2
     response = client.get(
@@ -504,7 +499,7 @@ def test_valve_ctrl_auto_rainfall(client, mocker):
 
 
 def test_valve_ctrl_auto_forecast(client, mocker):
-    mocker.patch("weather_forecast.get_rain_fall", side_effect=get_rain_fall_orig)
+    mocker.patch("rasp_water.weather_forecast.get_rain_fall", side_effect=get_rain_fall_orig)
 
     period = 2
     response = client.get(
@@ -526,8 +521,8 @@ def test_valve_ctrl_auto_forecast(client, mocker):
 
 
 def test_valve_ctrl_auto_forecast_error_1(client, mocker):
-    mocker.patch("weather_forecast.get_rain_fall", side_effect=get_rain_fall_orig)
-    mocker.patch("weather_forecast.get_weather_info_yahoo", return_value=None)
+    mocker.patch("rasp_water.weather_forecast.get_rain_fall", side_effect=get_rain_fall_orig)
+    mocker.patch("rasp_water.weather_forecast.get_weather_info_yahoo", return_value=None)
 
     period = 2
     response = client.get(
@@ -551,13 +546,13 @@ def test_valve_ctrl_auto_forecast_error_1(client, mocker):
 
 
 def test_valve_ctrl_auto_forecast_error_2(client, mocker):
-    import weather_forecast
+    import rasp_water.weather_forecast
 
-    mocker.patch("weather_forecast.get_rain_fall", side_effect=get_rain_fall_orig)
+    mocker.patch("rasp_water.weather_forecast.get_rain_fall", side_effect=get_rain_fall_orig)
 
     response_mock = mocker.Mock()
     response_mock.status_code = 404
-    mocker.patch.object(weather_forecast.requests, "get", retrun_value=response_mock)
+    mocker.patch.object(rasp_water.weather_forecast.requests, "get", retrun_value=response_mock)
 
     period = 2
     response = client.get(
@@ -582,11 +577,11 @@ def test_valve_ctrl_auto_forecast_error_2(client, mocker):
 def test_valve_ctrl_auto_forecast_error_3(client, mocker):
     import requests
 
-    mocker.patch("weather_forecast.get_rain_fall", side_effect=get_rain_fall_orig)
+    mocker.patch("rasp_water.weather_forecast.get_rain_fall", side_effect=get_rain_fall_orig)
 
     response = requests.models.Response()
     response.status_code = 500
-    mocker.patch("weather_forecast.requests.get", return_value=response)
+    mocker.patch("rasp_water.weather_forecast.requests.get", return_value=response)
 
     period = 2
     response = client.get(
@@ -609,10 +604,10 @@ def test_valve_ctrl_auto_forecast_error_3(client, mocker):
 
 
 def test_valve_ctrl_auto_forecast_error_4(client, mocker):
-    import weather_forecast
+    import rasp_water.weather_forecast
 
-    mocker.patch("weather_forecast.get_rain_fall", side_effect=get_rain_fall_orig)
-    mocker.patch.object(weather_forecast.requests, "get", side_effect=RuntimeError())
+    mocker.patch("rasp_water.weather_forecast.get_rain_fall", side_effect=get_rain_fall_orig)
+    mocker.patch.object(rasp_water.weather_forecast.requests, "get", side_effect=RuntimeError())
 
     period = 2
     response = client.get(
@@ -791,12 +786,12 @@ def test_schedule_ctrl_invalid(client):
 
 
 def test_valve_flow_open_over_1(client, mocker):
-    flow_mock = mocker.patch("valve.get_flow")
+    flow_mock = mocker.patch("rasp_water.valve.get_flow")
     flow_mock.return_value = {"flow": 100, "result": "success"}
 
-    mocker.patch("valve.TIME_OVER_FAIL", 0.5)
+    mocker.patch("rasp_water.valve.TIME_OVER_FAIL", 0.5)
     # NOTE: これをやっておかないと，後続のテストに影響がでる
-    mocker.patch("valve.TIME_ZERO_TAIL", 1)
+    mocker.patch("rasp_water.valve.TIME_ZERO_TAIL", 1)
 
     period = 3
     response = client.get(
@@ -823,12 +818,12 @@ def test_valve_flow_open_over_1(client, mocker):
 
 
 def test_valve_flow_open_over_2(client, mocker):
-    flow_mock = mocker.patch("valve.get_flow")
+    flow_mock = mocker.patch("rasp_water.valve.get_flow")
     flow_mock.return_value = {"flow": 100, "result": "success"}
 
-    mocker.patch("valve.TIME_CLOSE_FAIL", 1)
+    mocker.patch("rasp_water.valve.TIME_CLOSE_FAIL", 1)
     # NOTE: これをやっておかないと，後続のテストに影響がでる
-    mocker.patch("valve.TIME_ZERO_TAIL", 1)
+    mocker.patch("rasp_water.valve.TIME_ZERO_TAIL", 1)
 
     period = 3
     response = client.get(
@@ -856,9 +851,9 @@ def test_valve_flow_open_over_2(client, mocker):
 
 def test_valve_flow_close_fail(client, mocker):
     # NOTE: Fault injection
-    flow_mock = mocker.patch("valve.get_flow")
+    flow_mock = mocker.patch("rasp_water.valve.get_flow")
     flow_mock.return_value = {"flow": 0.1, "result": "success"}
-    mocker.patch("valve.TIME_OPEN_FAIL", 1)
+    mocker.patch("rasp_water.valve.TIME_OPEN_FAIL", 1)
 
     period = 3
     response = client.get(
@@ -888,10 +883,10 @@ def test_valve_flow_close_fail(client, mocker):
 
 def test_valve_flow_open_fail(client, mocker):
     # NOTE: Fault injection
-    flow_mock = mocker.patch("valve.get_flow")
+    flow_mock = mocker.patch("rasp_water.valve.get_flow")
     flow_mock.return_value = {"flow": 0, "result": "success"}
-    mocker.patch("valve.TIME_CLOSE_FAIL", 1)
-    mocker.patch("valve.TIME_ZERO_TAIL", 1)
+    mocker.patch("rasp_water.valve.TIME_CLOSE_FAIL", 1)
+    mocker.patch("rasp_water.valve.TIME_ZERO_TAIL", 1)
 
     period = 3
     response = client.get(
@@ -920,17 +915,17 @@ def test_valve_flow_open_fail(client, mocker):
 def test_valve_flow_read_command_fail(client, mocker):
     import builtins
 
-    import valve
+    import rasp_water.valve
 
     orig_open = builtins.open
 
     def open_mock(file, mode="r", *args, **kwargs):
-        if (file == valve.STAT_PATH_VALVE_CONTROL_COMMAND) and (mode == "r"):
+        if (file == rasp_water.valve.STAT_PATH_VALVE_CONTROL_COMMAND) and (mode == "r"):
             raise RuntimeError("Failed to open (Test)")  # noqa: EM101, TRY003
 
         return orig_open(file, mode, *args, **kwargs)
 
-    mocker.patch("valve.valve_open", side_effect=open_mock)
+    mocker.patch("rasp_water.valve.valve_open", side_effect=open_mock)
 
     period = 3
     response = client.get(
@@ -950,7 +945,7 @@ def test_valve_flow_read_command_fail(client, mocker):
     check_notify_slack(None)
 
     # NOTE: 後始末をしておく
-    valve.STAT_PATH_VALVE_CONTROL_COMMAND.unlink(missing_ok=True)
+    rasp_water.valve.STAT_PATH_VALVE_CONTROL_COMMAND.unlink(missing_ok=True)
     response = client.get(
         "/rasp-water/api/valve_ctrl",
         query_string={
@@ -963,18 +958,18 @@ def test_valve_flow_read_command_fail(client, mocker):
 
 
 def test_schedule_ctrl_execute(client, mocker, freezer):
-    import rasp_water_valve
+    import rasp_water.rasp_water_valve
 
-    rasp_water_valve.term()
+    rasp_water.rasp_water_valve.term()
     time.sleep(1)
 
-    time_mock = mocker.patch("valve.valve_time")
+    time_mock = mocker.patch("rasp_water.valve.valve_time")
 
     move_to(freezer, time_test(0))
     time_mock.return_value = time.time()
     time.sleep(1)
 
-    rasp_water_valve.init(my_lib.config.load(CONFIG_FILE))
+    rasp_water.rasp_water_valve.init(my_lib.config.load(CONFIG_FILE))
     ctrl_log_clear()
 
     schedule_data = gen_schedule_data()
@@ -1007,19 +1002,19 @@ def test_schedule_ctrl_execute(client, mocker, freezer):
 
 
 def test_schedule_ctrl_execute_force(client, mocker, freezer):
-    import rasp_water_valve
+    import rasp_water.rasp_water_valve
 
-    rasp_water_valve.term()
+    rasp_water.rasp_water_valve.term()
     time.sleep(1)
 
-    mocker.patch("rasp_water_valve.judge_execute", return_value=True)
-    time_mock = mocker.patch("valve.valve_time")
+    mocker.patch("rasp_water.rasp_water_valve.judge_execute", return_value=True)
+    time_mock = mocker.patch("rasp_water.valve.valve_time")
 
     move_to(freezer, time_test(0))
     time_mock.return_value = time.time()
     time.sleep(1)
 
-    rasp_water_valve.init(my_lib.config.load(CONFIG_FILE))
+    rasp_water.rasp_water_valve.init(my_lib.config.load(CONFIG_FILE))
     ctrl_log_clear()
 
     schedule_data = gen_schedule_data()
@@ -1049,19 +1044,19 @@ def test_schedule_ctrl_execute_force(client, mocker, freezer):
 
 
 def test_schedule_ctrl_execute_pending(client, mocker, freezer):
-    import rasp_water_valve
+    import rasp_water.rasp_water_valve
 
-    rasp_water_valve.term()
+    rasp_water.rasp_water_valve.term()
     time.sleep(1)
 
-    mocker.patch("rasp_water_valve.judge_execute", return_value=False)
-    time_mock = mocker.patch("valve.valve_time")
+    mocker.patch("rasp_water.rasp_water_valve.judge_execute", return_value=False)
+    time_mock = mocker.patch("rasp_water.valve.valve_time")
 
     move_to(freezer, time_test(0))
     time_mock.return_value = time.time()
     time.sleep(1)
 
-    rasp_water_valve.init(my_lib.config.load(CONFIG_FILE))
+    rasp_water.rasp_water_valve.init(my_lib.config.load(CONFIG_FILE))
     ctrl_log_clear()
 
     schedule_data = gen_schedule_data()
@@ -1091,21 +1086,21 @@ def test_schedule_ctrl_execute_pending(client, mocker, freezer):
 
 
 def test_schedule_ctrl_error(client, mocker, freezer):
-    import rasp_water_valve
+    import rasp_water.rasp_water_valve
 
-    valve_state_moch = mocker.patch("rasp_water_valve.set_valve_state")
+    valve_state_moch = mocker.patch("rasp_water.rasp_water_valve.set_valve_state")
     valve_state_moch.side_effect = RuntimeError()
 
-    rasp_water_valve.term()
+    rasp_water.rasp_water_valve.term()
     time.sleep(1)
 
-    time_mock = mocker.patch("valve.valve_time")
+    time_mock = mocker.patch("rasp_water.valve.valve_time")
 
     move_to(freezer, time_test(0))
     time_mock.return_value = time.time()
     time.sleep(0.6)
 
-    rasp_water_valve.init(my_lib.config.load(CONFIG_FILE))
+    rasp_water.rasp_water_valve.init(my_lib.config.load(CONFIG_FILE))
     ctrl_log_clear()
 
     schedule_data = gen_schedule_data()
@@ -1135,21 +1130,21 @@ def test_schedule_ctrl_error(client, mocker, freezer):
 
 
 def test_schedule_ctrl_execute_fail(client, mocker, freezer):
-    import rasp_water_valve
+    import rasp_water.rasp_water_valve
 
-    mocker.patch("weather_forecast.get_rain_fall", return_value=False)
-    mocker.patch("app_scheduler.valve_auto_control_impl", return_value=False)
+    mocker.patch("rasp_water.weather_forecast.get_rain_fall", return_value=False)
+    mocker.patch("rasp_water.app_scheduler.valve_auto_control_impl", return_value=False)
 
-    rasp_water_valve.term()
+    rasp_water.rasp_water_valve.term()
     time.sleep(1)
 
-    time_mock = mocker.patch("valve.valve_time")
+    time_mock = mocker.patch("rasp_water.valve.valve_time")
 
     move_to(freezer, time_test(0))
     time_mock.return_value = time.time()
     time.sleep(0.6)
 
-    rasp_water_valve.init(my_lib.config.load(CONFIG_FILE))
+    rasp_water.rasp_water_valve.init(my_lib.config.load(CONFIG_FILE))
     ctrl_log_clear()
 
     schedule_data = gen_schedule_data()
@@ -1277,7 +1272,7 @@ def test_schedule_ctrl_write_fail(client, mocker):
 
 
 def test_schedule_ctrl_validate_fail(client, mocker):
-    mocker.patch("app_scheduler.schedule_validate", return_value=False)
+    mocker.patch("rasp_water.app_scheduler.schedule_validate", return_value=False)
 
     response = client.get("/rasp-water/api/schedule_ctrl")
     assert response.status_code == 200
@@ -1351,17 +1346,17 @@ def test_memory(client):
 
 
 def test_second_str():
-    import rasp_water_valve
+    import rasp_water.rasp_water_valve
 
-    assert rasp_water_valve.second_str(60) == "1分"
-    assert rasp_water_valve.second_str(61) == "1分1秒"
+    assert rasp_water.rasp_water_valve.second_str(60) == "1分"
+    assert rasp_water.rasp_water_valve.second_str(61) == "1分1秒"
 
 
 def test_valve_init(mocker):
-    import rasp_water_valve
-    import valve
+    import rasp_water.rasp_water_valve
+    import rasp_water.valve
 
-    rasp_water_valve.term()
+    rasp_water.rasp_water_valve.term()
     time.sleep(1)
 
     mocker.patch("pathlib.Path.exists", return_value=True)
@@ -1370,26 +1365,26 @@ def test_valve_init(mocker):
     orig_open = pathlib.Path.open
 
     def open_mock(self, mode="r", *args, **kwargs):
-        if str(self) == valve.ADC_SCALE_PATH:
+        if str(self) == rasp_water.valve.ADC_SCALE_PATH:
             return file_mock
         else:
             return orig_open(self, mode, *args, **kwargs)
 
     mocker.patch("pathlib.Path.open", new=open_mock)
 
-    rasp_water_valve.init(my_lib.config.load(CONFIG_FILE))
+    rasp_water.rasp_water_valve.init(my_lib.config.load(CONFIG_FILE))
 
 
 def test_terminate():
     import my_lib.webapp.log
-    import rasp_water_schedule
-    import rasp_water_valve
+    import rasp_water.rasp_water_schedule
+    import rasp_water.rasp_water_valve
 
     my_lib.webapp.log.term()
-    rasp_water_schedule.term()
-    rasp_water_valve.term()
+    rasp_water.rasp_water_schedule.term()
+    rasp_water.rasp_water_valve.term()
 
     # NOTE: 二重に呼んでもエラーにならないことを確認
     my_lib.webapp.log.term()
-    rasp_water_schedule.term()
-    rasp_water_valve.term()
+    rasp_water.rasp_water_schedule.term()
+    rasp_water.rasp_water_valve.term()

@@ -9,7 +9,7 @@ import traceback
 
 import my_lib.webapp.config
 import my_lib.webapp.log
-import rasp_water_valve
+import rasp_water.rasp_water_valve
 import schedule
 
 RETRY_COUNT = 3
@@ -26,7 +26,7 @@ def init():
 def valve_auto_control_impl(config, period):
     try:
         # NOTE: Web 経由だと認証つけた場合に困るので，直接関数を呼ぶ
-        rasp_water_valve.set_valve_state(config, 1, period * 60, True, "scheduler")
+        rasp_water.rasp_water_valve.set_valve_state(config, 1, period * 60, True, "scheduler")
         return True
 
         # logging.debug("Request scheduled execution to {url}".format(url=url))

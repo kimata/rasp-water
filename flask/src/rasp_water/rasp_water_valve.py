@@ -12,8 +12,8 @@ import my_lib.flask_util
 import my_lib.webapp.config
 import my_lib.webapp.event
 import my_lib.webapp.log
-import valve
-import weather_forecast
+import rasp_water.valve
+import rasp_water.weather_forecast
 from flask_cors import cross_origin
 
 from flask import Blueprint, current_app, jsonify, request
@@ -34,7 +34,7 @@ def init(config):
     should_terminate = False
 
     flow_stat_queue = Queue()
-    valve.init(config, flow_stat_queue)
+    rasp_water.valve.init(config, flow_stat_queue)
     worker = threading.Thread(target=flow_notify_worker, args=(config, flow_stat_queue))
     worker.start()
 
@@ -50,7 +50,7 @@ def term():
     worker.join()
     worker = None
 
-    valve.term()
+    rasp_water.valve.term()
 
 
 def send_data(config, flow):
@@ -122,7 +122,7 @@ def flow_notify_worker(config, queue):
 
 def get_valve_state():
     try:
-        state = valve.get_control_mode()
+        state = rasp_water.valve.get_control_mode()
 
         return {
             "state": state["mode"].value,
@@ -139,7 +139,7 @@ def judge_execute(config, state, auto):
     if (state != 1) or (not auto):
         return True
 
-    if weather_forecast.get_rain_fall(config):
+    if rasp_water.weather_forecast.get_rain_fall(config):
         # NOTE: ダミーモードの場合，とにかく水やりする (CI テストの為)
         if os.environ.get("DUMMY_MODE", "false") == "true":
             return True
@@ -165,7 +165,7 @@ def set_valve_state(config, state, period, auto, host=""):
                 by=f"(by {host})" if host != "" else "",
             )
         )
-        valve.set_control_mode(period)
+        rasp_water.valve.set_control_mode(period)
     else:
         my_lib.webapp.log.app_log(
             "{auto}で水やりを終了します。{by}".format(
@@ -173,7 +173,7 @@ def set_valve_state(config, state, period, auto, host=""):
                 by=f"(by {host})" if host != "" else "",
             )
         )
-        valve.set_state(valve.VALVE_STATE.CLOSE)
+        rasp_water.valve.set_state(rasp_water.valve.VALVE_STATE.CLOSE)
 
     my_lib.webapp.event.notify_event(my_lib.webapp.event.EVENT_TYPE.CONTROL)
     return get_valve_state()
@@ -201,4 +201,4 @@ def api_valve_ctrl():
 @my_lib.flask_util.support_jsonp
 @cross_origin()
 def api_valve_flow():
-    return jsonify({"cmd": "get", "flow": valve.get_flow()["flow"]})
+    return jsonify({"cmd": "get", "flow": rasp_water.valve.get_flow()["flow"]})

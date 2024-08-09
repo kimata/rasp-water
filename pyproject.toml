@@ -33,6 +33,12 @@ dependencies = [
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
+[tool.hatch.build.targets.wheel]
+packages = ["flask/src/rasp_water"]
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
 [tool.rye]
 managed = true
 dev-dependencies = [
@@ -46,11 +52,6 @@ dev-dependencies = [
     "pytest-xdist>=3.6.1",
 ]
 
-[tool.hatch.metadata]
-allow-direct-references = true
-
-[tool.hatch.build.targets.wheel]
-packages = ["flask/lib"]
 
 [tool.pytest.ini_options]
 minversion = "6.0"
