@@ -13,7 +13,7 @@ from playwright.sync_api import expect
 
 sys.path.append(str(pathlib.Path(__file__).parent.parent / "flask" / "lib"))
 
-from webapp_config import TIMEZONE, TIMEZONE_OFFSET, TIMEZONE_PYTZ
+import my_lib.webapp.config
 
 APP_URL_TMPL = "http://{host}:{port}/rasp-water/"
 
@@ -36,7 +36,9 @@ def time_str_random():
 
 
 def time_str_after(minute):
-    return (datetime.datetime.now(TIMEZONE) + datetime.timedelta(minutes=minute)).strftime("%H:%M")
+    return (
+        datetime.datetime.now(my_lib.webapp.config.TIMEZONE) + datetime.timedelta(minutes=minute)
+    ).strftime("%H:%M")
 
 
 def bool_random():
@@ -79,28 +81,32 @@ def test_time(freezer):  # noqa: ARG001
     import schedule
 
     logging.debug("datetime.now()                 = %s", datetime.datetime.now())  # noqa: DTZ005
-    logging.debug("datetime.now(JST)              = %s", datetime.datetime.now(tz=TIMEZONE))
+    logging.debug(
+        "datetime.now(JST)              = %s", datetime.datetime.now(tz=my_lib.webapp.config.TIMEZONE)
+    )
     logging.debug(
         "datetime.now().replace(...)    = %s",
         datetime.datetime.now().replace(hour=0, minute=0, second=0),  # noqa: DTZ005
     )
     logging.debug(
         "datetime.now(JST).replace(...) = %s",
-        datetime.datetime.now(TIMEZONE).replace(hour=0, minute=0, second=0),
+        datetime.datetime.now(my_lib.webapp.config.TIMEZONE).replace(hour=0, minute=0, second=0),
     )
 
     schedule.clear()
     job_time_str = time_str_after(SCHEDULE_AFTER_MIN)
     logging.debug("set schedule at %s", job_time_str)
-    job = schedule.every().day.at(job_time_str, TIMEZONE_PYTZ).do(lambda: True)
+    job = schedule.every().day.at(job_time_str, my_lib.webapp.config.TIMEZONE_PYTZ).do(lambda: True)
 
     idle_sec = schedule.idle_seconds()
     logging.debug(
-        "Time to next jobs is %.1f sec (%.1f sec)", idle_sec, idle_sec - int(TIMEZONE_OFFSET) * 60 * 60
+        "Time to next jobs is %.1f sec (%.1f sec)",
+        idle_sec,
+        idle_sec - int(my_lib.webapp.config.TIMEZONE_OFFSET) * 60 * 60,
     )
     logging.debug("Next run is %s", job.next_run)
 
-    assert abs(idle_sec - int(TIMEZONE_OFFSET) * 60 * 60) < 60
+    assert abs(idle_sec - int(my_lib.webapp.config.TIMEZONE_OFFSET) * 60 * 60) < 60
 
 
 @flaky(max_runs=3, min_passes=1)
@@ -175,7 +181,7 @@ def test_schedule_run(page, host, port):
     check_log(page, "ログがクリアされました")
 
     # NOTE: 次の「分」で実行させるにあたって，秒数を調整する
-    time.sleep((90 - datetime.datetime.now(TIMEZONE).second) % 60)
+    time.sleep((90 - datetime.datetime.now(my_lib.webapp.config.TIMEZONE).second) % 60)
 
     enable_checkbox = page.locator('//input[contains(@id,"schedule-entry-")]')
     enable_wday_index = [bool_random() for _ in range(14)]
