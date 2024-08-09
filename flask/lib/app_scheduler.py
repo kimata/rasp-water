@@ -7,10 +7,10 @@ import threading
 import time
 import traceback
 
-import my_lib.webapp_log
+import my_lib.webapp.config
+import my_lib.webapp.log
 import rasp_water_valve
 import schedule
-from webapp_config import SCHEDULE_DATA_PATH, TIMEZONE_PYTZ
 
 RETRY_COUNT = 3
 
@@ -48,7 +48,7 @@ def valve_auto_control(config, period):
         if valve_auto_control_impl(config, period):
             return True
 
-    my_lib.webapp_log.app_log("😵 水やりの自動実行に失敗しました。")
+    my_lib.webapp.log.app_log("😵 水やりの自動実行に失敗しました。")
     return False
 
 
@@ -78,28 +78,28 @@ def schedule_store(schedule_data):
     global schedule_lock
     try:
         with schedule_lock:
-            SCHEDULE_DATA_PATH.parent.mkdir(parents=True, exist_ok=True)
-            with pathlib.Path(SCHEDULE_DATA_PATH).open(mode="wb") as f:
+            my_lib.webapp.config.SCHEDULE_FILE_PATH.parent.mkdir(parents=True, exist_ok=True)
+            with pathlib.Path(my_lib.webapp.config.SCHEDULE_FILE_PATH).open(mode="wb") as f:
                 pickle.dump(schedule_data, f)
     except Exception:
         logging.exception("Failed to save schedule settings.")
-        my_lib.webapp_log.app_log(
-            "😵 スケジュール設定の保存に失敗しました。", my_lib.webapp_log.APP_LOG_LEVEL.ERROR
+        my_lib.webapp.log.app_log(
+            "😵 スケジュール設定の保存に失敗しました。", my_lib.webapp.log.APP_LOG_LEVEL.ERROR
         )
 
 
 def schedule_load():
     global schedule_lock
-    if SCHEDULE_DATA_PATH.exists():
+    if my_lib.webapp.config.SCHEDULE_FILE_PATH.exists():
         try:
-            with schedule_lock, pathlib.Path(SCHEDULE_DATA_PATH).open(mode="rb") as f:
+            with schedule_lock, pathlib.Path(my_lib.webapp.config.SCHEDULE_FILE_PATH).open(mode="rb") as f:
                 schedule_data = pickle.load(f)  # noqa: S301
                 if schedule_validate(schedule_data):
                     return schedule_data
         except Exception:
             logging.exception("Failed to load schedule settings.")
-            my_lib.webapp_log.app_log(
-                "😵 スケジュール設定の読み出しに失敗しました。", my_lib.webapp_log.APP_LOG_LEVEL.ERROR
+            my_lib.webapp.log.app_log(
+                "😵 スケジュール設定の読み出しに失敗しました。", my_lib.webapp.log.APP_LOG_LEVEL.ERROR
             )
 
     return [
@@ -120,31 +120,31 @@ def set_schedule(config, schedule_data):  # noqa: C901
             continue
 
         if entry["wday"][0]:
-            schedule.every().sunday.at(entry["time"], TIMEZONE_PYTZ).do(
+            schedule.every().sunday.at(entry["time"], my_lib.webapp.config.TIMEZONE_PYTZ).do(
                 valve_auto_control, config, entry["period"]
             )
         if entry["wday"][1]:
-            schedule.every().monday.at(entry["time"], TIMEZONE_PYTZ).do(
+            schedule.every().monday.at(entry["time"], my_lib.webapp.config.TIMEZONE_PYTZ).do(
                 valve_auto_control, config, entry["period"]
             )
         if entry["wday"][2]:
-            schedule.every().tuesday.at(entry["time"], TIMEZONE_PYTZ).do(
+            schedule.every().tuesday.at(entry["time"], my_lib.webapp.config.TIMEZONE_PYTZ).do(
                 valve_auto_control, config, entry["period"]
             )
         if entry["wday"][3]:
-            schedule.every().wednesday.at(entry["time"], TIMEZONE_PYTZ).do(
+            schedule.every().wednesday.at(entry["time"], my_lib.webapp.config.TIMEZONE_PYTZ).do(
                 valve_auto_control, config, entry["period"]
             )
         if entry["wday"][4]:
-            schedule.every().thursday.at(entry["time"], TIMEZONE_PYTZ).do(
+            schedule.every().thursday.at(entry["time"], my_lib.webapp.config.TIMEZONE_PYTZ).do(
                 valve_auto_control, config, entry["period"]
             )
         if entry["wday"][5]:
-            schedule.every().friday.at(entry["time"], TIMEZONE_PYTZ).do(
+            schedule.every().friday.at(entry["time"], my_lib.webapp.config.TIMEZONE_PYTZ).do(
                 valve_auto_control, config, entry["period"]
             )
         if entry["wday"][6]:
-            schedule.every().saturday.at(entry["time"], TIMEZONE_PYTZ).do(
+            schedule.every().saturday.at(entry["time"], my_lib.webapp.config.TIMEZONE_PYTZ).do(
                 valve_auto_control, config, entry["period"]
             )
 
@@ -201,7 +201,7 @@ if __name__ == "__main__":
     from multiprocessing.pool import ThreadPool
 
     import logger
-    from webapp_config import TIMEZONE
+    import my_lib.webapp.config
 
     logger.init("test", level=logging.DEBUG)
 
@@ -216,7 +216,7 @@ if __name__ == "__main__":
     pool = ThreadPool(processes=1)
     result = pool.apply_async(schedule_worker, (queue,))
 
-    exec_time = datetime.datetime.now(TIMEZONE) + datetime.timedelta(seconds=5)
+    exec_time = datetime.datetime.now(my_lib.webapp.config.TIMEZONE) + datetime.timedelta(seconds=5)
     queue.put([{"time": exec_time.strftime("%H:%M"), "func": test_func}])
 
     # NOTE: 終了するのを待つ

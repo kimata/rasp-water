@@ -1,3 +1,17 @@
+---
+webapp:
+    timezone:
+        offset: "+9"
+        name: JST
+        zone: Asia/Tokyo
+
+    static_dir_path: dist/rasp-water
+
+    data:
+        schedule_file_path: flask/data/schedule.dat
+        log_file_path: flask/data/log.db
+        stat_dir_path: /dev/shm
+
 fluent:
     host: proxy.green-rabbit.net
 

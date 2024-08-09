@@ -6,14 +6,14 @@ from multiprocessing import Queue
 
 import app_scheduler
 import my_lib.flask_util
-import my_lib.webapp_event
-import my_lib.webapp_log
+import my_lib.webapp.config
+import my_lib.webapp.event
+import my_lib.webapp.log
 from flask_cors import cross_origin
-from webapp_config import APP_URL_PREFIX
 
 from flask import Blueprint, jsonify, request, url_for
 
-blueprint = Blueprint("rasp-water-schedule", __name__, url_prefix=APP_URL_PREFIX)
+blueprint = Blueprint("rasp-water-schedule", __name__, url_prefix=my_lib.webapp.config.URL_PREFIX)
 
 schedule_lock = threading.Lock()
 schedule_queue = None
@@ -84,9 +84,9 @@ def api_schedule_ctrl():
         schedule_data = json.loads(data)
 
         if not app_scheduler.schedule_validate(schedule_data):
-            my_lib.webapp_log.app_log(
+            my_lib.webapp.log.app_log(
                 "😵 スケジュールの指定が不正です。",
-                my_lib.webapp_log.APP_LOG_LEVEL.ERROR,
+                my_lib.webapp.log.APP_LOG_LEVEL.ERROR,
             )
             return jsonify(app_scheduler.schedule_load())
 
@@ -104,10 +104,10 @@ def api_schedule_ctrl():
             # レスポンスを schedule_load() で返したいので，ここでも呼ぶ．
             app_scheduler.schedule_store(schedule_data)
 
-            my_lib.webapp_event.notify_event(my_lib.webapp_event.EVENT_TYPE.SCHEDULE)
+            my_lib.webapp.event.notify_event(my_lib.webapp.event.EVENT_TYPE.SCHEDULE)
 
             user = my_lib.flask_util.auth_user(request)
-            my_lib.webapp_log.app_log(
+            my_lib.webapp.log.app_log(
                 "📅 スケジュールを更新しました。\n{schedule}\n{by}".format(
                     schedule=schedule_str(schedule_data),
                     by=f"by {user}" if user != "" else "",

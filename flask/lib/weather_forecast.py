@@ -4,8 +4,8 @@ import functools
 import json
 import logging
 
+import my_lib.webapp.config
 import requests
-from webapp_config import TIMEZONE, TIMEZONE_PYTZ
 
 YAHOO_API_ENDPOINT = "https://map.yahooapis.jp/weather/V1/place"
 
@@ -50,8 +50,10 @@ def get_rain_fall(config):
         x["Rainfall"]
         for x in filter(
             lambda x: (
-                datetime.datetime.now(TIMEZONE)
-                - datetime.datetime.strptime(x["Date"], "%Y%m%d%H%M").astimezone(TIMEZONE_PYTZ)
+                datetime.datetime.now(my_lib.webapp.config.TIMEZONE)
+                - datetime.datetime.strptime(x["Date"], "%Y%m%d%H%M").astimezone(
+                    my_lib.webapp.config.TIMEZONE_PYTZ
+                )
             ).total_seconds()
             / (60 * 60)
             < config["weather"]["rain_fall"]["before_hour"],

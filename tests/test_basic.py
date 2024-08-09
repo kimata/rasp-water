@@ -17,9 +17,9 @@ import pytest
 sys.path.append(str(pathlib.Path(__file__).parent.parent / "flask" / "app"))
 sys.path.append(str(pathlib.Path(__file__).parent.parent / "flask" / "lib"))
 
+import my_lib.webapp.config
 from app import create_app
 from weather_forecast import get_rain_fall as get_rain_fall_orig
-from webapp_config import TIMEZONE, TIMEZONE_PYTZ
 
 CONFIG_FILE = "config.example.yaml"
 
@@ -246,14 +246,14 @@ def test_time(freezer):
     import schedule
 
     logging.debug("datetime.now()                 = %s", datetime.datetime.now())  # noqa: DTZ005
-    logging.debug("datetime.now(JST)              = %s", datetime.datetime.now(TIMEZONE))
+    logging.debug("datetime.now(JST)              = %s", datetime.datetime.now(my_lib.webapp.config.TIMEZONE))
     logging.debug(
         "datetime.now().replace(...)    = %s",
         datetime.datetime.now().replace(hour=0, minute=0, second=0),  # noqa: DTZ005
     )
     logging.debug(
         "datetime.now(JST).replace(...) = %s",
-        datetime.datetime.now(TIMEZONE).replace(hour=0, minute=0, second=0),
+        datetime.datetime.now(my_lib.webapp.config.TIMEZONE).replace(hour=0, minute=0, second=0),
     )
 
     move_to(freezer, time_test(0))
@@ -262,13 +262,13 @@ def test_time(freezer):
         "datetime.now()                 = %s",
         datetime.datetime.now(),  # noqa: DTZ005
     )
-    logging.debug("datetime.now(JST)              = %s", datetime.datetime.now(TIMEZONE))
+    logging.debug("datetime.now(JST)              = %s", datetime.datetime.now(my_lib.webapp.config.TIMEZONE))
 
     schedule.clear()
     job_time_str = time_str(time_test(1))
     logging.debug("set schedule at %s", job_time_str)
 
-    job_add = schedule.every().day.at(job_time_str, TIMEZONE_PYTZ).do(lambda: True)
+    job_add = schedule.every().day.at(job_time_str, my_lib.webapp.config.TIMEZONE_PYTZ).do(lambda: True)
 
     for i, job in enumerate(schedule.get_jobs()):
         logging.debug("Current schedule [%d]: %s", i, job.next_run)
@@ -1191,9 +1191,9 @@ def test_schedule_ctrl_read(client):
 
 
 def test_schedule_ctrl_read_fail_1(client):
-    import webapp_config
+    my_lib.webapp.config.init(my_lib.config.load(CONFIG_FILE))
 
-    with pathlib.Path.open(webapp_config.SCHEDULE_DATA_PATH, "wb") as f:
+    with pathlib.Path.open(my_lib.webapp.config.SCHEDULE_FILE_PATH, "wb") as f:
         f.write(b"TEST")
 
     response = client.get("/rasp-water/api/schedule_ctrl")
@@ -1208,9 +1208,9 @@ def test_schedule_ctrl_read_fail_1(client):
 
 
 def test_schedule_ctrl_read_fail_2(client):
-    import webapp_config
+    my_lib.webapp.config.init(my_lib.config.load(CONFIG_FILE))
 
-    webapp_config.SCHEDULE_DATA_PATH.unlink(missing_ok=True)
+    my_lib.webapp.config.SCHEDULE_FILE_PATH.unlink(missing_ok=True)
 
     response = client.get("/rasp-water/api/schedule_ctrl")
     assert response.status_code == 200
@@ -1381,15 +1381,15 @@ def test_valve_init(mocker):
 
 
 def test_terminate():
-    import my_lib.webapp_log
+    import my_lib.webapp.log
     import rasp_water_schedule
     import rasp_water_valve
 
-    my_lib.webapp_log.term()
+    my_lib.webapp.log.term()
     rasp_water_schedule.term()
     rasp_water_valve.term()
 
     # NOTE: 二重に呼んでもエラーにならないことを確認
-    my_lib.webapp_log.term()
+    my_lib.webapp.log.term()
     rasp_water_schedule.term()
     rasp_water_valve.term()

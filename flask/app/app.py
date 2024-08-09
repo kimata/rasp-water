@@ -33,10 +33,16 @@ def create_app(config, dummy_mode=False):
     else:  # pragma: no cover
         os.environ["DUMMY_MODE"] = "false"
 
-    import my_lib.webapp_base
-    import my_lib.webapp_event
-    import my_lib.webapp_log
-    import my_lib.webapp_util
+    # NOTE: テストのため，環境変数 DUMMY_MODE をセットしてからロードしたいのでこの位置
+    import my_lib.webapp.config
+
+    my_lib.webapp.config.URL_PREFIX = "/rasp-water"
+    my_lib.webapp.config.init(config)
+
+    import my_lib.webapp.base
+    import my_lib.webapp.event
+    import my_lib.webapp.log
+    import my_lib.webapp.util
     import rasp_water_schedule
     import rasp_water_valve
     import valve
@@ -54,12 +60,12 @@ def create_app(config, dummy_mode=False):
 
         rasp_water_schedule.init(config)
         rasp_water_valve.init(config)
-        my_lib.webapp_log.init(config)
+        my_lib.webapp.log.init(config)
 
         def notify_terminate():  # pragma: no cover
             valve.set_state(valve.VALVE_STATE.CLOSE)
-            my_lib.webapp_log.app_log("🏃 アプリを再起動します．")
-            my_lib.webapp_log.term()
+            my_lib.webapp.log.app_log("🏃 アプリを再起動します．")
+            my_lib.webapp.log.term()
 
         atexit.register(notify_terminate)
     else:  # pragma: no cover
@@ -75,11 +81,11 @@ def create_app(config, dummy_mode=False):
     app.register_blueprint(rasp_water_valve.blueprint)
     app.register_blueprint(rasp_water_schedule.blueprint)
 
-    app.register_blueprint(my_lib.webapp_base.blueprint_default)
-    app.register_blueprint(my_lib.webapp_base.blueprint)
-    app.register_blueprint(my_lib.webapp_event.blueprint)
-    app.register_blueprint(my_lib.webapp_log.blueprint)
-    app.register_blueprint(my_lib.webapp_util.blueprint)
+    app.register_blueprint(my_lib.webapp.base.blueprint_default)
+    app.register_blueprint(my_lib.webapp.base.blueprint)
+    app.register_blueprint(my_lib.webapp.event.blueprint)
+    app.register_blueprint(my_lib.webapp.log.blueprint)
+    app.register_blueprint(my_lib.webapp.util.blueprint)
 
     # app.debug = True
 

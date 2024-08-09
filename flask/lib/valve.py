@@ -13,19 +13,19 @@ from enum import IntEnum
 # 置き換えたいので，別名にしておく．
 from time import time as valve_time
 
-from webapp_config import STAT_DIR_PATH
+import my_lib.webapp.config
 
 # バルブを一定期間開く際に作られるファイル．
 # ファイルの内容はバルブを閉じるべき UNIX 時間．
-STAT_PATH_VALVE_CONTROL_COMMAND = STAT_DIR_PATH / "valve" / "control" / "command"
+STAT_PATH_VALVE_CONTROL_COMMAND = my_lib.webapp.config.STAT_DIR_PATH / "valve" / "control" / "command"
 
 # 実際にバルブを開いた際に作られるファイル．
 # 実際にバルブを閉じた際に削除される．
-STAT_PATH_VALVE_OPEN = STAT_DIR_PATH / "valve" / "open"
+STAT_PATH_VALVE_OPEN = my_lib.webapp.config.STAT_DIR_PATH / "valve" / "open"
 
 # 実際にバルブを閉じた際に作られるファイル．
 # 実際にバルブを開いた際に削除される．
-STAT_PATH_VALVE_CLOSE = STAT_DIR_PATH / "valve" / "close"
+STAT_PATH_VALVE_CLOSE = my_lib.webapp.config.STAT_DIR_PATH / "valve" / "close"
 
 # 電磁弁制御用の GPIO 端子番号．
 # この端子が H になった場合に，水が出るように回路を組んでおく．

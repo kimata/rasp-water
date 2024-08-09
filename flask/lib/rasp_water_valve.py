@@ -9,16 +9,16 @@ from multiprocessing import Queue
 
 import fluent.sender
 import my_lib.flask_util
-import my_lib.webapp_event
-import my_lib.webapp_log
+import my_lib.webapp.config
+import my_lib.webapp.event
+import my_lib.webapp.log
 import valve
 import weather_forecast
 from flask_cors import cross_origin
-from webapp_config import APP_URL_PREFIX
 
 from flask import Blueprint, current_app, jsonify, request
 
-blueprint = Blueprint("rasp-water-valve", __name__, url_prefix=APP_URL_PREFIX)
+blueprint = Blueprint("rasp-water-valve", __name__, url_prefix=my_lib.webapp.config.URL_PREFIX)
 
 worker = None
 should_terminate = False
@@ -97,7 +97,7 @@ def flow_notify_worker(config, queue):
                 logging.debug("flow notify = %s", str(stat))
 
                 if stat["type"] == "total":
-                    my_lib.webapp_log.app_log(
+                    my_lib.webapp.log.app_log(
                         "🚿 {time_str}間，約 {water:.2f}L の水やりを行いました。".format(
                             time_str=second_str(stat["period"]), water=stat["total"]
                         )
@@ -105,7 +105,7 @@ def flow_notify_worker(config, queue):
                 elif stat["type"] == "instantaneous":
                     send_data(config, stat["flow"])
                 elif stat["type"] == "error":
-                    my_lib.webapp_log.app_log(stat["message"], my_lib.webapp_log.APP_LOG_LEVEL.ERROR)
+                    my_lib.webapp.log.app_log(stat["message"], my_lib.webapp.log.APP_LOG_LEVEL.ERROR)
                 else:  # pragma: no cover
                     pass
             time.sleep(sleep_sec)
@@ -144,7 +144,7 @@ def judge_execute(config, state, auto):
         if os.environ.get("DUMMY_MODE", "false") == "true":
             return True
         else:
-            my_lib.webapp_log.app_log("☂ 前後で雨が降る予報があるため、自動での水やりを見合わせます。")
+            my_lib.webapp.log.app_log("☂ 前後で雨が降る予報があるため、自動での水やりを見合わせます。")
             return False
 
     return True
@@ -154,11 +154,11 @@ def set_valve_state(config, state, period, auto, host=""):
     is_execute = judge_execute(config, state, auto)
 
     if not is_execute:
-        my_lib.webapp_event.notify_event(my_lib.webapp_event.EVENT_TYPE.CONTROL)
+        my_lib.webapp.event.notify_event(my_lib.webapp.event.EVENT_TYPE.CONTROL)
         return get_valve_state()
 
     if state == 1:
-        my_lib.webapp_log.app_log(
+        my_lib.webapp.log.app_log(
             "{auto}で{period_str}間の水やりを開始します。{by}".format(
                 auto="🕑 自動" if auto else "🔧 手動",
                 period_str=second_str(period),
@@ -167,7 +167,7 @@ def set_valve_state(config, state, period, auto, host=""):
         )
         valve.set_control_mode(period)
     else:
-        my_lib.webapp_log.app_log(
+        my_lib.webapp.log.app_log(
             "{auto}で水やりを終了します。{by}".format(
                 auto="🕑 自動" if auto else "🔧 手動",
                 by=f"(by {host})" if host != "" else "",
@@ -175,7 +175,7 @@ def set_valve_state(config, state, period, auto, host=""):
         )
         valve.set_state(valve.VALVE_STATE.CLOSE)
 
-    my_lib.webapp_event.notify_event(my_lib.webapp_event.EVENT_TYPE.CONTROL)
+    my_lib.webapp.event.notify_event(my_lib.webapp.event.EVENT_TYPE.CONTROL)
     return get_valve_state()
 
 
