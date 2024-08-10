@@ -24,6 +24,7 @@ RUN --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
     --mount=type=bind,source=README.md,target=README.md \
     pip install --no-cache-dir -r requirements.lock
 
+
 FROM python:3.12.4-slim-bookworm AS prod
 
 ARG IMAGE_BUILD_DATE
