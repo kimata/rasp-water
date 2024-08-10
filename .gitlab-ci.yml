@@ -1,4 +1,4 @@
-image: docker:27.1-dind
+image: registry.green-rabbit.net:5000/kimata/local_ubuntu:240730C
 
 stages:
     - build-webapp
@@ -26,8 +26,6 @@ build-image:
     stage: build-image
     needs: ["build-angular"]
 
-    image: registry.green-rabbit.net:5000/kimata/local_ubuntu:240730C
-
     variables:
         BUILDER: arm_builder
 
@@ -47,7 +45,6 @@ build-image:
 
 test-prepare:
     stage: pre-test
-    image: registry.green-rabbit.net:5000/kimata/local_ubuntu:240730E
 
     script:
         - CC=gcc rye sync
@@ -65,8 +62,6 @@ test-walk-through:
     stage: test
     needs: ["build-angular", "test-prepare"]
 
-    image: registry.green-rabbit.net:5000/kimata/local_ubuntu:240730E
-
     script:
         - rye run pytest --cov=flask --cov-report=html tests/test_basic.py
 
@@ -83,8 +78,6 @@ test-walk-through:
 test-playwright:
     stage: test
     needs: ["build-angular", "test-prepare"]
-
-    image: registry.green-rabbit.net:5000/kimata/local_ubuntu:240730E
 
     script:
         # NOTE: テストに失敗するとテスト用のコンテナが残るので削除する
@@ -111,8 +104,6 @@ test-playwright:
 test-playwright-docker:
     stage: test
     needs: ["build-angular", "test-prepare"]
-
-    image: registry.green-rabbit.net:5000/kimata/local_ubuntu:240730E
 
     script:
         # NOTE: テストに失敗するとテスト用のコンテナが残るので削除する
@@ -145,8 +136,6 @@ test-playwright-docker:
 test-playwright-docker-demo:
     stage: test
     needs: ["build-angular", "test-prepare"]
-
-    image: registry.green-rabbit.net:5000/kimata/local_ubuntu:240730E
 
     script:
         # NOTE: テストに失敗するとテスト用のコンテナが残るので削除する
