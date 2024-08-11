@@ -20,7 +20,7 @@ RUN --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
 
 RUN --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
     --mount=type=bind,source=README.md,target=README.md \
-    --mount=type=cache,target=/usr/local/lib/python3.12/site-packages,sharing=locked \
+    --mount=type=cache,target=/root/.cache/pip \
     pip install --no-cache-dir -r requirements.lock
 
 
