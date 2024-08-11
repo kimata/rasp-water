@@ -958,9 +958,9 @@ def test_valve_flow_read_command_fail(client, mocker):
 
 
 def test_schedule_ctrl_execute(client, mocker, freezer):
-    import rasp_water.rasp_water_valve
+    import rasp_water.webapp_valve
 
-    rasp_water.rasp_water_valve.term()
+    rasp_water.webapp_valve.term()
     time.sleep(1)
 
     time_mock = mocker.patch("rasp_water.valve.valve_time")
@@ -969,7 +969,7 @@ def test_schedule_ctrl_execute(client, mocker, freezer):
     time_mock.return_value = time.time()
     time.sleep(1)
 
-    rasp_water.rasp_water_valve.init(my_lib.config.load(CONFIG_FILE))
+    rasp_water.webapp_valve.init(my_lib.config.load(CONFIG_FILE))
     ctrl_log_clear()
 
     schedule_data = gen_schedule_data()
@@ -1002,19 +1002,19 @@ def test_schedule_ctrl_execute(client, mocker, freezer):
 
 
 def test_schedule_ctrl_execute_force(client, mocker, freezer):
-    import rasp_water.rasp_water_valve
+    import rasp_water.webapp_valve
 
-    rasp_water.rasp_water_valve.term()
+    rasp_water.webapp_valve.term()
     time.sleep(1)
 
-    mocker.patch("rasp_water.rasp_water_valve.judge_execute", return_value=True)
+    mocker.patch("rasp_water.webapp_valve.judge_execute", return_value=True)
     time_mock = mocker.patch("rasp_water.valve.valve_time")
 
     move_to(freezer, time_test(0))
     time_mock.return_value = time.time()
     time.sleep(1)
 
-    rasp_water.rasp_water_valve.init(my_lib.config.load(CONFIG_FILE))
+    rasp_water.webapp_valve.init(my_lib.config.load(CONFIG_FILE))
     ctrl_log_clear()
 
     schedule_data = gen_schedule_data()
@@ -1044,19 +1044,19 @@ def test_schedule_ctrl_execute_force(client, mocker, freezer):
 
 
 def test_schedule_ctrl_execute_pending(client, mocker, freezer):
-    import rasp_water.rasp_water_valve
+    import rasp_water.webapp_valve
 
-    rasp_water.rasp_water_valve.term()
+    rasp_water.webapp_valve.term()
     time.sleep(1)
 
-    mocker.patch("rasp_water.rasp_water_valve.judge_execute", return_value=False)
+    mocker.patch("rasp_water.webapp_valve.judge_execute", return_value=False)
     time_mock = mocker.patch("rasp_water.valve.valve_time")
 
     move_to(freezer, time_test(0))
     time_mock.return_value = time.time()
     time.sleep(1)
 
-    rasp_water.rasp_water_valve.init(my_lib.config.load(CONFIG_FILE))
+    rasp_water.webapp_valve.init(my_lib.config.load(CONFIG_FILE))
     ctrl_log_clear()
 
     schedule_data = gen_schedule_data()
@@ -1086,12 +1086,12 @@ def test_schedule_ctrl_execute_pending(client, mocker, freezer):
 
 
 def test_schedule_ctrl_error(client, mocker, freezer):
-    import rasp_water.rasp_water_valve
+    import rasp_water.webapp_valve
 
-    valve_state_moch = mocker.patch("rasp_water.rasp_water_valve.set_valve_state")
+    valve_state_moch = mocker.patch("rasp_water.webapp_valve.set_valve_state")
     valve_state_moch.side_effect = RuntimeError()
 
-    rasp_water.rasp_water_valve.term()
+    rasp_water.webapp_valve.term()
     time.sleep(1)
 
     time_mock = mocker.patch("rasp_water.valve.valve_time")
@@ -1100,7 +1100,7 @@ def test_schedule_ctrl_error(client, mocker, freezer):
     time_mock.return_value = time.time()
     time.sleep(0.6)
 
-    rasp_water.rasp_water_valve.init(my_lib.config.load(CONFIG_FILE))
+    rasp_water.webapp_valve.init(my_lib.config.load(CONFIG_FILE))
     ctrl_log_clear()
 
     schedule_data = gen_schedule_data()
@@ -1130,12 +1130,12 @@ def test_schedule_ctrl_error(client, mocker, freezer):
 
 
 def test_schedule_ctrl_execute_fail(client, mocker, freezer):
-    import rasp_water.rasp_water_valve
+    import rasp_water.webapp_valve
 
     mocker.patch("rasp_water.weather_forecast.get_rain_fall", return_value=False)
-    mocker.patch("rasp_water.app_scheduler.valve_auto_control_impl", return_value=False)
+    mocker.patch("rasp_water.scheduler.valve_auto_control_impl", return_value=False)
 
-    rasp_water.rasp_water_valve.term()
+    rasp_water.webapp_valve.term()
     time.sleep(1)
 
     time_mock = mocker.patch("rasp_water.valve.valve_time")
@@ -1144,7 +1144,7 @@ def test_schedule_ctrl_execute_fail(client, mocker, freezer):
     time_mock.return_value = time.time()
     time.sleep(0.6)
 
-    rasp_water.rasp_water_valve.init(my_lib.config.load(CONFIG_FILE))
+    rasp_water.webapp_valve.init(my_lib.config.load(CONFIG_FILE))
     ctrl_log_clear()
 
     schedule_data = gen_schedule_data()
@@ -1272,7 +1272,7 @@ def test_schedule_ctrl_write_fail(client, mocker):
 
 
 def test_schedule_ctrl_validate_fail(client, mocker):
-    mocker.patch("rasp_water.app_scheduler.schedule_validate", return_value=False)
+    mocker.patch("rasp_water.scheduler.schedule_validate", return_value=False)
 
     response = client.get("/rasp-water/api/schedule_ctrl")
     assert response.status_code == 200
@@ -1346,17 +1346,17 @@ def test_memory(client):
 
 
 def test_second_str():
-    import rasp_water.rasp_water_valve
+    import rasp_water.webapp_valve
 
-    assert rasp_water.rasp_water_valve.second_str(60) == "1分"
-    assert rasp_water.rasp_water_valve.second_str(61) == "1分1秒"
+    assert rasp_water.webapp_valve.second_str(60) == "1分"
+    assert rasp_water.webapp_valve.second_str(61) == "1分1秒"
 
 
 def test_valve_init(mocker):
-    import rasp_water.rasp_water_valve
     import rasp_water.valve
+    import rasp_water.webapp_valve
 
-    rasp_water.rasp_water_valve.term()
+    rasp_water.webapp_valve.term()
     time.sleep(1)
 
     mocker.patch("pathlib.Path.exists", return_value=True)
@@ -1372,19 +1372,19 @@ def test_valve_init(mocker):
 
     mocker.patch("pathlib.Path.open", new=open_mock)
 
-    rasp_water.rasp_water_valve.init(my_lib.config.load(CONFIG_FILE))
+    rasp_water.webapp_valve.init(my_lib.config.load(CONFIG_FILE))
 
 
 def test_terminate():
     import my_lib.webapp.log
-    import rasp_water.rasp_water_schedule
-    import rasp_water.rasp_water_valve
+    import rasp_water.webapp_schedule
+    import rasp_water.webapp_valve
 
     my_lib.webapp.log.term()
-    rasp_water.rasp_water_schedule.term()
-    rasp_water.rasp_water_valve.term()
+    rasp_water.webapp_schedule.term()
+    rasp_water.webapp_valve.term()
 
     # NOTE: 二重に呼んでもエラーにならないことを確認
     my_lib.webapp.log.term()
-    rasp_water.rasp_water_schedule.term()
-    rasp_water.rasp_water_valve.term()
+    rasp_water.webapp_schedule.term()
+    rasp_water.webapp_valve.term()

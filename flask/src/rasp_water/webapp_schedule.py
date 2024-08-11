@@ -9,7 +9,7 @@ import my_lib.flask_util
 import my_lib.webapp.config
 import my_lib.webapp.event
 import my_lib.webapp.log
-import rasp_water.app_scheduler
+import rasp_water.scheduler
 
 from flask import Blueprint, jsonify, request, url_for
 
@@ -30,9 +30,9 @@ def init(config):
         raise ValueError("worker should be None")  # noqa: TRY003, EM101
 
     schedule_queue = Queue()
-    rasp_water.app_scheduler.init()
+    rasp_water.scheduler.init()
     worker = threading.Thread(
-        target=rasp_water.app_scheduler.schedule_worker,
+        target=rasp_water.scheduler.schedule_worker,
         args=(
             config,
             schedule_queue,
@@ -47,7 +47,7 @@ def term():
     if worker is None:
         return
 
-    rasp_water.app_scheduler.should_terminate = True
+    rasp_water.scheduler.should_terminate = True
     worker.join()
     worker = None
 
@@ -83,12 +83,12 @@ def api_schedule_ctrl():
     if cmd == "set":
         schedule_data = json.loads(data)
 
-        if not rasp_water.app_scheduler.schedule_validate(schedule_data):
+        if not rasp_water.scheduler.schedule_validate(schedule_data):
             my_lib.webapp.log.app_log(
                 "😵 スケジュールの指定が不正です。",
                 my_lib.webapp.log.APP_LOG_LEVEL.ERROR,
             )
-            return jsonify(rasp_water.app_scheduler.schedule_load())
+            return jsonify(rasp_water.scheduler.schedule_load())
 
         with schedule_lock:
             endpoint = urllib.parse.urljoin(
@@ -102,7 +102,7 @@ def api_schedule_ctrl():
 
             # NOTE: 本来は schedule_worker の中だけで呼んでるので不要だけど，
             # レスポンスを schedule_load() で返したいので，ここでも呼ぶ．
-            rasp_water.app_scheduler.schedule_store(schedule_data)
+            rasp_water.scheduler.schedule_store(schedule_data)
 
             my_lib.webapp.event.notify_event(my_lib.webapp.event.EVENT_TYPE.SCHEDULE)
 
@@ -114,4 +114,4 @@ def api_schedule_ctrl():
                 )
             )
 
-    return jsonify(rasp_water.app_scheduler.schedule_load())
+    return jsonify(rasp_water.scheduler.schedule_load())
