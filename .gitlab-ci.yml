@@ -103,7 +103,7 @@ test-playwright:
 
 test-playwright-docker:
     stage: test
-    needs: ["build-image"]
+    needs: ["build-image", "test-prepare"]
 
     script:
         # NOTE: テストに失敗するとテスト用のコンテナが残るので削除する
@@ -135,7 +135,7 @@ test-playwright-docker:
 
 test-playwright-docker-demo:
     stage: test
-    needs: ["build-image"]
+    needs: ["build-image", "test-prepare"]
 
     script:
         # NOTE: テストに失敗するとテスト用のコンテナが残るので削除する
