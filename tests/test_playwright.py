@@ -3,17 +3,12 @@
 # ruff: noqa: S101, S311
 
 import datetime
-import pathlib
 import random
-import sys
 import time
 
+import my_lib.webapp.config
 from flaky import flaky
 from playwright.sync_api import expect
-
-sys.path.append(str(pathlib.Path(__file__).parent.parent / "flask" / "lib"))
-
-import my_lib.webapp.config
 
 APP_URL_TMPL = "http://{host}:{port}/rasp-water/"
 

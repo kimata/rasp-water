@@ -15,15 +15,11 @@ Options:
 import atexit
 import logging
 import os
-import pathlib
-import sys
 
 import flask_cors
 from docopt import docopt
 
 import flask
-
-sys.path.append(str(pathlib.Path(__file__).parent.parent / "lib"))
 
 
 def create_app(config, dummy_mode=False):
