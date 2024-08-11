@@ -82,10 +82,10 @@ jobs:
 
             - name: Install Poetry
               run: |
-                  curl -sSL https://install.python-poetry.org | python3 -
+                  curl -sSf https://rye.astral.sh/get | RYE_NO_AUTO_INSTALL=1 RYE_INSTALL_OPTION="--yes" bash
 
             - name: Add path of Poetry
-              run: echo "$HOME/.poetry/bin" >> $GITHUB_PATH
+              run: echo "$HOME/.rye/shims" >> $GITHUB_PATH
 
             - name: Cache python modules
               id: cache-python-modules
@@ -102,11 +102,10 @@ jobs:
 
             - name: Install Dependencies
               run: |
-                  poetry config --local virtualenvs.in-project true
-                  poetry install --no-interaction --with test
+                  rye sync
 
             - name: Run Tests
-              run: poetry run pytest --cov=flask --cov-report=html tests/test_basic.py
+              run: rye run pytest --cov=flask --cov-report=html tests/test_basic.py
 
             - name: Upload coverage file
               uses: actions/upload-artifact@v3
