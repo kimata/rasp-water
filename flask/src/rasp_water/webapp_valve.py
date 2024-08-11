@@ -97,7 +97,7 @@ def flow_notify_worker(config, queue):
                 logging.debug("flow notify = %s", str(stat))
 
                 if stat["type"] == "total":
-                    my_lib.webapp.log.app_log(
+                    my_lib.webapp.log.log(
                         "🚿 {time_str}間，約 {water:.2f}L の水やりを行いました。".format(
                             time_str=second_str(stat["period"]), water=stat["total"]
                         )
@@ -105,7 +105,7 @@ def flow_notify_worker(config, queue):
                 elif stat["type"] == "instantaneous":
                     send_data(config, stat["flow"])
                 elif stat["type"] == "error":
-                    my_lib.webapp.log.app_log(stat["message"], my_lib.webapp.log.APP_LOG_LEVEL.ERROR)
+                    my_lib.webapp.log.log(stat["message"], my_lib.webapp.log.LOG_LEVEL.ERROR)
                 else:  # pragma: no cover
                     pass
             time.sleep(sleep_sec)
@@ -144,7 +144,7 @@ def judge_execute(config, state, auto):
         if os.environ.get("DUMMY_MODE", "false") == "true":
             return True
         else:
-            my_lib.webapp.log.app_log("☂ 前後で雨が降る予報があるため、自動での水やりを見合わせます。")
+            my_lib.webapp.log.log("☂ 前後で雨が降る予報があるため、自動での水やりを見合わせます。")
             return False
 
     return True
@@ -158,7 +158,7 @@ def set_valve_state(config, state, period, auto, host=""):
         return get_valve_state()
 
     if state == 1:
-        my_lib.webapp.log.app_log(
+        my_lib.webapp.log.log(
             "{auto}で{period_str}間の水やりを開始します。{by}".format(
                 auto="🕑 自動" if auto else "🔧 手動",
                 period_str=second_str(period),
@@ -167,7 +167,7 @@ def set_valve_state(config, state, period, auto, host=""):
         )
         rasp_water.valve.set_control_mode(period)
     else:
-        my_lib.webapp.log.app_log(
+        my_lib.webapp.log.log(
             "{auto}で水やりを終了します。{by}".format(
                 auto="🕑 自動" if auto else "🔧 手動",
                 by=f"(by {host})" if host != "" else "",

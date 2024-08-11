@@ -84,9 +84,9 @@ def api_schedule_ctrl():
         schedule_data = json.loads(data)
 
         if not rasp_water.scheduler.schedule_validate(schedule_data):
-            my_lib.webapp.log.app_log(
+            my_lib.webapp.log.log(
                 "😵 スケジュールの指定が不正です。",
-                my_lib.webapp.log.APP_LOG_LEVEL.ERROR,
+                my_lib.webapp.log.LOG_LEVEL.ERROR,
             )
             return jsonify(rasp_water.scheduler.schedule_load())
 
@@ -107,7 +107,7 @@ def api_schedule_ctrl():
             my_lib.webapp.event.notify_event(my_lib.webapp.event.EVENT_TYPE.SCHEDULE)
 
             user = my_lib.flask_util.auth_user(request)
-            my_lib.webapp.log.app_log(
+            my_lib.webapp.log.log(
                 "📅 スケジュールを更新しました。\n{schedule}\n{by}".format(
                     schedule=schedule_str(schedule_data),
                     by=f"by {user}" if user != "" else "",
