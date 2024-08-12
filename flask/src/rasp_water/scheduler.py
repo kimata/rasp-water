@@ -54,22 +54,29 @@ def valve_auto_control(config, period):
 
 def schedule_validate(schedule_data):  # noqa: C901, PLR0911
     if len(schedule_data) != 2:
+        logging.warning("Count of entry is Invalid: %d", len(schedule_data))
         return False
 
     for entry in schedule_data:
         for key in ["is_active", "time", "period", "wday"]:
             if key not in entry:
+                logging.warning("Does not contain %s", key)
                 return False
         if type(entry["is_active"]) is not bool:
+            logging.warning("Type of is_active is invalid: %s", type(entry["is_active"]))
             return False
         if not re.compile(r"\d{2}:\d{2}").search(entry["time"]):
+            logging.warning("Format of time is invalid: %s", entry["time"])
             return False
         if type(entry["period"]) is not int:
+            logging.warning("Type of period is invalid: %s", type(entry["period"]))
             return False
         if len(entry["wday"]) != 7:
+            logging.warning("Count of wday is Invalid: %d", len(entry["wday"]))
             return False
-        for wday_flag in entry["wday"]:
+        for i, wday_flag in enumerate(entry["wday"]):
             if type(wday_flag) is not bool:
+                logging.warning("Type of wday[%d] is Invalid: %d", i, type(entry["wday"][i]))
                 return False
     return True
 

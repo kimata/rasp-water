@@ -17,7 +17,6 @@ import logging
 import os
 
 import flask_cors
-from docopt import docopt
 
 import flask
 
@@ -89,10 +88,11 @@ def create_app(config, dummy_mode=False):
 
 
 if __name__ == "__main__":
+    import docopt
     import my_lib.config
     import my_lib.logger
 
-    args = docopt(__doc__)
+    args = docopt.docopt(__doc__)
 
     config_file = args["-c"]
     port = args["-p"]
