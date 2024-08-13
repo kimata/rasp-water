@@ -115,7 +115,7 @@ jobs:
                   path: tests/evidence
 
             - name: Upload artifact
-              uses: actions/upload-pages-artifact@v2
+              uses: actions/upload-pages-artifact@v3
               with:
                   path: tests/evidence
 
@@ -129,4 +129,4 @@ jobs:
         steps:
             - name: Download test results
               id: deployment
-              uses: actions/deploy-pages@v2
+              uses: actions/deploy-pages@v4
