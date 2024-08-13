@@ -76,7 +76,7 @@ def schedule_validate(schedule_data):  # noqa: C901, PLR0911
             return False
         for i, wday_flag in enumerate(entry["wday"]):
             if type(wday_flag) is not bool:
-                logging.warning("Type of wday[%d] is Invalid: %d", i, type(entry["wday"][i]))
+                logging.warning("Type of wday[%d] is Invalid: %s", i, type(entry["wday"][i]))
                 return False
     return True
 
