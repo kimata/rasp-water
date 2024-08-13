@@ -70,6 +70,8 @@ filterwarnings = [
     "ignore::DeprecationWarning:pytest_freezegun",
 ]
 
+maxdiff = 20
+
 [tool.coverage.run]
 branch = true
 
