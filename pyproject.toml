@@ -26,7 +26,7 @@ dependencies = [
     "tzlocal>=5.2",
     "requests>=2.32.3",
     "docopt-ng>=0.9.0",
-    "my-lib @ git+https://github.com/kimata/my-py-lib@8c7bd910097cb5886d02c551f09dce1b7a6e2a52",
+    "my-lib @ git+https://github.com/kimata/my-py-lib@d4846afa11b592e53cf3408abd2fc55655014fa6",
 ]
 
 [build-system]
@@ -69,8 +69,6 @@ filterwarnings = [
     "ignore:The hookimpl CovPlugin.pytest_testnodedown uses",
     "ignore::DeprecationWarning:pytest_freezegun",
 ]
-
-maxdiff = 20
 
 [tool.coverage.run]
 branch = true
