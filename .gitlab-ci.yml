@@ -25,6 +25,9 @@ build-angular:
 build-image:
     stage: build-image
 
+    needs:
+        - build-angular
+
     variables:
         BUILDER: arm_builder
 
@@ -62,6 +65,9 @@ test-prepare:
 test-walk-through:
     stage: test
 
+    needs:
+        - test-prepare
+
     script:
         - rye run pytest --cov=flask --cov-report=html tests/test_basic.py
 
@@ -77,6 +83,9 @@ test-walk-through:
 
 test-playwright:
     stage: test
+
+    needs:
+        - test-prepare
 
     script:
         # NOTE: テストに失敗するとテスト用のコンテナが残るので削除する
@@ -104,6 +113,10 @@ test-playwright:
 
 test-playwright-docker:
     stage: test
+
+    needs:
+        - build-image
+        - test-prepare
 
     script:
         # NOTE: テストに失敗するとテスト用のコンテナが残るので削除する
@@ -138,6 +151,10 @@ test-playwright-docker:
 test-playwright-docker-demo:
     stage: test
 
+    needs:
+        - build-image
+        - test-prepare
+
     script:
         # NOTE: テストに失敗するとテスト用のコンテナが残るので削除する
         - docker ps  --filter "label=job=${CI_JOB_NAME}" | grep hours | cut -d " " -f1 | while read id; do docker stop -t 5 $id; done || true
@@ -171,6 +188,10 @@ test-playwright-docker-demo:
 test-healthz-docker:
     stage: test
 
+    needs:
+        - build-image
+        - test-prepare
+
     script:
         # NOTE: テストに失敗するとテスト用のコンテナが残るので削除する
         - docker ps  --filter "label=job=${CI_JOB_NAME}" | grep hours | cut -d " " -f1 | while read id; do docker stop -t 5 $id; done || true
@@ -191,6 +212,13 @@ test-healthz-docker:
 deploy-webapp:
     stage: deploy
 
+    needs:
+        - test-walk-through
+        - test-playwright
+        - test-playwright-docker
+        - test-playwright-docker-demo
+        - test-healthz-docker
+
     image:
         name: bitnami/kubectl:latest
         entrypoint: [""]
@@ -208,9 +236,19 @@ deploy-webapp:
               - pyoroject.json
               - flask/**/*
               - src/**/*
+              - public/**/*
+          when: on_success
+        - when: never
 
 deploy-webapp-demo:
     stage: deploy
+
+    needs:
+        - test-walk-through
+        - test-playwright
+        - test-playwright-docker
+        - test-playwright-docker-demo
+        - test-healthz-docker
 
     image:
         name: bitnami/kubectl:latest
@@ -229,6 +267,9 @@ deploy-webapp-demo:
               - pyoroject.json
               - flask/**/*
               - src/**/*
+              - public/**/*
+          when: on_success
+        - when: never
 
 renovate:
     stage: renovate
