@@ -9,10 +9,6 @@ import traceback
 from builtins import open as valve_open
 from enum import IntEnum
 
-# NOTE: freezegun を使ったテスト時に，別スレッドのものも含めて time.time() を mock で
-# 置き換えたいので，別名にしておく．
-from time import time as valve_time
-
 import my_lib.rpi
 import my_lib.webapp.config
 
@@ -126,7 +122,7 @@ should_terminate = False
 # NOTE: STAT_PATH_VALVE_CONTROL_COMMAND の内容に基づいて，
 # バルブを一定時間開けます．
 # freezegun を使ったテストのため，この関数の中では，
-# time.time() の代わりに valve_time() を使う．
+# time.time() の代わりに my_lib.rpi.gpio_time() を使う．
 def control_worker(config, queue):  # noqa: PLR0912, PLR0915, C901
     global should_terminate
 
@@ -159,7 +155,7 @@ def control_worker(config, queue):  # noqa: PLR0912, PLR0915, C901
             flow_sum += flow
             count_flow += 1
 
-            if (valve_time() - notify_last_time) > 10:
+            if (my_lib.rpi.gpio_time() - notify_last_time) > 10:
                 # NOTE: 10秒ごとに途中集計を報告する
                 queue.put(
                     {
@@ -168,7 +164,7 @@ def control_worker(config, queue):  # noqa: PLR0912, PLR0915, C901
                     }
                 )
 
-                notify_last_time = valve_time()
+                notify_last_time = my_lib.rpi.gpio_time()
                 notify_last_flow_sum = flow_sum
                 notify_last_count = count_flow
 
@@ -177,7 +173,7 @@ def control_worker(config, queue):  # noqa: PLR0912, PLR0915, C901
             if time_open_start is None:
                 if STAT_PATH_VALVE_OPEN.exists():
                     # NOTE: バルブが開かれていたら，状態を変更してトータルの水量の集計を開始する
-                    time_open_start = valve_time()
+                    time_open_start = my_lib.rpi.gpio_time()
                     notify_last_time = time_open_start
             else:
                 if STAT_PATH_VALVE_CONTROL_COMMAND.exists():
@@ -188,21 +184,23 @@ def control_worker(config, queue):  # noqa: PLR0912, PLR0915, C901
 
                             # NOTE: テストの際に freezegun 使う関係で，
                             # 単純な大小比較だけではなく差分絶対値の比較も行う
-                            if (valve_time() > time_to_close) or (abs(valve_time() - time_to_close) < 0.01):
+                            if (my_lib.rpi.gpio_time() > time_to_close) or (
+                                abs(my_lib.rpi.gpio_time() - time_to_close) < 0.01
+                            ):
                                 logging.info("Times is up, close valve")
                                 # NOTE: 下記の関数の中で
                                 # STAT_PATH_VALVE_CONTROL_COMMAND は削除される
                                 set_state(VALVE_STATE.CLOSE)
-                                time_close = valve_time()
+                                time_close = my_lib.rpi.gpio_time()
                     except Exception:
                         logging.warning(traceback.format_exc())
                 if (time_close is None) and STAT_PATH_VALVE_CLOSE.exists():
                     # NOTE: 常にバルブコマンドで制御するので，基本的にここには来ない
                     logging.warning("BUG?")
-                    time_close = valve_time()
+                    time_close = my_lib.rpi.gpio_time()
 
             if (time_close is not None) and (time_open_start is not None):
-                period_sec = valve_time() - time_open_start
+                period_sec = my_lib.rpi.gpio_time() - time_open_start
 
                 # NOTE: バルブが閉じられた後，流量が 0 になっていたらトータル流量を報告する
                 if flow < 0.15:
@@ -236,7 +234,7 @@ def control_worker(config, queue):  # noqa: PLR0912, PLR0915, C901
                         )
 
                     stop_measure = True
-                elif (valve_time() - time_close) > TIME_OPEN_FAIL:
+                elif (my_lib.rpi.gpio_time() - time_close) > TIME_OPEN_FAIL:
                     set_state(VALVE_STATE.CLOSE)
                     queue.put(
                         {
@@ -363,7 +361,7 @@ def set_control_mode(open_sec):
 
     set_state(VALVE_STATE.OPEN)
 
-    time_close = valve_time() + open_sec
+    time_close = my_lib.rpi.gpio_time() + open_sec
 
     STAT_PATH_VALVE_CONTROL_COMMAND.parent.mkdir(parents=True, exist_ok=True)
 
@@ -375,7 +373,7 @@ def get_control_mode():
     if STAT_PATH_VALVE_CONTROL_COMMAND.exists():
         with pathlib.Path(STAT_PATH_VALVE_CONTROL_COMMAND).open() as f:
             time_close = float(f.read())
-            time_now = valve_time()
+            time_now = my_lib.rpi.gpio_time()
 
             if time_close >= time_now:
                 return {
