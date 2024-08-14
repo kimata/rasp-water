@@ -123,9 +123,9 @@ def gen_schedule_data(offset_min=1):
 
 
 def ctrl_log_check(expect_list, is_strict=True, is_error=True):
-    import rasp_water.valve
+    import my_lib.rpi
 
-    hist_list = rasp_water.valve.GPIO.hist_get()
+    hist_list = my_lib.rpi.gpio.hist_get()
 
     logging.debug(hist_list)
 
@@ -203,9 +203,9 @@ def app_log_check(  # noqa: PLR0912, C901
 
 
 def ctrl_log_clear():
-    import rasp_water.valve
+    import my_lib.rpi
 
-    rasp_water.valve.GPIO.hist_clear()
+    my_lib.rpi.gpio.hist_clear()
 
 
 def schedule_clear(client):
@@ -964,7 +964,7 @@ def test_schedule_ctrl_execute(client, mocker, freezer):
     rasp_water.webapp_valve.term()
     time.sleep(1)
 
-    time_mock = mocker.patch("rasp_water.valve.valve_time")
+    time_mock = mocker.patch("my_lib.rpi.gpio_time")
 
     move_to(freezer, time_test(0))
     time_mock.return_value = time.time()
@@ -1009,7 +1009,7 @@ def test_schedule_ctrl_execute_force(client, mocker, freezer):
     time.sleep(1)
 
     mocker.patch("rasp_water.webapp_valve.judge_execute", return_value=True)
-    time_mock = mocker.patch("rasp_water.valve.valve_time")
+    time_mock = mocker.patch("my_lib.rpi.gpio_time")
 
     move_to(freezer, time_test(0))
     time_mock.return_value = time.time()
@@ -1051,7 +1051,7 @@ def test_schedule_ctrl_execute_pending(client, mocker, freezer):
     time.sleep(1)
 
     mocker.patch("rasp_water.webapp_valve.judge_execute", return_value=False)
-    time_mock = mocker.patch("rasp_water.valve.valve_time")
+    time_mock = mocker.patch("my_lib.rpi.gpio_time")
 
     move_to(freezer, time_test(0))
     time_mock.return_value = time.time()
@@ -1095,7 +1095,7 @@ def test_schedule_ctrl_error(client, mocker, freezer):
     rasp_water.webapp_valve.term()
     time.sleep(1)
 
-    time_mock = mocker.patch("rasp_water.valve.valve_time")
+    time_mock = mocker.patch("my_lib.rpi.gpio_time")
 
     move_to(freezer, time_test(0))
     time_mock.return_value = time.time()
@@ -1139,7 +1139,7 @@ def test_schedule_ctrl_execute_fail(client, mocker, freezer):
     rasp_water.webapp_valve.term()
     time.sleep(1)
 
-    time_mock = mocker.patch("rasp_water.valve.valve_time")
+    time_mock = mocker.patch("my_lib.rpi.gpio_time")
 
     move_to(freezer, time_test(0))
     time_mock.return_value = time.time()

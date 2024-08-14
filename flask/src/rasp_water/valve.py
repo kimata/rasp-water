@@ -13,6 +13,7 @@ from enum import IntEnum
 # 置き換えたいので，別名にしておく．
 from time import time as valve_time
 
+import my_lib.rpi
 import my_lib.webapp.config
 
 # バルブを一定期間開く際に作られるファイル．
@@ -72,7 +73,6 @@ class CONTROL_MODE(IntEnum):  # noqa: N801
 if (os.environ.get("DUMMY_MODE", "false") != "true") and (
     os.environ.get("TEST", "false") != "true"
 ):  # pragma: no cover
-    from RPi import GPIO
 
     def conv_rawadc_to_flow(adc):
         flow = (adc * ADC_SCALE_VALUE * FLOW_SCALE_MAX) / 5000.0
@@ -89,78 +89,7 @@ if (os.environ.get("DUMMY_MODE", "false") != "true") and (
             return {"flow": 0, "result": "fail"}
 
 else:
-    if os.environ.get("WERKZEUG_RUN_MAIN") == "true":
-        logging.warning("Using dummy GPIO")
-
     import random
-
-    # NOTE: 本物の GPIO のように振る舞うダミーのライブラリ
-    class GPIO:
-        IS_DUMMY = True
-        BCM = 0
-        OUT = 0
-        state = 0
-        time_start = None
-        time_stop = None
-        gpio_hist = []
-
-        @staticmethod
-        def setmode(mode):  # noqa: ARG004
-            return
-
-        @staticmethod
-        def setup(gpio, direction):  # noqa: ARG004
-            return
-
-        @staticmethod
-        def hist_get():
-            return GPIO.gpio_hist
-
-        @staticmethod
-        def hist_clear():
-            GPIO.gpio_hist = []
-
-        @staticmethod
-        def hist_add(hist):
-            GPIO.gpio_hist.append(hist)
-
-        @staticmethod
-        def output(gpio, value):  # noqa: ARG004
-            logging.debug("set GPIO.output = %s", "open" if value == 1 else "close")
-            if value == 0:
-                if GPIO.time_start is not None:
-                    GPIO.hist_add(
-                        {
-                            "state": "close",
-                            "period": int(valve_time() - GPIO.time_start),
-                        }
-                    )
-                else:
-                    GPIO.hist_add(
-                        {
-                            "state": "close",
-                        }
-                    )
-                GPIO.time_start = None
-                GPIO.time_stop = valve_time()
-            else:
-                GPIO.time_start = valve_time()
-                GPIO.time_stop = None
-                GPIO.hist_add(
-                    {
-                        "state": "open",
-                    }
-                )
-
-            GPIO.state = value
-
-        @staticmethod
-        def input(gpio):  # noqa: ARG004
-            return GPIO.state
-
-        @staticmethod
-        def setwarnings(warnings):  # noqa: ARG004
-            return
 
     def get_flow():
         if STAT_PATH_VALVE_OPEN.exists():
@@ -394,10 +323,10 @@ def set_state(valve_state):
     if valve_state != curr_state:
         logging.info("VALVE: %s -> %s", curr_state.name, valve_state.name)
 
-    GPIO.setwarnings(False)
-    GPIO.setmode(GPIO.BCM)
-    GPIO.setup(pin_no, GPIO.OUT)
-    GPIO.output(pin_no, valve_state.value)
+    my_lib.rpi.gpio.setwarnings(False)
+    my_lib.rpi.gpio.setmode(my_lib.rpi.gpio.BCM)
+    my_lib.rpi.gpio.setup(pin_no, my_lib.rpi.gpio.OUT)
+    my_lib.rpi.gpio.output(pin_no, valve_state.value)
 
     if valve_state == VALVE_STATE.OPEN:
         STAT_PATH_VALVE_CLOSE.unlink(missing_ok=True)
@@ -419,11 +348,11 @@ def set_state(valve_state):
 def get_state():
     global pin_no
 
-    GPIO.setwarnings(False)
-    GPIO.setmode(GPIO.BCM)
-    GPIO.setup(pin_no, GPIO.OUT)
+    my_lib.rpi.gpio.setwarnings(False)
+    my_lib.rpi.gpio.setmode(my_lib.rpi.gpio.BCM)
+    my_lib.rpi.gpio.setup(pin_no, my_lib.rpi.gpio.OUT)
 
-    if GPIO.input(pin_no) == 1:
+    if my_lib.rpi.gpio.input(pin_no) == 1:
         return VALVE_STATE.OPEN
     else:
         return VALVE_STATE.CLOSE
