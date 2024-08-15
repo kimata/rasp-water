@@ -59,7 +59,7 @@ def create_app(config, dummy_mode=False):
 
         def notify_terminate():  # pragma: no cover
             rasp_water.valve.set_state(rasp_water.valve.VALVE_STATE.CLOSE)
-            my_lib.webapp.log.log("🏃 アプリを再起動します．")
+            my_lib.webapp.log.info("🏃 アプリを再起動します．")
             my_lib.webapp.log.term()
 
         atexit.register(notify_terminate)
