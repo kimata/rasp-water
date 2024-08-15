@@ -48,7 +48,7 @@ def valve_auto_control(config, period):
         if valve_auto_control_impl(config, period):
             return True
 
-    my_lib.webapp.log.log("😵 水やりの自動実行に失敗しました。")
+    my_lib.webapp.log.info("😵 水やりの自動実行に失敗しました。")
     return False
 
 
@@ -90,7 +90,7 @@ def schedule_store(schedule_data):
                 pickle.dump(schedule_data, f)
     except Exception:
         logging.exception("Failed to save schedule settings.")
-        my_lib.webapp.log.log("😵 スケジュール設定の保存に失敗しました。", my_lib.webapp.log.LOG_LEVEL.ERROR)
+        my_lib.webapp.log.error("😵 スケジュール設定の保存に失敗しました。")
 
 
 def schedule_load():
@@ -103,9 +103,7 @@ def schedule_load():
                     return schedule_data
         except Exception:
             logging.exception("Failed to load schedule settings.")
-            my_lib.webapp.log.log(
-                "😵 スケジュール設定の読み出しに失敗しました。", my_lib.webapp.log.LOG_LEVEL.ERROR
-            )
+            my_lib.webapp.log.error("😵 スケジュール設定の読み出しに失敗しました。")
 
     return [
         {
