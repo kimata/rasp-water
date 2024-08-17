@@ -7,6 +7,7 @@ import time
 import traceback
 from multiprocessing import Queue
 
+import flask_cors
 import fluent.sender
 import my_lib.flask_util
 import my_lib.webapp.config
@@ -14,11 +15,10 @@ import my_lib.webapp.event
 import my_lib.webapp.log
 import rasp_water.valve
 import rasp_water.weather_forecast
-from flask_cors import cross_origin
 
-from flask import Blueprint, current_app, jsonify, request
+import flask
 
-blueprint = Blueprint("rasp-water-valve", __name__, url_prefix=my_lib.webapp.config.URL_PREFIX)
+blueprint = flask.Blueprint("rasp-water-valve", __name__, url_prefix=my_lib.webapp.config.URL_PREFIX)
 
 worker = None
 should_terminate = False
@@ -181,24 +181,24 @@ def set_valve_state(config, state, period, auto, host=""):
 
 @blueprint.route("/api/valve_ctrl", methods=["GET", "POST"])
 @my_lib.flask_util.support_jsonp
-@cross_origin()
+@flask_cors.cross_origin()
 def api_valve_ctrl():
-    cmd = request.args.get("cmd", 0, type=int)
-    state = request.args.get("state", 0, type=int)
-    period = request.args.get("period", 0, type=int)
-    auto = request.args.get("auto", False, type=bool)
+    cmd = flask.request.args.get("cmd", 0, type=int)
+    state = flask.request.args.get("state", 0, type=int)
+    period = flask.request.args.get("period", 0, type=int)
+    auto = flask.request.args.get("auto", False, type=bool)
 
-    config = current_app.config["CONFIG"]
+    config = flask.current_app.config["CONFIG"]
 
     if cmd == 1:
-        user = my_lib.flask_util.auth_user(request)
-        return jsonify(dict({"cmd": "set"}, **set_valve_state(config, state, period, auto, user)))
+        user = my_lib.flask_util.auth_user(flask.request)
+        return flask.jsonify(dict({"cmd": "set"}, **set_valve_state(config, state, period, auto, user)))
     else:
-        return jsonify(dict({"cmd": "get"}, **get_valve_state()))
+        return flask.jsonify(dict({"cmd": "get"}, **get_valve_state()))
 
 
 @blueprint.route("/api/valve_flow", methods=["GET"])
 @my_lib.flask_util.support_jsonp
-@cross_origin()
+@flask_cors.cross_origin()
 def api_valve_flow():
-    return jsonify({"cmd": "get", "flow": rasp_water.valve.get_flow()["flow"]})
+    return flask.jsonify({"cmd": "get", "flow": rasp_water.valve.get_flow()["flow"]})
