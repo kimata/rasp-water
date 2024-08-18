@@ -47,9 +47,11 @@ def term():
     if worker is None:
         return
 
-    rasp_water.scheduler.should_terminate = True
+    rasp_water.scheduler.should_terminate.set()
     worker.join()
+
     worker = None
+    rasp_water.scheduler.should_terminate.clear()
 
 
 def wday_str_list(wday_list):

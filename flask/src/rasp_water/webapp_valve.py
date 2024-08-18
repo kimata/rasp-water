@@ -21,7 +21,7 @@ import flask
 blueprint = flask.Blueprint("rasp-water-valve", __name__, url_prefix=my_lib.webapp.config.URL_PREFIX)
 
 worker = None
-should_terminate = False
+should_terminate = threading.Event()
 
 
 def init(config):
@@ -40,15 +40,16 @@ def init(config):
 
 
 def term():
-    global should_terminate  # noqa: PLW0603
     global worker  # noqa: PLW0603
 
     if worker is None:
         return
 
-    should_terminate = True
+    should_terminate.set()
     worker.join()
+
     worker = None
+    should_terminate.clear()
 
     rasp_water.valve.term()
 
@@ -87,7 +88,7 @@ def flow_notify_worker(config, queue):
     logging.info("Start flow notify worker")
     i = 0
     while True:
-        if should_terminate:
+        if should_terminate.is_set():
             break
 
         try:

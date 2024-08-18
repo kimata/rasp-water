@@ -116,7 +116,7 @@ else:
 
 pin_no = GPIO_PIN_DEFAULT
 worker = None
-should_terminate = False
+should_terminate = threading.Event()
 
 
 # NOTE: STAT_PATH_VALVE_CONTROL_COMMAND の内容に基づいて，
@@ -147,7 +147,7 @@ def control_worker(config, queue):  # noqa: PLR0912, PLR0915, C901
 
     i = 0
     while True:
-        if should_terminate:
+        if should_terminate.is_set():
             break
 
         if time_open_start is not None:
@@ -267,14 +267,11 @@ def control_worker(config, queue):  # noqa: PLR0912, PLR0915, C901
 
 
 def init(config, queue, pin=GPIO_PIN_DEFAULT):
-    global should_terminate  # noqa: PLW0603
     global worker  # noqa: PLW0603
     global pin_no  # noqa: PLW0603
 
     if worker is not None:
         raise ValueError("worker should be None")  # noqa: TRY003, EM101
-
-    should_terminate = False
 
     pin_no = pin
 
@@ -297,11 +294,12 @@ def init(config, queue, pin=GPIO_PIN_DEFAULT):
 
 def term():
     global worker  # noqa: PLW0603
-    global should_terminate  # noqa: PLW0603
 
-    should_terminate = True
+    should_terminate.set()
     worker.join()
+
     worker = None
+    should_terminate.clear()
 
 
 # NOTE: 実際にバルブを開きます．
@@ -423,4 +421,4 @@ if __name__ == "__main__":
         if info["type"] == "total":
             break
 
-    should_terminate = True
+    should_terminate.set()
