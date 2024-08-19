@@ -103,11 +103,10 @@ def time_str(time):
     return time.strftime("%H:%M")
 
 
-def move_to(freezer, target_time):
+def move_to(time_machine, target_time):
     logging.debug("Freeze time at %s", time_str(target_time))
 
-    # NOTE: schedule と freezeer を組み合わせた場合，タイムゾーンの調整が必要
-    freezer.move_to(target_time + datetime.timedelta(hours=+9))
+    time_machine.move_to(target_time)
 
 
 def gen_schedule_data(offset_min=1):
@@ -238,7 +237,7 @@ def check_notify_slack(message, index=-1):
 
 
 ######################################################################
-def test_time(freezer):
+def test_time(time_machine):
     import schedule
 
     logging.debug("datetime.now()                 = %s", datetime.datetime.now())  # noqa: DTZ005
@@ -252,7 +251,7 @@ def test_time(freezer):
         datetime.datetime.now(my_lib.webapp.config.TIMEZONE).replace(hour=0, minute=0, second=0),
     )
 
-    move_to(freezer, time_test(0))
+    move_to(time_machine, time_test(0))
 
     logging.debug(
         "datetime.now()                 = %s",
@@ -277,7 +276,7 @@ def test_time(freezer):
 
 
 # NOTE: schedule へのテストレポート用
-def test_time2(freezer):
+def test_time2(time_machine):
     import time
 
     import pytz
@@ -294,7 +293,7 @@ def test_time2(freezer):
     ) + datetime.timedelta(hours=+9)  # NOTE: ここで +9 時間進める必要があるのは本来おかしい
 
     logging.debug("Freeze time at %s", freeze_time)
-    freezer.move_to(freeze_time)
+    time_machine.move_to(freeze_time)
 
     logging.debug("time.localtime()               = %s", time.asctime(time.localtime(time.time())))
 
@@ -668,8 +667,8 @@ def test_event(client):
     check_notify_slack(None)
 
 
-def test_schedule_ctrl_inactive(client, freezer):
-    move_to(freezer, time_test(0))
+def test_schedule_ctrl_inactive(client, time_machine):
+    move_to(time_machine, time_test(0))
     time.sleep(0.6)
 
     schedule_data = gen_schedule_data()
@@ -681,10 +680,10 @@ def test_schedule_ctrl_inactive(client, freezer):
     )
     assert response.status_code == 200
 
-    move_to(freezer, time_test(1))
+    move_to(time_machine, time_test(1))
     time.sleep(0.6)
 
-    move_to(freezer, time_test(2))
+    move_to(time_machine, time_test(2))
     time.sleep(0.6)
 
     schedule_data = gen_schedule_data(3)
@@ -696,10 +695,10 @@ def test_schedule_ctrl_inactive(client, freezer):
     )
     assert response.status_code == 200
 
-    move_to(freezer, time_test(3))
+    move_to(time_machine, time_test(3))
     time.sleep(0.6)
 
-    move_to(freezer, time_test(4))
+    move_to(time_machine, time_test(4))
     time.sleep(0.6)
 
     ctrl_log_check([])
@@ -958,7 +957,7 @@ def test_valve_flow_read_command_fail(client, mocker):
     assert response.json["result"] == "success"
 
 
-def test_schedule_ctrl_execute(client, mocker, freezer):
+def test_schedule_ctrl_execute(client, mocker, time_machine):
     import rasp_water.webapp_valve
 
     rasp_water.webapp_valve.term()
@@ -966,7 +965,7 @@ def test_schedule_ctrl_execute(client, mocker, freezer):
 
     time_mock = mocker.patch("my_lib.rpi.gpio_time")
 
-    move_to(freezer, time_test(0))
+    move_to(time_machine, time_test(0))
     time_mock.return_value = time.time()
     time.sleep(1)
 
@@ -982,15 +981,15 @@ def test_schedule_ctrl_execute(client, mocker, freezer):
     assert response.status_code == 200
     time.sleep(1)
 
-    move_to(freezer, time_test(1))
+    move_to(time_machine, time_test(1))
     time_mock.return_value = time.time()
     time.sleep(2)
 
-    move_to(freezer, time_test(2))
+    move_to(time_machine, time_test(2))
     time_mock.return_value = time.time()
     time.sleep(20)
 
-    move_to(freezer, time_test(3))
+    move_to(time_machine, time_test(3))
     time_mock.return_value = time.time()
     time.sleep(20)
 
@@ -1002,7 +1001,7 @@ def test_schedule_ctrl_execute(client, mocker, freezer):
     check_notify_slack(None)
 
 
-def test_schedule_ctrl_execute_force(client, mocker, freezer):
+def test_schedule_ctrl_execute_force(client, mocker, time_machine):
     import rasp_water.webapp_valve
 
     rasp_water.webapp_valve.term()
@@ -1011,7 +1010,7 @@ def test_schedule_ctrl_execute_force(client, mocker, freezer):
     mocker.patch("rasp_water.webapp_valve.judge_execute", return_value=True)
     time_mock = mocker.patch("my_lib.rpi.gpio_time")
 
-    move_to(freezer, time_test(0))
+    move_to(time_machine, time_test(0))
     time_mock.return_value = time.time()
     time.sleep(1)
 
@@ -1027,15 +1026,15 @@ def test_schedule_ctrl_execute_force(client, mocker, freezer):
     assert response.status_code == 200
     time.sleep(1)
 
-    move_to(freezer, time_test(1))
+    move_to(time_machine, time_test(1))
     time_mock.return_value = time.time()
     time.sleep(2)
 
-    move_to(freezer, time_test(2))
+    move_to(time_machine, time_test(2))
     time_mock.return_value = time.time()
     time.sleep(20)
 
-    move_to(freezer, time_test(3))
+    move_to(time_machine, time_test(3))
     time_mock.return_value = time.time()
     time.sleep(20)
 
@@ -1044,7 +1043,7 @@ def test_schedule_ctrl_execute_force(client, mocker, freezer):
     check_notify_slack(None)
 
 
-def test_schedule_ctrl_execute_pending(client, mocker, freezer):
+def test_schedule_ctrl_execute_pending(client, mocker, time_machine):
     import rasp_water.webapp_valve
 
     rasp_water.webapp_valve.term()
@@ -1053,7 +1052,7 @@ def test_schedule_ctrl_execute_pending(client, mocker, freezer):
     mocker.patch("rasp_water.webapp_valve.judge_execute", return_value=False)
     time_mock = mocker.patch("my_lib.rpi.gpio_time")
 
-    move_to(freezer, time_test(0))
+    move_to(time_machine, time_test(0))
     time_mock.return_value = time.time()
     time.sleep(1)
 
@@ -1069,15 +1068,15 @@ def test_schedule_ctrl_execute_pending(client, mocker, freezer):
     assert response.status_code == 200
     time.sleep(1)
 
-    move_to(freezer, time_test(1))
+    move_to(time_machine, time_test(1))
     time_mock.return_value = time.time()
     time.sleep(2)
 
-    move_to(freezer, time_test(2))
+    move_to(time_machine, time_test(2))
     time_mock.return_value = time.time()
     time.sleep(20)
 
-    move_to(freezer, time_test(3))
+    move_to(time_machine, time_test(3))
     time_mock.return_value = time.time()
     time.sleep(20)
 
@@ -1086,7 +1085,7 @@ def test_schedule_ctrl_execute_pending(client, mocker, freezer):
     check_notify_slack(None)
 
 
-def test_schedule_ctrl_error(client, mocker, freezer):
+def test_schedule_ctrl_error(client, mocker, time_machine):
     import rasp_water.webapp_valve
 
     valve_state_moch = mocker.patch("rasp_water.webapp_valve.set_valve_state")
@@ -1097,7 +1096,7 @@ def test_schedule_ctrl_error(client, mocker, freezer):
 
     time_mock = mocker.patch("my_lib.rpi.gpio_time")
 
-    move_to(freezer, time_test(0))
+    move_to(time_machine, time_test(0))
     time_mock.return_value = time.time()
     time.sleep(0.6)
 
@@ -1113,15 +1112,15 @@ def test_schedule_ctrl_error(client, mocker, freezer):
     assert response.status_code == 200
     time.sleep(0.6)
 
-    move_to(freezer, time_test(1))
+    move_to(time_machine, time_test(1))
     time_mock.return_value = time.time()
     time.sleep(2)
 
-    move_to(freezer, time_test(2))
+    move_to(time_machine, time_test(2))
     time_mock.return_value = time.time()
     time.sleep(4)
 
-    move_to(freezer, time_test(3))
+    move_to(time_machine, time_test(3))
     time_mock.return_value = time.time()
     time.sleep(1)
 
@@ -1130,7 +1129,7 @@ def test_schedule_ctrl_error(client, mocker, freezer):
     check_notify_slack(None)
 
 
-def test_schedule_ctrl_execute_fail(client, mocker, freezer):
+def test_schedule_ctrl_execute_fail(client, mocker, time_machine):
     import rasp_water.webapp_valve
 
     mocker.patch("rasp_water.weather_forecast.get_rain_fall", return_value=False)
@@ -1141,7 +1140,7 @@ def test_schedule_ctrl_execute_fail(client, mocker, freezer):
 
     time_mock = mocker.patch("my_lib.rpi.gpio_time")
 
-    move_to(freezer, time_test(0))
+    move_to(time_machine, time_test(0))
     time_mock.return_value = time.time()
     time.sleep(0.6)
 
@@ -1157,15 +1156,15 @@ def test_schedule_ctrl_execute_fail(client, mocker, freezer):
     assert response.status_code == 200
     time.sleep(0.6)
 
-    move_to(freezer, time_test(1))
+    move_to(time_machine, time_test(1))
     time_mock.return_value = time.time()
     time.sleep(2)
 
-    move_to(freezer, time_test(2))
+    move_to(time_machine, time_test(2))
     time_mock.return_value = time.time()
     time.sleep(4)
 
-    move_to(freezer, time_test(3))
+    move_to(time_machine, time_test(3))
     time_mock.return_value = time.time()
     time.sleep(1)
 

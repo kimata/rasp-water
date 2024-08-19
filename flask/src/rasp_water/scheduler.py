@@ -188,6 +188,7 @@ def schedule_worker(config, queue):
     i = 0
     while True:
         if should_terminate.is_set():
+            schedule.clear()
             break
         try:
             if not queue.empty():

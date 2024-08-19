@@ -70,7 +70,7 @@ def init(page):
 
 
 ######################################################################
-def test_time(freezer):  # noqa: ARG001
+def test_time():
     import logging
 
     import schedule
