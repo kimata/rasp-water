@@ -15,10 +15,21 @@ Options:
 import atexit
 import logging
 import os
+import signal
 
 import flask_cors
+import rasp_water.valve
 
 import flask
+
+
+def sig_handler(num, frame):  # noqa: ARG001
+    global should_terminate
+
+    logging.warning("receive signal %d", num)
+
+    if num == signal.SIGTERM:
+        rasp_water.valve.term()
 
 
 def create_app(config, dummy_mode=False):
@@ -38,7 +49,6 @@ def create_app(config, dummy_mode=False):
     import my_lib.webapp.event
     import my_lib.webapp.log
     import my_lib.webapp.util
-    import rasp_water.valve
     import rasp_water.webapp_schedule
     import rasp_water.webapp_valve
 
@@ -107,3 +117,5 @@ if __name__ == "__main__":
 
     # NOTE: スクリプトの自動リロード停止したい場合は use_reloader=False にする
     app.run(host="0.0.0.0", port=port, threaded=True, use_reloader=True)  # noqa: S104
+
+    signal.signal(signal.SIGTERM, sig_handler)

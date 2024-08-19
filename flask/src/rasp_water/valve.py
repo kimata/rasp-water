@@ -301,6 +301,8 @@ def term():
     worker = None
     should_terminate.clear()
 
+    my_lib.rpi.gpio.cleanup()
+
 
 # NOTE: 実際にバルブを開きます．
 def set_state(valve_state):
