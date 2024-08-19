@@ -46,7 +46,7 @@ ADC_VALUE_PATH = "/sys/bus/iio/devices/iio:device0/in_voltage0_raw"
 TIME_CLOSE_FAIL = 45
 
 # 電磁弁を閉じてからこの時間経過しても，水が流れていたらエラーにする
-# (テストで freezegun を使って分単位で制御する関係上，60 より大きい値にしておく)
+# (Pytest によるテストの際，時間を分単位で制御する関係上，60 より大きい値にしておく)
 TIME_OPEN_FAIL = 61
 
 # この時間の間，異常な流量になっていたらエラーにする
@@ -121,7 +121,7 @@ should_terminate = threading.Event()
 
 # NOTE: STAT_PATH_VALVE_CONTROL_COMMAND の内容に基づいて，
 # バルブを一定時間開けます．
-# freezegun を使ったテストのため，この関数の中では，
+# 時間を操作したテストを行うため，この関数の中では，
 # time.time() の代わりに my_lib.rpi.gpio_time() を使う．
 def control_worker(config, queue):  # noqa: PLR0912, PLR0915, C901
     global should_terminate
@@ -182,7 +182,7 @@ def control_worker(config, queue):  # noqa: PLR0912, PLR0915, C901
                         with valve_open(STAT_PATH_VALVE_CONTROL_COMMAND) as f:
                             time_to_close = float(f.read())
 
-                            # NOTE: テストの際に freezegun 使う関係で，
+                            # NOTE: テストの際に時間を操作する関係で，
                             # 単純な大小比較だけではなく差分絶対値の比較も行う
                             if (my_lib.rpi.gpio_time() > time_to_close) or (
                                 abs(my_lib.rpi.gpio_time() - time_to_close) < 0.01
