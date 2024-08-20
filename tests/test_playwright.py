@@ -94,14 +94,10 @@ def test_time():
     job = schedule.every().day.at(job_time_str, my_lib.webapp.config.TIMEZONE_PYTZ).do(lambda: True)
 
     idle_sec = schedule.idle_seconds()
-    logging.debug(
-        "Time to next jobs is %.1f sec (%.1f sec)",
-        idle_sec,
-        idle_sec - int(my_lib.webapp.config.TIMEZONE_OFFSET) * 60 * 60,
-    )
+    logging.debug("Time to next jobs is %.1f sec", idle_sec)
     logging.debug("Next run is %s", job.next_run)
 
-    assert abs(idle_sec - int(my_lib.webapp.config.TIMEZONE_OFFSET) * 60 * 60) < 60
+    assert abs(idle_sec) < 60
 
 
 @flaky(max_runs=3, min_passes=1)
