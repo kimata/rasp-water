@@ -18,7 +18,6 @@ import os
 import signal
 
 import flask_cors
-import rasp_water.valve
 
 import flask
 
@@ -29,6 +28,8 @@ def sig_handler(num, frame):  # noqa: ARG001
     logging.warning("receive signal %d", num)
 
     if num == signal.SIGTERM:
+        import rasp_water.valve
+
         rasp_water.valve.term()
 
 
