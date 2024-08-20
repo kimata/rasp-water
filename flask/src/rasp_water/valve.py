@@ -57,8 +57,8 @@ TIME_ZERO_TAIL = 5
 
 
 class VALVE_STATE(IntEnum):  # noqa: N801
-    OPEN = my_lib.rpi.gpio.HIGH
-    CLOSE = my_lib.rpi.gpio.LOW
+    OPEN = my_lib.rpi.gpio.level.HIGH.value
+    CLOSE = my_lib.rpi.gpio.level.LOW.value
 
 
 class CONTROL_MODE(IntEnum):  # noqa: N801

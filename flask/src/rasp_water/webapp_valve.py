@@ -26,12 +26,9 @@ should_terminate = threading.Event()
 
 def init(config):
     global worker  # noqa: PLW0603
-    global should_terminate  # noqa: PLW0603
 
     if worker is not None:
         raise ValueError("worker should be None")  # noqa: TRY003, EM101
-
-    should_terminate = False
 
     flow_stat_queue = Queue()
     rasp_water.valve.init(config, flow_stat_queue)

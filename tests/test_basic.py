@@ -125,6 +125,8 @@ def ctrl_log_check(expect_list, is_strict=True, is_error=True):
     import my_lib.rpi
 
     hist_list = my_lib.rpi.gpio.hist_get()
+    # NOTE: GPIO は1本しか使わないので，チェック対象から外す
+    hist_list = [{k: v for k, v in d.items() if k not in "pin_num"} for i, d in enumerate(hist_list)]
 
     logging.debug(hist_list)
 
@@ -141,7 +143,9 @@ def ctrl_log_check(expect_list, is_strict=True, is_error=True):
             assert len(hist_list) == len(expect_list)
             for i in range(len(expect_list)):
                 if expect_list[i]["state"] == "open":
-                    assert hist_list[i] == expect_list[i], f"{i} 番目の操作が期待値と異なります。"
+                    assert (
+                        hist_list[i] == expect_list[i]
+                    ), f"{i} 番目の操作が期待値と異なります。({hist_list[i]} != {expect_list[i]})"
 
                 if "period" in expect_list[i]:
                     assert (hist_list[i] == expect_list[i]) or (
@@ -150,9 +154,11 @@ def ctrl_log_check(expect_list, is_strict=True, is_error=True):
                             "period": expect_list[i]["period"] - 1,
                             "state": expect_list[i]["state"],
                         }
-                    ), f"{i} 番目の操作が期待値と異なります。"
+                    ), f"{i} 番目の操作が期待値と異なります。({hist_list[i]} != {expect_list[i]})"
                 else:
-                    assert hist_list[i] == expect_list[i], f"{i} 番目の操作が期待値と異なります。"
+                    assert (
+                        hist_list[i] == expect_list[i]
+                    ), f"{i} 番目の操作が期待値と異なります。({hist_list[i]} != {expect_list[i]})"
 
 
 def app_log_check(  # noqa: PLR0912, C901
@@ -290,7 +296,7 @@ def test_time2(time_machine):
 
     freeze_time = datetime.datetime.now(tz=datetime.timezone(datetime.timedelta(hours=9))).replace(
         hour=0, minute=0, second=0
-    ) + datetime.timedelta(hours=+9)  # NOTE: ここで +9 時間進める必要があるのは本来おかしい
+    )
 
     logging.debug("Freeze time at %s", freeze_time)
     time_machine.move_to(freeze_time)
@@ -399,7 +405,7 @@ def test_valve_ctrl_mismatch(client):
     assert response.json["result"] == "success"
     time.sleep(5)
 
-    ctrl_log_check([{"state": "open"}, {"period": 0, "state": "close"}])
+    ctrl_log_check([{"state": "HIGH"}, {"high_period": 0, "state": "LOW"}])
     # NOTE: 強引にバルブを開いているのでアプリのログには記録されない
     app_log_check(client, ["CLEAR", "STOP_AUTO"])
     check_notify_slack(None)
@@ -425,7 +431,7 @@ def test_valve_ctrl_manual(client, mocker):
 
     time.sleep(period + 5)
 
-    ctrl_log_check([{"state": "open"}, {"period": period, "state": "close"}], is_strict=False)
+    ctrl_log_check([{"state": "HIGH"}, {"high_period": period, "state": "LOW"}], is_strict=False)
     app_log_check(client, ["CLEAR", "START_AUTO", "STOP_AUTO"])
     check_notify_slack(None)
 
@@ -448,7 +454,7 @@ def test_valve_ctrl_auto(client, mocker):
 
     time.sleep(period + 5)
 
-    ctrl_log_check([{"state": "open"}, {"period": period, "state": "close"}], is_strict=False)
+    ctrl_log_check([{"state": "HIGH"}, {"high_period": period, "state": "LOW"}], is_strict=False)
     app_log_check(client, ["CLEAR", "START_AUTO", "STOP_AUTO"])
     check_notify_slack(None)
 
@@ -472,7 +478,7 @@ def test_valve_ctrl_auto_rainfall(client, mocker):
     time.sleep(period + 5)
 
     # NOTE: ダミーモードの場合は，天気に関わらず水やりする
-    ctrl_log_check([{"state": "open"}, {"period": period, "state": "close"}], is_strict=False)
+    ctrl_log_check([{"state": "HIGH"}, {"high_period": period, "state": "LOW"}], is_strict=False)
     app_log_check(client, ["CLEAR", "START_AUTO", "STOP_AUTO"])
 
     ctrl_log_clear()
@@ -540,7 +546,7 @@ def test_valve_ctrl_auto_forecast_error_1(client, mocker):
     time.sleep(period + 5)
 
     # NOTE: get_weather_info_yahoo == None の場合，水やりは行う
-    ctrl_log_check([{"state": "open"}, {"period": period, "state": "close"}], is_strict=False)
+    ctrl_log_check([{"state": "HIGH"}, {"high_period": period, "state": "LOW"}], is_strict=False)
     app_log_check(client, ["CLEAR", "START_AUTO", "STOP_AUTO"])
     check_notify_slack(None)
 
@@ -569,7 +575,7 @@ def test_valve_ctrl_auto_forecast_error_2(client, mocker):
 
     time.sleep(period + 5)
 
-    ctrl_log_check([{"state": "open"}, {"period": period, "state": "close"}], is_strict=False)
+    ctrl_log_check([{"state": "HIGH"}, {"high_period": period, "state": "LOW"}], is_strict=False)
     app_log_check(client, ["CLEAR", "START_AUTO", "STOP_AUTO"])
     check_notify_slack(None)
 
@@ -598,7 +604,7 @@ def test_valve_ctrl_auto_forecast_error_3(client, mocker):
 
     time.sleep(period + 5)
 
-    ctrl_log_check([{"state": "open"}, {"period": period, "state": "close"}], is_strict=False)
+    ctrl_log_check([{"state": "HIGH"}, {"high_period": period, "state": "LOW"}], is_strict=False)
     app_log_check(client, ["CLEAR", "START_AUTO", "STOP_AUTO"])
     check_notify_slack(None)
 
@@ -624,7 +630,7 @@ def test_valve_ctrl_auto_forecast_error_4(client, mocker):
 
     time.sleep(period + 5)
 
-    ctrl_log_check([{"state": "open"}, {"period": period, "state": "close"}], is_strict=False)
+    ctrl_log_check([{"state": "HIGH"}, {"high_period": period, "state": "LOW"}], is_strict=False)
     app_log_check(client, ["CLEAR", "START_AUTO", "STOP_AUTO"])
     check_notify_slack(None)
 
@@ -650,7 +656,7 @@ def test_valve_flow(client):
 
     time.sleep(1)
 
-    ctrl_log_check([{"state": "close"}])
+    ctrl_log_check([{"state": "LOW"}])
     app_log_check(client, ["CLEAR", "STOP_MANUAL"])
     check_notify_slack(None)
 
@@ -807,7 +813,7 @@ def test_valve_flow_open_over_1(client, mocker):
     time.sleep(period + 5)
 
     ctrl_log_check(
-        [{"state": "open"}, {"period": period, "state": "close"}, {"state": "close"}],
+        [{"state": "HIGH"}, {"high_period": period, "state": "LOW"}, {"state": "LOW"}],
         is_strict=False,
     )
     app_log_check(client, ["FAIL_OVER"], False)
@@ -839,7 +845,7 @@ def test_valve_flow_open_over_2(client, mocker):
     time.sleep(period + 5)
 
     ctrl_log_check(
-        [{"state": "open"}, {"period": period, "state": "close"}, {"state": "close"}],
+        [{"state": "HIGH"}, {"high_period": period, "state": "LOW"}, {"state": "LOW"}],
         is_strict=False,
     )
     app_log_check(client, ["FAIL_OVER"], False)
@@ -870,7 +876,7 @@ def test_valve_flow_close_fail(client, mocker):
     time.sleep(period + 5)
 
     ctrl_log_check(
-        [{"state": "open"}, {"period": period, "state": "close"}, {"state": "close"}],
+        [{"state": "HIGH"}, {"high_period": period, "state": "LOW"}, {"state": "LOW"}],
         is_strict=False,
         is_error=True,
     )
@@ -902,7 +908,7 @@ def test_valve_flow_open_fail(client, mocker):
     time.sleep(period + 5)
 
     ctrl_log_check(
-        [{"state": "open"}, {"period": period, "state": "close"}],
+        [{"state": "HIGH"}, {"high_period": period, "state": "LOW"}],
         is_strict=False,
     )
     app_log_check(client, ["CLEAR", "START_AUTO", "STOP_AUTO", "FAIL_OPEN"])
@@ -940,7 +946,7 @@ def test_valve_flow_read_command_fail(client, mocker):
 
     time.sleep(period + 5)
 
-    ctrl_log_check([{"state": "open"}])
+    ctrl_log_check([{"state": "HIGH"}])
     app_log_check(client, ["CLEAR", "START_AUTO"])
     check_notify_slack(None)
 
@@ -1038,7 +1044,7 @@ def test_schedule_ctrl_execute_force(client, mocker, time_machine):
     time_mock.return_value = time.time()
     time.sleep(20)
 
-    ctrl_log_check([{"state": "open"}, {"state": "close", "period": 60}])
+    ctrl_log_check([{"state": "HIGH"}, {"state": "LOW", "high_period": 60}])
     app_log_check(client, ["CLEAR", "SCHEDULE", "START_AUTO", "STOP_AUTO"])
     check_notify_slack(None)
 

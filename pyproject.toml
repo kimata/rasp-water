@@ -23,7 +23,7 @@ dependencies = [
     "tzlocal>=5.2",
     "uptime>=3.0.1",
     "schedule==1.2.2",
-    "my-lib @ git+https://github.com/kimata/my-py-lib@c93ad83b845ec083bb021b2866b7a7063bcc733c",
+    "my-lib @ git+https://github.com/kimata/my-py-lib@3c0c0ccad387a54fa7b55a58bdd8c8ee4a0c0bff",
 ]
 
 [build-system]
