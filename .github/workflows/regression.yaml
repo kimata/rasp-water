@@ -102,10 +102,10 @@ jobs:
 
             - name: Install Dependencies
               run: |
-                  CC=gcc rye sync
+                  rye sync
 
             - name: Run Tests
-              run: rye run pytest --cov=flask --cov-report=html tests/test_basic.py
+              run: rye run pytest --cov-report=html tests/test_basic.py
 
             - name: Upload coverage file
               uses: actions/upload-artifact@v4
