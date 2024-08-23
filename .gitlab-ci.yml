@@ -286,7 +286,7 @@ deploy-webapp-demo:
         - changes:
               - package.json
               - package-lock.json
-              - pyoroject.json
+              - pyoroject.toml
               - flask/**/*
               - src/**/*
               - public/**/*
