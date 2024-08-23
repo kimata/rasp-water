@@ -24,7 +24,7 @@ dependencies = [
     "uptime>=3.0.1",
     "rpi-lgpio>=0.6",
     "schedule==1.2.2",
-    "my-lib @ git+https://github.com/kimata/my-py-lib@3c0c0ccad387a54fa7b55a58bdd8c8ee4a0c0bff",
+    "my-lib @ git+https://github.com/kimata/my-py-lib@7f7dfeb5070dc9100564c62428c1f92de51792dc",
 ]
 
 [build-system]
