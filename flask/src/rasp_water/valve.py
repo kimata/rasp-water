@@ -14,15 +14,15 @@ import my_lib.webapp.config
 
 # バルブを一定期間開く際に作られるファイル．
 # ファイルの内容はバルブを閉じるべき UNIX 時間．
-STAT_PATH_VALVE_CONTROL_COMMAND = my_lib.webapp.config.STAT_DIR_PATH / "valve" / "control" / "command"
+STAT_PATH_VALVE_CONTROL_COMMAND = None
 
 # 実際にバルブを開いた際に作られるファイル．
 # 実際にバルブを閉じた際に削除される．
-STAT_PATH_VALVE_OPEN = my_lib.webapp.config.STAT_DIR_PATH / "valve" / "open"
+STAT_PATH_VALVE_OPEN = None
 
 # 実際にバルブを閉じた際に作られるファイル．
 # 実際にバルブを開いた際に削除される．
-STAT_PATH_VALVE_CLOSE = my_lib.webapp.config.STAT_DIR_PATH / "valve" / "close"
+STAT_PATH_VALVE_CLOSE = None
 
 # 電磁弁制御用の GPIO 端子番号．
 # この端子が H になった場合に，水が出るように回路を組んでおく．
@@ -269,6 +269,13 @@ def control_worker(config, queue):  # noqa: PLR0912, PLR0915, C901
 def init(config, queue, pin=GPIO_PIN_DEFAULT):
     global worker  # noqa: PLW0603
     global pin_no  # noqa: PLW0603
+    global STAT_PATH_VALVE_CONTROL_COMMAND  # noqa: PLW0603
+    global STAT_PATH_VALVE_OPEN  # noqa: PLW0603
+    global STAT_PATH_VALVE_CLOSE  # noqa: PLW0603
+
+    STAT_PATH_VALVE_CONTROL_COMMAND = my_lib.webapp.config.STAT_DIR_PATH / "valve" / "control" / "command"
+    STAT_PATH_VALVE_OPEN = my_lib.webapp.config.STAT_DIR_PATH / "valve" / "open"
+    STAT_PATH_VALVE_CLOSE = my_lib.webapp.config.STAT_DIR_PATH / "valve" / "close"
 
     if worker is not None:
         raise ValueError("worker should be None")  # noqa: TRY003, EM101
