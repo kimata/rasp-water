@@ -128,7 +128,7 @@ def ctrl_log_check(expect_list, is_strict=True, is_error=True):
     # NOTE: GPIO は1本しか使わないので，チェック対象から外す
     hist_list = [{k: v for k, v in d.items() if k not in "pin_num"} for i, d in enumerate(hist_list)]
 
-    logging.debug(hist_list)
+    logging.debug(json.dumps(hist_list, indent=2, ensure_ascii=False))
 
     if len(expect_list) == 0:
         assert hist_list == expect_list, "操作されてないはずのバルブが操作されています。"
@@ -170,7 +170,7 @@ def app_log_check(  # noqa: PLR0912, C901
 
     log_list = response.json["data"]
 
-    logging.debug(log_list)
+    logging.debug(json.dumps(log_list, indent=2, ensure_ascii=False))
 
     if is_strict:
         # NOTE: クリアする直前のログが残っている可能性があるので，+1 でも OK とする
