@@ -10,6 +10,7 @@ from multiprocessing import Queue
 import flask_cors
 import fluent.sender
 import my_lib.flask_util
+import my_lib.footprint
 import my_lib.webapp.config
 import my_lib.webapp.event
 import my_lib.webapp.log
@@ -80,7 +81,6 @@ def flow_notify_worker(config, queue):
     sleep_sec = 0.1
 
     liveness_file = pathlib.Path(config["liveness"]["file"]["flow_notify"])
-    liveness_file.parent.mkdir(parents=True, exist_ok=True)
 
     logging.info("Start flow notify worker")
     i = 0
@@ -112,7 +112,8 @@ def flow_notify_worker(config, queue):
             logging.debug(traceback.format_exc())
 
         if i % (10 / sleep_sec) == 0:
-            liveness_file.touch()
+            my_lib.footprint.update(liveness_file)
+
         i += 1
 
     logging.info("Terminate flow notify worker")

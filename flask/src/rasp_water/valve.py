@@ -9,6 +9,7 @@ import traceback
 from builtins import open as valve_open
 from enum import IntEnum
 
+import my_lib.footprint
 import my_lib.rpi
 import my_lib.webapp.config
 
@@ -129,7 +130,6 @@ def control_worker(config, queue):  # noqa: PLR0912, PLR0915, C901
     sleep_sec = 0.1
 
     liveness_file = pathlib.Path(config["liveness"]["file"]["valve_control"])
-    liveness_file.parent.mkdir(parents=True, exist_ok=True)
 
     logging.info("Start valve control worker")
 
@@ -260,7 +260,8 @@ def control_worker(config, queue):  # noqa: PLR0912, PLR0915, C901
         time.sleep(sleep_sec)
 
         if i % (10 / sleep_sec) == 0:
-            liveness_file.touch()
+            my_lib.footprint.update(liveness_file)
+
         i += 1
 
     logging.info("Terminate valve control worker")
