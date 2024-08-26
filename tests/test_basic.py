@@ -852,7 +852,7 @@ def test_valve_flow_open_over_2(client, mocker):
     check_notify_slack("水が流れすぎています。")
 
     flow_mock.return_value = {"flow": 0, "result": "success"}
-    time.sleep(1)
+    time.sleep(2)
 
 
 def test_valve_flow_close_fail(client, mocker):
