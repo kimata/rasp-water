@@ -8,6 +8,7 @@ import threading
 import time
 import traceback
 
+import my_lib.footprint
 import my_lib.webapp.config
 import my_lib.webapp.log
 import rasp_water.webapp_valve
@@ -179,7 +180,6 @@ def schedule_worker(config, queue):
     sleep_sec = 0.25
 
     liveness_file = pathlib.Path(config["liveness"]["file"]["scheduler"])
-    liveness_file.parent.mkdir(parents=True, exist_ok=True)
 
     logging.info("Load schedule")
     set_schedule(config, schedule_load())
@@ -205,7 +205,8 @@ def schedule_worker(config, queue):
             logging.debug(traceback.format_exc())
 
         if i % (10 / sleep_sec) == 0:
-            liveness_file.touch()
+            my_lib.footprint.update(liveness_file)
+
         i += 1
 
     logging.info("Terminate schedule worker")
