@@ -16,7 +16,6 @@ import pathlib
 import sys
 
 import my_lib.healthz
-from docopt import docopt
 
 
 def check_liveness(target_list, port):
@@ -29,10 +28,11 @@ def check_liveness(target_list, port):
 
 ######################################################################
 if __name__ == "__main__":
+    import docopt
     import my_lib.config
     import my_lib.logger
 
-    args = docopt(__doc__)
+    args = docopt.docopt(__doc__)
 
     config_file = args["-c"]
     port = args["-p"]
