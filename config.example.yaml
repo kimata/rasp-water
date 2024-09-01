@@ -43,6 +43,6 @@ slack:
 
 liveness:
     file:
-        scheduler: /dev/shm/rasp-water/liveness/scheduler
-        valve_control: /dev/shm/rasp-water/liveness/valve_control
-        flow_notify: /dev/shm/rasp-water/liveness/flow_notify
+        scheduler: flask/data/liveness/scheduler
+        valve_control: flask/data/liveness/valve_control
+        flow_notify: flask/data/liveness/flow_notify
