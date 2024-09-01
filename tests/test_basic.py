@@ -243,6 +243,23 @@ def check_notify_slack(message, index=-1):
 
 
 ######################################################################
+def test_liveness(client):  # noqa: ARG001
+    import healthz
+
+    config = my_lib.config.load(CONFIG_FILE)
+
+    assert healthz.check_liveness(
+        [
+            {
+                "name": name,
+                "liveness_file": pathlib.Path(config["liveness"]["file"][name]),
+                "interval": 10,
+            }
+            for name in ["scheduler", "valve_control", "flow_notify"]
+        ]
+    )
+
+
 def test_time(time_machine):
     import schedule
 
@@ -1379,23 +1396,6 @@ def test_valve_init(mocker):
     mocker.patch("pathlib.Path.open", new=open_mock)
 
     rasp_water.webapp_valve.init(my_lib.config.load(CONFIG_FILE))
-
-
-def test_liveness(client):  # noqa: ARG001
-    import healthz
-
-    config = my_lib.config.load(CONFIG_FILE)
-
-    assert healthz.check_liveness(
-        [
-            {
-                "name": name,
-                "liveness_file": pathlib.Path(config["liveness"]["file"][name]),
-                "interval": 10,
-            }
-            for name in ["scheduler", "valve_control", "flow_notify"]
-        ]
-    )
 
 
 def test_terminate():
