@@ -252,15 +252,7 @@ deploy-webapp:
         # NOTE: 自動実行ではデプロイしない
         - if: '$CI_PIPELINE_SOURCE == "schedule"'
           when: never
-        - changes:
-              - package.json
-              - package-lock.json
-              - pyoroject.json
-              - flask/**/*
-              - src/**/*
-              - public/**/*
-          when: on_success
-        - when: never
+        - when: on_success
 
 deploy-webapp-demo:
     stage: deploy
@@ -283,15 +275,7 @@ deploy-webapp-demo:
         # NOTE: 自動実行ではデプロイしない
         - if: '$CI_PIPELINE_SOURCE == "schedule"'
           when: never
-        - changes:
-              - package.json
-              - package-lock.json
-              - pyproject.toml
-              - flask/**/*
-              - src/**/*
-              - public/**/*
-          when: on_success
-        - when: never
+        - when: on_success
 
 renovate:
     stage: renovate
