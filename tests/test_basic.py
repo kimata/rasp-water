@@ -1381,6 +1381,23 @@ def test_valve_init(mocker):
     rasp_water.webapp_valve.init(my_lib.config.load(CONFIG_FILE))
 
 
+def test_liveness(client):  # noqa: ARG001
+    import healthz
+
+    config = my_lib.config.load(CONFIG_FILE)
+
+    assert healthz.check_liveness(
+        [
+            {
+                "name": name,
+                "liveness_file": pathlib.Path(config["liveness"]["file"][name]),
+                "interval": 10,
+            }
+            for name in ["scheduler", "valve_control", "flow_notify"]
+        ]
+    )
+
+
 def test_terminate():
     import my_lib.webapp.log
     import rasp_water.webapp_schedule
