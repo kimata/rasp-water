@@ -166,7 +166,7 @@ def app_log_check(  # noqa: PLR0912, C901
     expect_list,
     is_strict=True,
 ):
-    response = client.get("/rasp-water/api/log_view")
+    response = client.get(f"{my_lib.webapp.config.URL_PREFIX}/api/log_view")
 
     log_list = response.json["data"]
 
@@ -218,14 +218,14 @@ def schedule_clear(client):
     schedule_data[0]["is_active"] = False
     schedule_data[1]["is_active"] = False
     response = client.get(
-        "/rasp-water/api/schedule_ctrl",
+        f"{my_lib.webapp.config.URL_PREFIX}/api/schedule_ctrl",
         query_string={"cmd": "set", "data": json.dumps(schedule_data)},
     )
     assert response.status_code == 200
 
 
 def app_log_clear(client):
-    response = client.get("/rasp-water/api/log_clear")
+    response = client.get(f"{my_lib.webapp.config.URL_PREFIX}/api/log_clear")
     assert response.status_code == 200
 
 
@@ -345,7 +345,7 @@ def test_time2(time_machine):
 def test_redirect(client):
     response = client.get("/")
     assert response.status_code == 302
-    assert re.search(r"/rasp-water/$", response.location)
+    assert re.search(rf"{my_lib.webapp.config.URL_PREFIX}/$", response.location)
     time.sleep(1)
 
     ctrl_log_check([])
@@ -354,11 +354,11 @@ def test_redirect(client):
 
 
 def test_index(client):
-    response = client.get("/rasp-water/")
+    response = client.get(f"{my_lib.webapp.config.URL_PREFIX}/")
     assert response.status_code == 200
     assert "散水システム" in response.data.decode("utf-8")
 
-    response = client.get("/rasp-water/", headers={"Accept-Encoding": "gzip"})
+    response = client.get(f"{my_lib.webapp.config.URL_PREFIX}/", headers={"Accept-Encoding": "gzip"})
     assert response.status_code == 200
     time.sleep(1)
 
@@ -374,7 +374,7 @@ def test_index_with_other_status(client, mocker):
         new_callable=mocker.PropertyMock,
     )
 
-    response = client.get("/rasp-water/", headers={"Accept-Encoding": "gzip"})
+    response = client.get(f"{my_lib.webapp.config.URL_PREFIX}/", headers={"Accept-Encoding": "gzip"})
     assert response.status_code == 301
     time.sleep(1)
 
@@ -385,7 +385,7 @@ def test_index_with_other_status(client, mocker):
 
 def test_valve_ctrl_read(client):
     response = client.get(
-        "/rasp-water/api/valve_ctrl",
+        f"{my_lib.webapp.config.URL_PREFIX}/api/valve_ctrl",
     )
     assert response.status_code == 200
     assert response.json["result"] == "success"
@@ -400,7 +400,7 @@ def test_valve_ctrl_read_fail(client, mocker):
     mocker.patch("rasp_water.valve.get_control_mode", side_effect=RuntimeError())
 
     response = client.get(
-        "/rasp-water/api/valve_ctrl",
+        f"{my_lib.webapp.config.URL_PREFIX}/api/valve_ctrl",
     )
     assert response.status_code == 200
     assert response.json["result"] == "fail"
@@ -418,7 +418,7 @@ def test_valve_ctrl_mismatch(client):
     rasp_water.valve.set_control_mode(-10)
 
     response = client.get(
-        "/rasp-water/api/valve_ctrl",
+        f"{my_lib.webapp.config.URL_PREFIX}/api/valve_ctrl",
     )
     assert response.status_code == 200
     assert response.json["result"] == "success"
@@ -437,7 +437,7 @@ def test_valve_ctrl_manual(client, mocker):
 
     period = 2
     response = client.get(
-        "/rasp-water/api/valve_ctrl",
+        f"{my_lib.webapp.config.URL_PREFIX}/api/valve_ctrl",
         query_string={
             "cmd": 1,
             "state": 1,
@@ -460,7 +460,7 @@ def test_valve_ctrl_auto(client, mocker):
 
     period = 2
     response = client.get(
-        "/rasp-water/api/valve_ctrl",
+        f"{my_lib.webapp.config.URL_PREFIX}/api/valve_ctrl",
         query_string={
             "cmd": 1,
             "state": 1,
@@ -483,7 +483,7 @@ def test_valve_ctrl_auto_rainfall(client, mocker):
 
     period = 2
     response = client.get(
-        "/rasp-water/api/valve_ctrl",
+        f"{my_lib.webapp.config.URL_PREFIX}/api/valve_ctrl",
         query_string={
             "cmd": 1,
             "state": 1,
@@ -505,7 +505,7 @@ def test_valve_ctrl_auto_rainfall(client, mocker):
 
     mocker.patch.dict(os.environ, {"DUMMY_MODE": "false"}, clear=True)
     response = client.get(
-        "/rasp-water/api/valve_ctrl",
+        f"{my_lib.webapp.config.URL_PREFIX}/api/valve_ctrl",
         query_string={
             "cmd": 1,
             "state": 1,
@@ -528,7 +528,7 @@ def test_valve_ctrl_auto_forecast(client, mocker):
 
     period = 2
     response = client.get(
-        "/rasp-water/api/valve_ctrl",
+        f"{my_lib.webapp.config.URL_PREFIX}/api/valve_ctrl",
         query_string={
             "cmd": 1,
             "state": 1,
@@ -551,7 +551,7 @@ def test_valve_ctrl_auto_forecast_error_1(client, mocker):
 
     period = 2
     response = client.get(
-        "/rasp-water/api/valve_ctrl",
+        f"{my_lib.webapp.config.URL_PREFIX}/api/valve_ctrl",
         query_string={
             "cmd": 1,
             "state": 1,
@@ -581,7 +581,7 @@ def test_valve_ctrl_auto_forecast_error_2(client, mocker):
 
     period = 2
     response = client.get(
-        "/rasp-water/api/valve_ctrl",
+        f"{my_lib.webapp.config.URL_PREFIX}/api/valve_ctrl",
         query_string={
             "cmd": 1,
             "state": 1,
@@ -610,7 +610,7 @@ def test_valve_ctrl_auto_forecast_error_3(client, mocker):
 
     period = 2
     response = client.get(
-        "/rasp-water/api/valve_ctrl",
+        f"{my_lib.webapp.config.URL_PREFIX}/api/valve_ctrl",
         query_string={
             "cmd": 1,
             "state": 1,
@@ -636,7 +636,7 @@ def test_valve_ctrl_auto_forecast_error_4(client, mocker):
 
     period = 2
     response = client.get(
-        "/rasp-water/api/valve_ctrl",
+        f"{my_lib.webapp.config.URL_PREFIX}/api/valve_ctrl",
         query_string={
             "cmd": 1,
             "state": 1,
@@ -655,12 +655,12 @@ def test_valve_ctrl_auto_forecast_error_4(client, mocker):
 
 
 def test_valve_flow(client):
-    response = client.get("/rasp-water/api/valve_flow")
+    response = client.get(f"{my_lib.webapp.config.URL_PREFIX}/api/valve_flow")
     assert response.status_code == 200
     assert "flow" in response.json
 
     response = client.get(
-        "/rasp-water/api/valve_ctrl",
+        f"{my_lib.webapp.config.URL_PREFIX}/api/valve_ctrl",
         query_string={
             "cmd": 1,
             "state": 0,
@@ -669,7 +669,7 @@ def test_valve_flow(client):
     assert response.status_code == 200
     assert response.json["result"] == "success"
 
-    response = client.get("/rasp-water/api/valve_flow")
+    response = client.get(f"{my_lib.webapp.config.URL_PREFIX}/api/valve_flow")
     assert response.status_code == 200
     assert "flow" in response.json
 
@@ -681,7 +681,7 @@ def test_valve_flow(client):
 
 
 def test_event(client):
-    response = client.get("/rasp-water/api/event", query_string={"count": "1"})
+    response = client.get(f"{my_lib.webapp.config.URL_PREFIX}/api/event", query_string={"count": "1"})
     assert response.status_code == 200
     assert response.data.decode()
 
@@ -700,7 +700,7 @@ def test_schedule_ctrl_inactive(client, time_machine):
     schedule_data[0]["is_active"] = False
     schedule_data[1]["is_active"] = False
     response = client.get(
-        "/rasp-water/api/schedule_ctrl",
+        f"{my_lib.webapp.config.URL_PREFIX}/api/schedule_ctrl",
         query_string={"cmd": "set", "data": json.dumps(schedule_data)},
     )
     assert response.status_code == 200
@@ -715,7 +715,7 @@ def test_schedule_ctrl_inactive(client, time_machine):
     schedule_data[0]["wday"] = [False] * 7
     schedule_data[1]["wday"] = [False] * 7
     response = client.get(
-        "/rasp-water/api/schedule_ctrl",
+        f"{my_lib.webapp.config.URL_PREFIX}/api/schedule_ctrl",
         query_string={"cmd": "set", "data": json.dumps(schedule_data)},
     )
     assert response.status_code == 200
@@ -739,14 +739,14 @@ def test_schedule_ctrl_invalid(client):
     schedule_data = gen_schedule_data()
     del schedule_data[0]["period"]
     response = client.get(
-        "/rasp-water/api/schedule_ctrl",
+        f"{my_lib.webapp.config.URL_PREFIX}/api/schedule_ctrl",
         query_string={"cmd": "set", "data": json.dumps(schedule_data)},
     )
     assert response.status_code == 200
 
     schedule_data.pop(0)
     response = client.get(
-        "/rasp-water/api/schedule_ctrl",
+        f"{my_lib.webapp.config.URL_PREFIX}/api/schedule_ctrl",
         query_string={"cmd": "set", "data": json.dumps(schedule_data)},
     )
     assert response.status_code == 200
@@ -754,7 +754,7 @@ def test_schedule_ctrl_invalid(client):
     schedule_data = gen_schedule_data()
     schedule_data[0]["is_active"] = "TEST"
     response = client.get(
-        "/rasp-water/api/schedule_ctrl",
+        f"{my_lib.webapp.config.URL_PREFIX}/api/schedule_ctrl",
         query_string={"cmd": "set", "data": json.dumps(schedule_data)},
     )
     assert response.status_code == 200
@@ -762,7 +762,7 @@ def test_schedule_ctrl_invalid(client):
     schedule_data = gen_schedule_data()
     schedule_data[0]["time"] = "TEST"
     response = client.get(
-        "/rasp-water/api/schedule_ctrl",
+        f"{my_lib.webapp.config.URL_PREFIX}/api/schedule_ctrl",
         query_string={"cmd": "set", "data": json.dumps(schedule_data)},
     )
     assert response.status_code == 200
@@ -770,7 +770,7 @@ def test_schedule_ctrl_invalid(client):
     schedule_data = gen_schedule_data()
     schedule_data[0]["period"] = "TEST"
     response = client.get(
-        "/rasp-water/api/schedule_ctrl",
+        f"{my_lib.webapp.config.URL_PREFIX}/api/schedule_ctrl",
         query_string={"cmd": "set", "data": json.dumps(schedule_data)},
     )
     assert response.status_code == 200
@@ -778,7 +778,7 @@ def test_schedule_ctrl_invalid(client):
     schedule_data = gen_schedule_data()
     schedule_data[0]["wday"] = [True] * 5
     response = client.get(
-        "/rasp-water/api/schedule_ctrl",
+        f"{my_lib.webapp.config.URL_PREFIX}/api/schedule_ctrl",
         query_string={"cmd": "set", "data": json.dumps(schedule_data)},
     )
     assert response.status_code == 200
@@ -786,7 +786,7 @@ def test_schedule_ctrl_invalid(client):
     schedule_data = gen_schedule_data()
     schedule_data[0]["wday"] = ["TEST"] * 7
     response = client.get(
-        "/rasp-water/api/schedule_ctrl",
+        f"{my_lib.webapp.config.URL_PREFIX}/api/schedule_ctrl",
         query_string={"cmd": "set", "data": json.dumps(schedule_data)},
     )
     assert response.status_code == 200
@@ -820,7 +820,7 @@ def test_valve_flow_open_over_1(client, mocker):
 
     period = 3
     response = client.get(
-        "/rasp-water/api/valve_ctrl",
+        f"{my_lib.webapp.config.URL_PREFIX}/api/valve_ctrl",
         query_string={
             "cmd": 1,
             "state": 1,
@@ -852,7 +852,7 @@ def test_valve_flow_open_over_2(client, mocker):
 
     period = 3
     response = client.get(
-        "/rasp-water/api/valve_ctrl",
+        f"{my_lib.webapp.config.URL_PREFIX}/api/valve_ctrl",
         query_string={
             "cmd": 1,
             "state": 1,
@@ -882,7 +882,7 @@ def test_valve_flow_close_fail(client, mocker):
 
     period = 3
     response = client.get(
-        "/rasp-water/api/valve_ctrl",
+        f"{my_lib.webapp.config.URL_PREFIX}/api/valve_ctrl",
         query_string={
             "cmd": 1,
             "state": 1,
@@ -915,7 +915,7 @@ def test_valve_flow_open_fail(client, mocker):
 
     period = 3
     response = client.get(
-        "/rasp-water/api/valve_ctrl",
+        f"{my_lib.webapp.config.URL_PREFIX}/api/valve_ctrl",
         query_string={
             "cmd": 1,
             "state": 1,
@@ -954,7 +954,7 @@ def test_valve_flow_read_command_fail(client, mocker):
 
     period = 3
     response = client.get(
-        "/rasp-water/api/valve_ctrl",
+        f"{my_lib.webapp.config.URL_PREFIX}/api/valve_ctrl",
         query_string={
             "cmd": 1,
             "state": 1,
@@ -972,7 +972,7 @@ def test_valve_flow_read_command_fail(client, mocker):
     # NOTE: 後始末をしておく
     rasp_water.valve.STAT_PATH_VALVE_CONTROL_COMMAND.unlink(missing_ok=True)
     response = client.get(
-        "/rasp-water/api/valve_ctrl",
+        f"{my_lib.webapp.config.URL_PREFIX}/api/valve_ctrl",
         query_string={
             "cmd": 1,
             "state": 0,
@@ -1000,7 +1000,7 @@ def test_schedule_ctrl_execute(client, mocker, time_machine):
     schedule_data = gen_schedule_data()
     schedule_data[1]["is_active"] = False
     response = client.get(
-        "/rasp-water/api/schedule_ctrl",
+        f"{my_lib.webapp.config.URL_PREFIX}/api/schedule_ctrl",
         query_string={"cmd": "set", "data": json.dumps(schedule_data)},
     )
     assert response.status_code == 200
@@ -1018,7 +1018,7 @@ def test_schedule_ctrl_execute(client, mocker, time_machine):
     time_mock.return_value = time.time()
     time.sleep(20)
 
-    response = client.get("/rasp-water/api/valve_flow")
+    response = client.get(f"{my_lib.webapp.config.URL_PREFIX}/api/valve_flow")
     assert response.status_code == 200
     assert "flow" in response.json
 
@@ -1045,7 +1045,7 @@ def test_schedule_ctrl_execute_force(client, mocker, time_machine):
     schedule_data = gen_schedule_data()
     schedule_data[1]["is_active"] = False
     response = client.get(
-        "/rasp-water/api/schedule_ctrl",
+        f"{my_lib.webapp.config.URL_PREFIX}/api/schedule_ctrl",
         query_string={"cmd": "set", "data": json.dumps(schedule_data)},
     )
     assert response.status_code == 200
@@ -1087,7 +1087,7 @@ def test_schedule_ctrl_execute_pending(client, mocker, time_machine):
     schedule_data = gen_schedule_data()
     schedule_data[1]["is_active"] = False
     response = client.get(
-        "/rasp-water/api/schedule_ctrl",
+        f"{my_lib.webapp.config.URL_PREFIX}/api/schedule_ctrl",
         query_string={"cmd": "set", "data": json.dumps(schedule_data)},
     )
     assert response.status_code == 200
@@ -1131,7 +1131,7 @@ def test_schedule_ctrl_error(client, mocker, time_machine):
     schedule_data = gen_schedule_data()
     schedule_data[1]["is_active"] = False
     response = client.get(
-        "/rasp-water/api/schedule_ctrl",
+        f"{my_lib.webapp.config.URL_PREFIX}/api/schedule_ctrl",
         query_string={"cmd": "set", "data": json.dumps(schedule_data)},
     )
     assert response.status_code == 200
@@ -1175,7 +1175,7 @@ def test_schedule_ctrl_execute_fail(client, mocker, time_machine):
     schedule_data = gen_schedule_data()
     schedule_data[1]["is_active"] = False
     response = client.get(
-        "/rasp-water/api/schedule_ctrl",
+        f"{my_lib.webapp.config.URL_PREFIX}/api/schedule_ctrl",
         query_string={"cmd": "set", "data": json.dumps(schedule_data)},
     )
     assert response.status_code == 200
@@ -1199,7 +1199,7 @@ def test_schedule_ctrl_execute_fail(client, mocker, time_machine):
 
 
 def test_schedule_ctrl_read(client):
-    response = client.get("/rasp-water/api/schedule_ctrl")
+    response = client.get(f"{my_lib.webapp.config.URL_PREFIX}/api/schedule_ctrl")
     assert response.status_code == 200
     assert len(response.json) == 2
 
@@ -1216,7 +1216,7 @@ def test_schedule_ctrl_read_fail_1(client):
     with pathlib.Path.open(my_lib.webapp.config.SCHEDULE_FILE_PATH, "wb") as f:
         f.write(b"TEST")
 
-    response = client.get("/rasp-water/api/schedule_ctrl")
+    response = client.get(f"{my_lib.webapp.config.URL_PREFIX}/api/schedule_ctrl")
     assert response.status_code == 200
     assert len(response.json) == 2
 
@@ -1232,7 +1232,7 @@ def test_schedule_ctrl_read_fail_2(client):
 
     my_lib.webapp.config.SCHEDULE_FILE_PATH.unlink(missing_ok=True)
 
-    response = client.get("/rasp-water/api/schedule_ctrl")
+    response = client.get(f"{my_lib.webapp.config.URL_PREFIX}/api/schedule_ctrl")
     assert response.status_code == 200
     assert len(response.json) == 2
 
@@ -1250,14 +1250,14 @@ def test_schedule_ctrl_read_fail_3(client, mocker):
     schedule_data.pop(0)
     pickle_mock.return_value = schedule_data
 
-    response = client.get("/rasp-water/api/schedule_ctrl")
+    response = client.get(f"{my_lib.webapp.config.URL_PREFIX}/api/schedule_ctrl")
     assert response.status_code == 200
     assert len(response.json) == 2
 
     schedule_data = gen_schedule_data()
     pickle_mock.return_value = schedule_data
 
-    response = client.get("/rasp-water/api/schedule_ctrl")
+    response = client.get(f"{my_lib.webapp.config.URL_PREFIX}/api/schedule_ctrl")
     assert response.status_code == 200
     assert len(response.json) == 2
 
@@ -1275,7 +1275,7 @@ def test_schedule_ctrl_write_fail(client, mocker):
 
     schedule_data = gen_schedule_data(1)
     response = client.get(
-        "/rasp-water/api/schedule_ctrl",
+        f"{my_lib.webapp.config.URL_PREFIX}/api/schedule_ctrl",
         query_string={"cmd": "set", "data": json.dumps(schedule_data)},
     )
     assert response.status_code == 200
@@ -1285,7 +1285,7 @@ def test_schedule_ctrl_write_fail(client, mocker):
     # NOTE: 次回のテストに向けて，正常なものに戻しておく
     schedule_data = gen_schedule_data()
     response = client.get(
-        "/rasp-water/api/schedule_ctrl",
+        f"{my_lib.webapp.config.URL_PREFIX}/api/schedule_ctrl",
         query_string={"cmd": "set", "data": json.dumps(schedule_data)},
     )
     assert response.status_code == 200
@@ -1299,7 +1299,7 @@ def test_schedule_ctrl_write_fail(client, mocker):
 def test_schedule_ctrl_validate_fail(client, mocker):
     mocker.patch("rasp_water.scheduler.schedule_validate", return_value=False)
 
-    response = client.get("/rasp-water/api/schedule_ctrl")
+    response = client.get(f"{my_lib.webapp.config.URL_PREFIX}/api/schedule_ctrl")
     assert response.status_code == 200
     assert len(response.json) == 2
 
@@ -1312,7 +1312,7 @@ def test_schedule_ctrl_validate_fail(client, mocker):
 
 def test_log_view(client):
     response = client.get(
-        "/rasp-water/api/log_view",
+        f"{my_lib.webapp.config.URL_PREFIX}/api/log_view",
         headers={"Accept-Encoding": "gzip"},
         query_string={
             "callback": "TEST",
@@ -1328,11 +1328,11 @@ def test_log_view(client):
 
 
 def test_log_clear(client):
-    response = client.get("/rasp-water/api/log_clear")
+    response = client.get(f"{my_lib.webapp.config.URL_PREFIX}/api/log_clear")
     assert response.status_code == 200
 
     response = client.get(
-        "/rasp-water/api/log_view",
+        f"{my_lib.webapp.config.URL_PREFIX}/api/log_view",
         headers={"Accept-Encoding": "gzip"},
         query_string={
             "callback": "TEST",
@@ -1348,7 +1348,7 @@ def test_log_clear(client):
 
 
 def test_sysinfo(client):
-    response = client.get("/rasp-water/api/sysinfo")
+    response = client.get(f"{my_lib.webapp.config.URL_PREFIX}/api/sysinfo")
     assert response.status_code == 200
     assert "date" in response.json
     assert "uptime" in response.json
@@ -1356,16 +1356,16 @@ def test_sysinfo(client):
 
 
 def test_snapshot(client):
-    response = client.get("/rasp-water/api/snapshot")
+    response = client.get(f"{my_lib.webapp.config.URL_PREFIX}/api/snapshot")
     assert response.status_code == 200
     assert "msg" in response.json
-    response = client.get("/rasp-water/api/snapshot")
+    response = client.get(f"{my_lib.webapp.config.URL_PREFIX}/api/snapshot")
     assert response.status_code == 200
     assert "msg" not in response.json
 
 
 def test_memory(client):
-    response = client.get("/rasp-water/api/memory")
+    response = client.get(f"{my_lib.webapp.config.URL_PREFIX}/api/memory")
     assert response.status_code == 200
     assert "memory" in response.json
 
