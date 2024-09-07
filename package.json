@@ -1,6 +1,7 @@
 {
     "name": "rasp-water",
     "version": "0.0.0",
+    "type": "module",
     "scripts": {
         "ng": "ng",
         "start": "npx angular-build-info && ng serve --host=0.0.0.0",
@@ -41,12 +42,15 @@
         "@types/node": "^20.14.12",
         "@types/uuid": "^10.0.0",
         "angular-build-info": "^2.0.1",
+        "eslint-plugin-react-hooks": "^4.6.2",
+        "eslint-plugin-react-refresh": "^0.4.11",
         "jasmine-core": "~5.2.0",
         "karma": "~6.4.3",
         "karma-chrome-launcher": "~3.2.0",
         "karma-coverage": "~2.2.1",
         "karma-jasmine": "~5.1.0",
         "karma-jasmine-html-reporter": "~2.1.0",
-        "typescript": "~5.5.4"
+        "typescript": "~5.5.4",
+        "typescript-eslint": "^7.18.0"
     }
 }
