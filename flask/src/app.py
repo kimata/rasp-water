@@ -21,7 +21,7 @@ import flask_cors
 
 import flask
 
-CONFIG_SCHEMA = "config.schema"
+SCHEMA_CONFIG = "config.schema"
 
 
 def sig_handler(num, frame):  # noqa: ARG001
@@ -116,7 +116,7 @@ if __name__ == "__main__":
 
     my_lib.logger.init("hems.rasp-water", level=logging.DEBUG if debug_mode else logging.INFO)
 
-    config = my_lib.config.load(config_file, pathlib.Path(CONFIG_SCHEMA))
+    config = my_lib.config.load(config_file, pathlib.Path(SCHEMA_CONFIG))
 
     app = create_app(config, dummy_mode)
 

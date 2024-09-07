@@ -10,7 +10,7 @@ import time
 from unittest import mock
 
 import my_lib.config
-import my_lib.notify_slack
+import my_lib.notify.slack
 import my_lib.webapp.config
 import pytest
 from app import create_app
@@ -34,7 +34,7 @@ def env_mock():
 @pytest.fixture(scope="session", autouse=True)
 def slack_mock():
     with mock.patch(
-        "my_lib.notify_slack.slack_sdk.web.client.WebClient.chat_postMessage",
+        "my_lib.notify.slack.slack_sdk.web.client.WebClient.chat_postMessage",
         retunr_value=True,
     ) as fixture:
         yield fixture
@@ -42,8 +42,8 @@ def slack_mock():
 
 @pytest.fixture(autouse=True)
 def _clear():
-    my_lib.notify_slack.interval_clear()
-    my_lib.notify_slack.hist_clear()
+    my_lib.notify.slack.interval_clear()
+    my_lib.notify.slack.hist_clear()
 
 
 @pytest.fixture(scope="session")
@@ -70,7 +70,7 @@ def client(app, mocker):
         return_value=sender_mock,
     )
     mocker.patch(
-        "my_lib.notify_slack.slack_sdk.web.client.WebClient.chat_postMessage",
+        "my_lib.notify.slack.slack_sdk.web.client.WebClient.chat_postMessage",
         side_effect=slack_sdk.errors.SlackClientError(),
     )
     mocker.patch(
@@ -230,9 +230,9 @@ def app_log_clear(client):
 
 
 def check_notify_slack(message, index=-1):
-    import my_lib.notify_slack
+    import my_lib.notify.slack
 
-    notify_hist = my_lib.notify_slack.hist_get()
+    notify_hist = my_lib.notify.slack.hist_get()
     logging.debug(notify_hist)
 
     if message is None:
@@ -732,9 +732,9 @@ def test_schedule_ctrl_inactive(client, time_machine):
 
 
 def test_schedule_ctrl_invalid(client):
-    import my_lib.notify_slack
+    import my_lib.notify.slack
 
-    my_lib.notify_slack.interval_clear()
+    my_lib.notify.slack.interval_clear()
 
     schedule_data = gen_schedule_data()
     del schedule_data[0]["period"]
