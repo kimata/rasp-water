@@ -1,4 +1,3 @@
----
 kind: Namespace
 apiVersion: v1
 metadata:
@@ -23,10 +22,10 @@ spec:
         required:
             nodeSelectorTerms:
                 - matchExpressions:
-                      - key: kubernetes.io/hostname
-                        operator: In
-                        values:
-                            - rasp-water-1
+                    - key: kubernetes.io/hostname
+                      operator: In
+                      values:
+                        - rasp-water-1
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -79,47 +78,47 @@ spec:
                   image: registry.green-rabbit.net:5000/kimata/rasp-water:latest
                   imagePullPolicy: Always
                   ports:
-                      - containerPort: 5000
+                    - containerPort: 5000
 
                   volumeMounts:
-                      - name: data
-                        mountPath: /opt/rasp-water/flask/data
+                    - name: data
+                      mountPath: /opt/rasp-water/flask/data
 
-                      - name: dev-gpio
-                        mountPath: /dev/gpiomem
+                    - name: dev-gpio
+                      mountPath: /dev/gpiomem
 
-                      - name: dev-adc
-                        mountPath: /sys/bus/iio/devices/iio:device0
+                    - name: dev-adc
+                      mountPath: /sys/bus/iio/devices/iio:device0
 
                   securityContext:
-                      privileged: true
+                    privileged: true
 
                   resources:
-                      requests:
-                          memory: 128Mi
-                      limits:
-                          memory: 256Mi
+                    requests:
+                        memory: 128Mi
+                    limits:
+                        memory: 256Mi
 
                   livenessProbe:
-                      exec:
-                          command:
-                              - /opt/rasp-water/flask/src/healthz.py
-                      initialDelaySeconds: 120
-                      periodSeconds: 120
-                      timeoutSeconds: 30
-                      successThreshold: 1
-                      failureThreshold: 3
+                    exec:
+                        command:
+                            - /opt/rasp-water/flask/src/healthz.py
+                    initialDelaySeconds: 120
+                    periodSeconds: 120
+                    timeoutSeconds: 30
+                    successThreshold: 1
+                    failureThreshold: 3
 
             volumes:
                 - name: data
                   persistentVolumeClaim:
-                      claimName: pvc-rasp-water
+                    claimName: pvc-rasp-water
                 - name: dev-gpio
                   hostPath:
-                      path: /dev/gpiomem
+                    path: /dev/gpiomem
                 - name: dev-adc
                   hostPath:
-                      path: /sys/bus/iio/devices/iio:device0
+                    path: /sys/bus/iio/devices/iio:device0
 
             dnsPolicy: ClusterFirst
 

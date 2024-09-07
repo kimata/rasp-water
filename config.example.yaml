@@ -1,4 +1,3 @@
----
 webapp:
     timezone:
         offset: "+9"
