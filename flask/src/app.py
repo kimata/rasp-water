@@ -21,6 +21,8 @@ import flask_cors
 
 import flask
 
+CONFIG_SCHEMA = "config.schema"
+
 
 def sig_handler(num, frame):  # noqa: ARG001
     global should_terminate
@@ -99,6 +101,8 @@ def create_app(config, dummy_mode=False):
 
 
 if __name__ == "__main__":
+    import pathlib
+
     import docopt
     import my_lib.config
     import my_lib.logger
@@ -112,7 +116,7 @@ if __name__ == "__main__":
 
     my_lib.logger.init("hems.rasp-water", level=logging.DEBUG if debug_mode else logging.INFO)
 
-    config = my_lib.config.load(config_file)
+    config = my_lib.config.load(config_file, pathlib.Path(CONFIG_SCHEMA))
 
     app = create_app(config, dummy_mode)
 
