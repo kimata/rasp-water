@@ -124,6 +124,8 @@ def gen_schedule_data(offset_min=1):
 def ctrl_log_check(expect_list, is_strict=True, is_error=True):
     import my_lib.rpi
 
+    time.sleep(1)
+
     hist_list = my_lib.rpi.gpio.hist_get()
     # NOTE: GPIO は1本しか使わないので，チェック対象から外す
     hist_list = [{k: v for k, v in d.items() if k not in "pin_num"} for i, d in enumerate(hist_list)]
@@ -346,7 +348,6 @@ def test_redirect(client):
     response = client.get("/")
     assert response.status_code == 302
     assert re.search(rf"{my_lib.webapp.config.URL_PREFIX}/$", response.location)
-    time.sleep(1)
 
     ctrl_log_check([])
     app_log_check(client, ["CLEAR"])
@@ -360,7 +361,6 @@ def test_index(client):
 
     response = client.get(f"{my_lib.webapp.config.URL_PREFIX}/", headers={"Accept-Encoding": "gzip"})
     assert response.status_code == 200
-    time.sleep(1)
 
     ctrl_log_check([])
     app_log_check(client, ["CLEAR"])
@@ -376,7 +376,6 @@ def test_index_with_other_status(client, mocker):
 
     response = client.get(f"{my_lib.webapp.config.URL_PREFIX}/", headers={"Accept-Encoding": "gzip"})
     assert response.status_code == 301
-    time.sleep(1)
 
     ctrl_log_check([])
     app_log_check(client, ["CLEAR"])
@@ -389,7 +388,6 @@ def test_valve_ctrl_read(client):
     )
     assert response.status_code == 200
     assert response.json["result"] == "success"
-    time.sleep(1)
 
     ctrl_log_check([])
     app_log_check(client, ["CLEAR"])
@@ -404,7 +402,6 @@ def test_valve_ctrl_read_fail(client, mocker):
     )
     assert response.status_code == 200
     assert response.json["result"] == "fail"
-    time.sleep(1)
 
     ctrl_log_check([])
     app_log_check(client, ["CLEAR"])
@@ -673,8 +670,6 @@ def test_valve_flow(client):
     assert response.status_code == 200
     assert "flow" in response.json
 
-    time.sleep(1)
-
     ctrl_log_check([{"state": "LOW"}])
     app_log_check(client, ["CLEAR", "STOP_MANUAL"])
     check_notify_slack(None)
@@ -684,8 +679,6 @@ def test_event(client):
     response = client.get(f"{my_lib.webapp.config.URL_PREFIX}/api/event", query_string={"count": "1"})
     assert response.status_code == 200
     assert response.data.decode()
-
-    time.sleep(1)
 
     ctrl_log_check([])
     app_log_check(client, ["CLEAR"])
@@ -724,7 +717,6 @@ def test_schedule_ctrl_inactive(client, time_machine):
     time.sleep(0.6)
 
     move_to(time_machine, time_test(4))
-    time.sleep(0.6)
 
     ctrl_log_check([])
     app_log_check(client, ["CLEAR", "SCHEDULE", "SCHEDULE"])
@@ -1147,7 +1139,6 @@ def test_schedule_ctrl_error(client, mocker, time_machine):
 
     move_to(time_machine, time_test(3))
     time_mock.return_value = time.time()
-    time.sleep(1)
 
     ctrl_log_check([])
     app_log_check(client, ["CLEAR", "SCHEDULE", "FAIL_AUTO"])
@@ -1191,7 +1182,6 @@ def test_schedule_ctrl_execute_fail(client, mocker, time_machine):
 
     move_to(time_machine, time_test(3))
     time_mock.return_value = time.time()
-    time.sleep(1)
 
     ctrl_log_check([])
     app_log_check(client, ["CLEAR", "SCHEDULE", "FAIL_AUTO"])
@@ -1202,8 +1192,6 @@ def test_schedule_ctrl_read(client):
     response = client.get(f"{my_lib.webapp.config.URL_PREFIX}/api/schedule_ctrl")
     assert response.status_code == 200
     assert len(response.json) == 2
-
-    time.sleep(1)
 
     ctrl_log_check([])
     app_log_check(client, ["CLEAR"])
@@ -1220,8 +1208,6 @@ def test_schedule_ctrl_read_fail_1(client):
     assert response.status_code == 200
     assert len(response.json) == 2
 
-    time.sleep(1)
-
     ctrl_log_check([])
     app_log_check(client, ["CLEAR", "FAIL_READ"])
     check_notify_slack("スケジュール設定の読み出しに失敗しました。")
@@ -1235,8 +1221,6 @@ def test_schedule_ctrl_read_fail_2(client):
     response = client.get(f"{my_lib.webapp.config.URL_PREFIX}/api/schedule_ctrl")
     assert response.status_code == 200
     assert len(response.json) == 2
-
-    time.sleep(1)
 
     ctrl_log_check([])
     app_log_check(client, ["CLEAR"])
@@ -1260,8 +1244,6 @@ def test_schedule_ctrl_read_fail_3(client, mocker):
     response = client.get(f"{my_lib.webapp.config.URL_PREFIX}/api/schedule_ctrl")
     assert response.status_code == 200
     assert len(response.json) == 2
-
-    time.sleep(1)
 
     ctrl_log_check([])
     app_log_check(client, ["CLEAR"])
@@ -1289,7 +1271,6 @@ def test_schedule_ctrl_write_fail(client, mocker):
         query_string={"cmd": "set", "data": json.dumps(schedule_data)},
     )
     assert response.status_code == 200
-    time.sleep(2)
 
     ctrl_log_check([])
     app_log_check(client, ["CLEAR", "FAIL_WRITE", "SCHEDULE", "FAIL_READ", "SCHEDULE"], False)
@@ -1302,8 +1283,6 @@ def test_schedule_ctrl_validate_fail(client, mocker):
     response = client.get(f"{my_lib.webapp.config.URL_PREFIX}/api/schedule_ctrl")
     assert response.status_code == 200
     assert len(response.json) == 2
-
-    time.sleep(1)
 
     ctrl_log_check([])
     app_log_check(client, ["CLEAR"])
@@ -1319,8 +1298,6 @@ def test_log_view(client):
         },
     )
     assert response.status_code == 200
-
-    time.sleep(1)
 
     ctrl_log_check([])
     app_log_check(client, ["CLEAR"])
@@ -1339,8 +1316,6 @@ def test_log_clear(client):
         },
     )
     assert response.status_code == 200
-
-    time.sleep(1)
 
     ctrl_log_check([])
     app_log_check(client, ["CLEAR"])
