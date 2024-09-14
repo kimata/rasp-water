@@ -234,7 +234,7 @@ def app_log_clear(client):
 def check_notify_slack(message, index=-1):
     import my_lib.notify.slack
 
-    notify_hist = my_lib.notify.slack.hist_get()
+    notify_hist = my_lib.notify.slack.hist_get(False)
     logging.debug(notify_hist)
 
     if message is None:

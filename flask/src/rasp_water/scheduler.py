@@ -2,13 +2,13 @@
 import datetime
 import logging
 import pathlib
-import pickle
 import re
 import threading
 import time
 import traceback
 
 import my_lib.footprint
+import my_lib.serializer
 import my_lib.webapp.config
 import my_lib.webapp.log
 import rasp_water.webapp_valve
@@ -87,26 +87,13 @@ def schedule_store(schedule_data):
     global schedule_lock
     try:
         with schedule_lock:
-            my_lib.webapp.config.SCHEDULE_FILE_PATH.parent.mkdir(parents=True, exist_ok=True)
-            with pathlib.Path(my_lib.webapp.config.SCHEDULE_FILE_PATH).open(mode="wb") as f:
-                pickle.dump(schedule_data, f)
+            my_lib.serializer.store(my_lib.webapp.config.SCHEDULE_FILE_PATH, schedule_data)
     except Exception:
         logging.exception("Failed to save schedule settings.")
         my_lib.webapp.log.error("😵 スケジュール設定の保存に失敗しました。")
 
 
-def schedule_load():
-    global schedule_lock
-    if my_lib.webapp.config.SCHEDULE_FILE_PATH.exists():
-        try:
-            with schedule_lock, pathlib.Path(my_lib.webapp.config.SCHEDULE_FILE_PATH).open(mode="rb") as f:
-                schedule_data = pickle.load(f)  # noqa: S301
-                if schedule_validate(schedule_data):
-                    return schedule_data
-        except Exception:
-            logging.exception("Failed to load schedule settings.")
-            my_lib.webapp.log.error("😵 スケジュール設定の読み出しに失敗しました。")
-
+def gen_schedule_default():
     return [
         {
             "is_active": False,
@@ -115,6 +102,23 @@ def schedule_load():
             "wday": [True] * 7,
         }
     ] * 2
+
+
+def schedule_load():
+    global schedule_lock
+
+    schedule_default = gen_schedule_default()
+
+    try:
+        with schedule_lock:
+            schedule_data = my_lib.serializer.load(my_lib.webapp.config.SCHEDULE_FILE_PATH, schedule_default)
+            if schedule_validate(schedule_data):
+                return schedule_data
+    except Exception:
+        logging.exception("Failed to load schedule settings.")
+        my_lib.webapp.log.error("😵 スケジュール設定の読み出しに失敗しました。")
+
+    return schedule_default
 
 
 def set_schedule(config, schedule_data):  # noqa: C901
