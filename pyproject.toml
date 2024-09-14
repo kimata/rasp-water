@@ -17,7 +17,7 @@ dependencies = [
     "slack-sdk>=3.31.0",
     "rpi-lgpio>=0.6",
     "schedule==1.2.2",
-    "my-lib @ git+https://github.com/kimata/my-py-lib@4c9dfd7bd994cc23f4ef140bd1776dc656225984",
+    "my-lib @ git+https://github.com/kimata/my-py-lib@787031d778d27c5ed21f47d9521f91d9a0fcf23c",
 ]
 
 [build-system]
