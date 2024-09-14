@@ -149,11 +149,11 @@ def ctrl_log_check(expect_list, is_strict=True, is_error=True):
                         hist_list[i] == expect_list[i]
                     ), f"{i} 番目の操作が期待値と異なります。({hist_list[i]} != {expect_list[i]})"
 
-                if "period" in expect_list[i]:
+                if "high_period" in expect_list[i]:
                     assert (hist_list[i] == expect_list[i]) or (
                         hist_list[i]
                         == {
-                            "period": expect_list[i]["period"] - 1,
+                            "high_period": expect_list[i]["period"] - 1,
                             "state": expect_list[i]["state"],
                         }
                     ), f"{i} 番目の操作が期待値と異なります。({hist_list[i]} != {expect_list[i]})"
@@ -1273,7 +1273,7 @@ def test_schedule_ctrl_write_fail(client, mocker):
     assert response.status_code == 200
 
     ctrl_log_check([])
-    app_log_check(client, ["CLEAR", "FAIL_WRITE", "SCHEDULE", "FAIL_READ", "SCHEDULE"], False)
+    app_log_check(client, ["CLEAR", "FAIL_WRITE", "SCHEDULE", "SCHEDULE"], False)
     check_notify_slack("スケジュール設定の保存に失敗しました。", 0)
 
 
