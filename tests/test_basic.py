@@ -421,7 +421,7 @@ def test_valve_ctrl_mismatch(client):
     assert response.json["result"] == "success"
     time.sleep(5)
 
-    ctrl_log_check([{"state": "HIGH"}, {"high_period": 0, "state": "LOW"}])
+    ctrl_log_check([{"state": "HIGH"}, {"high_period": 1, "state": "LOW"}])
     # NOTE: 強引にバルブを開いているのでアプリのログには記録されない
     app_log_check(client, ["CLEAR", "STOP_AUTO"])
     check_notify_slack(None)
