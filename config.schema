@@ -49,7 +49,8 @@
             },
             "required": [
                 "data",
-                "static_dir_path"
+                "static_dir_path",
+                "timezone"
             ]
         },
         "fluent": {
@@ -79,55 +80,122 @@
                 "host"
             ]
         },
+        "influxdb": {
+            "type": "object",
+            "properties": {
+                "url": {
+                    "type": "string"
+                },
+                "org": {
+                    "type": "string"
+                },
+                "token": {
+                    "type": "string"
+                },
+                "bucket": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "bucket",
+                "org",
+                "token",
+                "url"
+            ]
+        },
         "weather": {
             "type": "object",
             "properties": {
-                "yahoo": {
-                    "type": "object",
-                    "properties": {
-                        "id": {
-                            "type": "string"
-                        }
-                    },
-                    "required": [
-                        "id"
-                    ]
-                },
-                "point": {
-                    "type": "object",
-                    "properties": {
-                        "lat": {
-                            "type": "number"
-                        },
-                        "lon": {
-                            "type": "number"
-                        }
-                    },
-                    "required": [
-                        "lat",
-                        "lon"
-                    ]
-                },
                 "rain_fall": {
                     "type": "object",
                     "properties": {
-                        "before_hour": {
-                            "type": "integer"
+                        "forecast": {
+                            "type": "object",
+                            "properties": {
+                                "yahoo": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id"
+                                    ]
+                                },
+                                "point": {
+                                    "type": "object",
+                                    "properties": {
+                                        "lat": {
+                                            "type": "number"
+                                        },
+                                        "lon": {
+                                            "type": "number"
+                                        }
+                                    },
+                                    "required": [
+                                        "lat",
+                                        "lon"
+                                    ]
+                                },
+                                "threshold": {
+                                    "type": "object",
+                                    "properties": {
+                                        "before_hour": {
+                                            "type": "integer"
+                                        },
+                                        "sum": {
+                                            "type": "integer"
+                                        }
+                                    },
+                                    "required": [
+                                        "before_hour",
+                                        "sum"
+                                    ]
+                                }
+                            },
+                            "required": [
+                                "point",
+                                "threshold",
+                                "yahoo"
+                            ]
                         },
-                        "threshold": {
-                            "type": "integer"
+                        "sensor": {
+                            "type": "object",
+                            "properties": {
+                                "name": {
+                                    "type": "string"
+                                },
+                                "type": {
+                                    "type": "string"
+                                },
+                                "threshold": {
+                                    "type": "object",
+                                    "properties": {
+                                        "sum": {
+                                            "type": "integer"
+                                        }
+                                    },
+                                    "required": [
+                                        "sum"
+                                    ]
+                                }
+                            },
+                            "required": [
+                                "name",
+                                "threshold",
+                                "type"
+                            ]
                         }
                     },
                     "required": [
-                        "before_hour",
-                        "threshold"
+                        "forecast",
+                        "sensor"
                     ]
                 }
             },
             "required": [
-                "point",
-                "rain_fall",
-                "yahoo"
+                "rain_fall"
             ]
         },
         "slack": {
@@ -203,7 +271,9 @@
     },
     "required": [
         "fluent",
+        "influxdb",
         "liveness",
+        "slack",
         "weather",
         "webapp"
     ]

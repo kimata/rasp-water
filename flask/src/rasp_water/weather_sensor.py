@@ -1,83 +1,75 @@
 #!/usr/bin/env python3
-# NOTE: 現時点で使われていない
+"""
+雨量データを取得します．
+
+Usage:
+  weather_sensor.py [-c CONFIG] [-d DAYS]
+
+Options:
+  -c CONFIG    : CONFIG を設定ファイルとして読み込んで実行します．[default: config.yaml]
+  -d DAYS      : 集計する日数を指定します．[default: 1]
+"""
 
 import datetime
 import logging
-import pathlib
 
-from influxdb import InfluxDBClient
-
-INFLUXDB_ADDR = "192.168.0.10"
-INFLUXDB_PORT = 8086
-INFLUXDB_DB = "sensor"
-
-INFLUXDB_QUERY1 = """ SELECT mean("touchpad") FROM "sensor.esp32"
-WHERE ("hostname" = \'ESP32-raindrop\') AND time >= now() - 1h GROUP
-BY time(5m) fill(previous) ORDER by time desc LIMIT 10 """
-
-INFLUXDB_QUERY2 = """ SELECT sum("rain") FROM "sensor.esp32" WHERE
-("hostname" = \'ESP32-rain\') AND time >= now() - 2d GROUP BY
-time(12h) fill(0) ORDER by time desc LIMIT 10 """
-
-WET_THRESHOLD1 = 370
-WET_THRESHOLD2 = 0.5
+import rasp_water.scheduler
+from my_lib.sensor_data import get_day_sum
 
 
-def is_soil_wet_1():
-    try:
-        client = InfluxDBClient(host=INFLUXDB_ADDR, port=INFLUXDB_PORT, database=INFLUXDB_DB)
-        result = client.query(INFLUXDB_QUERY1)
+def days_since_last_watering():
+    schedule_data = rasp_water.scheduler.schedule_load()
 
-        points = list(filter(lambda x: x is not None, (x["sum"] for x in result.get_points())))
+    wday_list = [x or y for x, y in zip(schedule_data[0]["wday"], schedule_data[1]["wday"])]
+    wday = datetime.datetime.now().weekday()  # noqa: DTZ005
 
-        with (pathlib.Path.resolve(__file__).parent / "soilwet.log").open(
-            mode="a",
-        ) as f:
-            now = datetime.datetime.now(tz=datetime.timezone(datetime.timedelta(hours=9)))
-            print(
-                f"{now} wet1 {list(points)}",
-                file=f,
-            )
-
-        val = points[0]
-        if val is None:
-            return False
-        return val < WET_THRESHOLD1
-    except Exception:
-        logging.exception("Failed to judge soil wet")
-
-    return False
+    for i in range(1, len(wday_list) + 1):
+        index = (wday - i) % len(wday_list)
+        if wday_list[index]:
+            return i
+    return 7
 
 
-def is_soil_wet_2():
-    try:
-        client = InfluxDBClient(host=INFLUXDB_ADDR, port=INFLUXDB_PORT, database=INFLUXDB_DB)
-        result = client.query(INFLUXDB_QUERY2)
-
-        points = list(filter(lambda x: x is not None, (x["sum"] for x in result.get_points())))
-
-        with (pathlib.Path.resolve(__file__).parent / "soilwet.log").open(
-            mode="a",
-        ) as f:
-            now = datetime.now(tz=datetime.timezone(datetime.timedelta(hours=9)))
-            print(
-                f"{now} wet2 {list(points)}",
-                file=f,
-            )
-
-        val = points[0]
-        if val is None:
-            return False
-        return val > WET_THRESHOLD2
-    except Exception:
-        logging.exception("Failed to judge soil wet")
-
-    return False
+def get_rain_fall_sum(config, days):
+    return get_day_sum(
+        config["influxdb"],
+        config["weather"]["rain_fall"]["sensor"]["type"],
+        config["weather"]["rain_fall"]["sensor"]["name"],
+        "rain",
+        days=days,
+    )
 
 
-def is_soil_wet():
-    return is_soil_wet_1() or is_soil_wet_2()
+def get_rain_fall(config):
+    days = days_since_last_watering()
+    rain_fall_sum = get_rain_fall_sum(config, days)
+
+    logging.info("Rain fall sum since last watering: %.1f (%d days)", rain_fall_sum, days)
+
+    rainfall_judge = rain_fall_sum > config["weather"]["rain_fall"]["sensor"]["threshold"]["sum"]
+    logging.info("Rain fall sensor judge: %s", rainfall_judge)
+
+    return rainfall_judge
 
 
 if __name__ == "__main__":
-    print(is_soil_wet())  # noqa: T201
+    import docopt
+    import my_lib.config
+    import my_lib.logger
+    import my_lib.webapp.config
+
+    args = docopt.docopt(__doc__)
+
+    config_file = args["-c"]
+    days = int(args["-d"])
+
+    my_lib.logger.init("test", level=logging.INFO)
+
+    config = my_lib.config.load(config_file)
+
+    my_lib.webapp.config.init(config)
+    rasp_water.scheduler.init()
+
+    logging.info("Sum of rainfall is %.1f", get_rain_fall_sum(config, days))
+
+    logging.info("Finish.")

@@ -16,6 +16,7 @@ import my_lib.webapp.event
 import my_lib.webapp.log
 import rasp_water.valve
 import rasp_water.weather_forecast
+import rasp_water.weather_sensor
 
 import flask
 
@@ -146,7 +147,7 @@ def judge_execute(config, state, auto):
             my_lib.webapp.log.info("☂ 前後で雨が降る予報があるため、自動での水やりを見合わせます。")
             return False
 
-    return True
+    return rasp_water.weather_sensor.get_rain_fall_sum(config)
 
 
 def set_valve_state(config, state, period, auto, host=""):

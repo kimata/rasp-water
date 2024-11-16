@@ -13,13 +13,13 @@ YAHOO_API_ENDPOINT = "https://map.yahooapis.jp/weather/V1/place"
 def get_weather_info_yahoo(config):
     try:
         params = {
-            "appid": config["weather"]["yahoo"]["id"],
+            "appid": config["weather"]["rain_fall"]["forecast"]["yahoo"]["id"],
             "coordinates": ",".join(
                 map(
                     str,
                     [
-                        config["weather"]["point"]["lon"],
-                        config["weather"]["point"]["lat"],
+                        config["weather"]["rain_fall"]["forecast"]["point"]["lon"],
+                        config["weather"]["rain_fall"]["forecast"]["point"]["lat"],
                     ],
                 )
             ),
@@ -56,17 +56,19 @@ def get_rain_fall(config):
                 )
             ).total_seconds()
             / (60 * 60)
-            < config["weather"]["rain_fall"]["before_hour"],
+            < config["weather"]["rain_fall"]["forecast"]["threshold"]["before_hour"],
             weather_info,
         )
     ]
 
-    rainfall_total = functools.reduce(lambda x, y: x + y, rainfall_list)
+    rainfall_sum = functools.reduce(lambda x, y: x + y, rainfall_list)
 
-    logging.info("Rain fall total: %d (%s)", rainfall_total, ", ".join(f"{num:.1f}" for num in rainfall_list))
+    logging.info(
+        "Rain fall forecast sum: %d (%s)", rainfall_sum, ", ".join(f"{num:.1f}" for num in rainfall_list)
+    )
 
-    rainfall_judge = rainfall_total > config["weather"]["rain_fall"]["threshold"]
-    logging.info("Rain fall judge: %s", rainfall_judge)
+    rainfall_judge = rainfall_sum > config["weather"]["rain_fall"]["forecast"]["threshold"]["sum"]
+    logging.info("Rain fall forecast judge: %s", rainfall_judge)
 
     return rainfall_judge
 
