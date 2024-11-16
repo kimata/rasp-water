@@ -147,7 +147,7 @@ def judge_execute(config, state, auto):
             my_lib.webapp.log.info("☂ 前後で雨が降る予報があるため、自動での水やりを見合わせます。")
             return False
 
-    return rasp_water.weather_sensor.get_rain_fall_sum(config)
+    return rasp_water.weather_sensor.get_rain_fall(config)
 
 
 def set_valve_state(config, state, period, auto, host=""):
