@@ -474,7 +474,7 @@ def test_valve_ctrl_auto(client, mocker):
 
 
 def test_valve_ctrl_auto_rainfall(client, mocker):
-    mocker.patch("rasp_water.weather_forecast.get_rain_fall", return_value=True)
+    mocker.patch("rasp_water.weather_forecast.get_rain_fall", return_value=(True, 10))
 
     period = 2
     response = client.get(
@@ -1146,7 +1146,6 @@ def test_schedule_ctrl_error(client, mocker, time_machine):
 def test_schedule_ctrl_execute_fail(client, mocker, time_machine):
     import rasp_water.webapp_valve
 
-    mocker.patch("rasp_water.weather_forecast.get_rain_fall", return_value=False)
     mocker.patch("rasp_water.scheduler.valve_auto_control_impl", return_value=False)
 
     rasp_water.webapp_valve.term()
