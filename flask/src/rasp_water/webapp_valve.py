@@ -141,21 +141,25 @@ def judge_execute(config, state, auto):
 
     rainfall_judge, rain_fall_sum = rasp_water.weather_forecast.get_rain_fall(config)
     if rainfall_judge:
-        my_lib.webapp.log.info(
-            "☂ 前後で {rain_fall_sum:.0f}mm の雨が降る予報があるため、自動での水やりを見合わせます。"
-        )
-
         # NOTE: ダミーモードの場合，とにかく水やりする (CI テストの為)
-        return False or os.environ.get("DUMMY_MODE", "false") == "true"
+        if os.environ.get("DUMMY_MODE", "false") == "true":
+            return True
+
+        my_lib.webapp.log.info(
+            f"☂ 前後で {rain_fall_sum:.0f}mm の雨が降る予報があるため、自動での水やりを見合わせます。"
+        )
+        return False
 
     rainfall_judge, rain_fall_sum = rasp_water.weather_sensor.get_rain_fall(config)
     if rainfall_judge:
-        my_lib.webapp.log.info(
-            "☂ 前回の水やりから {rain_fall_sum:.0f}mm の雨が降ったため、自動での水やりを見合わせます。"
-        )
-
         # NOTE: ダミーモードの場合，とにかく水やりする (CI テストの為)
-        return False or os.environ.get("DUMMY_MODE", "false") == "true"
+        if os.environ.get("DUMMY_MODE", "false") == "true":
+            return True
+
+        my_lib.webapp.log.info(
+            f"☂ 前回の水やりから {rain_fall_sum:.0f}mm の雨が降ったため、自動での水やりを見合わせます。"
+        )
+        return False
 
     return True
 
