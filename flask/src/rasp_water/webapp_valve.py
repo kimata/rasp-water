@@ -146,7 +146,7 @@ def judge_execute(config, state, auto):
         )
 
         # NOTE: ダミーモードの場合，とにかく水やりする (CI テストの為)
-        return False or os.environ.get("DUMMY_MODE", "false") != "true"
+        return False or os.environ.get("DUMMY_MODE", "false") == "true"
 
     rainfall_judge, rain_fall_sum = rasp_water.weather_sensor.get_rain_fall(config)
     if rainfall_judge:
@@ -155,7 +155,7 @@ def judge_execute(config, state, auto):
         )
 
         # NOTE: ダミーモードの場合，とにかく水やりする (CI テストの為)
-        return False or os.environ.get("DUMMY_MODE", "false") != "true"
+        return False or os.environ.get("DUMMY_MODE", "false") == "true"
 
     return True
 
