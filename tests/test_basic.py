@@ -73,14 +73,8 @@ def client(app, mocker):
         "my_lib.notify.slack.slack_sdk.web.client.WebClient.chat_postMessage",
         side_effect=slack_sdk.errors.SlackClientError(),
     )
-    mocker.patch(
-        "rasp_water.weather_forecast.get_rain_fall",
-        return_value=False,
-    )
-    mocker.patch(
-        "rasp_water.weather_sensor.get_rain_fall",
-        return_value=False,
-    )
+    mocker.patch("rasp_water.weather_forecast.get_rain_fall", return_value=(False, 0))
+    mocker.patch("rasp_water.weather_sensor.get_rain_fall", return_value=(False, 0))
 
     test_client = app.test_client()
 
