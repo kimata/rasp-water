@@ -43,7 +43,7 @@ def get_rain_fall(config):
     weather_info = get_weather_info_yahoo(config)
 
     if weather_info is None:
-        return False
+        return (False, 0)
 
     # NOTE: YAhoo の場合，1 時間後までしか情報がとれないことに注意
     rainfall_list = [
