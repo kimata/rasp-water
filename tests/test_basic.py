@@ -77,6 +77,10 @@ def client(app, mocker):
         "rasp_water.weather_forecast.get_rain_fall",
         return_value=False,
     )
+    mocker.patch(
+        "rasp_water.weather_sensor.get_rain_fall",
+        return_value=False,
+    )
 
     test_client = app.test_client()
 
