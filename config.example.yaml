@@ -18,6 +18,12 @@ fluent:
         hostname: rasp-water-1
         tag: hems
 
+influxdb:
+    url: http://proxy.green-rabbit.net:8086
+    org: home
+    token: strBCB9segqccgxsR5Xe_9RnCqkBFYX9aOKvxVR4lr3iLEb7HXuGqsN40YU6DIb6TZm9bvKLW5OWQS7sB8AQbQ==
+    bucket: sensor
+
 weather:
     rain_fall:
         forecast:
