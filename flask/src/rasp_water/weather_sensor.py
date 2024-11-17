@@ -49,7 +49,7 @@ def get_rain_fall(config):
     rainfall_judge = rain_fall_sum > config["weather"]["rain_fall"]["sensor"]["threshold"]["sum"]
     logging.info("Rain fall sensor judge: %s", rainfall_judge)
 
-    return rainfall_judge
+    return (rainfall_judge, rain_fall_sum)
 
 
 if __name__ == "__main__":
