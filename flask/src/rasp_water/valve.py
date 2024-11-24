@@ -175,6 +175,8 @@ def control_worker(config, queue):  # noqa: PLR0912, PLR0915, C901
                     # NOTE: バルブが開かれていたら，状態を変更してトータルの水量の集計を開始する
                     time_open_start = my_lib.rpi.gpio_time()
                     notify_last_time = time_open_start
+                    # NOTE: バルブを閉じてから流量が 0 になるまでに再度開いた場合にエラーにならないようにする
+                    time_close = None
             else:
                 if STAT_PATH_VALVE_CONTROL_COMMAND.exists():
                     # NOTE: バルブコマンドが存在したら，閉じる時間をチェックして，必要に応じて閉じる
