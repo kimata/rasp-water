@@ -412,11 +412,11 @@ if __name__ == "__main__":
 
     set_state(VALVE_STATE.OPEN)
     time.sleep(0.5)
-    logging.info("Flow: %.2f", get_flow()["flow"])
+    logging.info("Flow: %.2f", get_flow(config["flow"]["offset"])["flow"])
     time.sleep(0.5)
-    logging.info("Flow: %.2f", get_flow()["flow"])
+    logging.info("Flow: %.2f", get_flow(config["flow"]["offset"])["flow"])
     set_state(VALVE_STATE.CLOSE)
-    logging.info("Flow: %.2f", get_flow()["flow"])
+    logging.info("Flow: %.2f", get_flow(config["flow"]["offset"])["flow"])
 
     set_control_mode(60)
     time.sleep(1)
