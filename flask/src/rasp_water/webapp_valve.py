@@ -215,4 +215,6 @@ def api_valve_ctrl():
 @my_lib.flask_util.support_jsonp
 @flask_cors.cross_origin()
 def api_valve_flow():
-    return flask.jsonify({"cmd": "get", "flow": rasp_water.valve.get_flow()["flow"]})
+    config = flask.current_app.config["CONFIG"]
+
+    return flask.jsonify({"cmd": "get", "flow": rasp_water.valve.get_flow(config["flow"]["offset"])["flow"]})
