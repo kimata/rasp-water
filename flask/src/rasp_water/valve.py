@@ -71,24 +71,24 @@ if (os.environ.get("DUMMY_MODE", "false") != "true") and (
     os.environ.get("TEST", "false") != "true"
 ):  # pragma: no cover
 
-    def conv_rawadc_to_flow(adc):
-        flow = (adc * ADC_SCALE_VALUE * FLOW_SCALE_MAX) / 5000.0
+    def conv_rawadc_to_flow(adc, offset):
+        flow = max(((adc * ADC_SCALE_VALUE * FLOW_SCALE_MAX) / 5000.0) - offset, 0)
         if flow < 0.01:
             flow = 0
 
         return flow
 
-    def get_flow():
+    def get_flow(offset=0):
         try:
             with pathlib.Path(ADC_VALUE_PATH).open(mode="r") as f:
-                return {"flow": conv_rawadc_to_flow(int(f.read())), "result": "success"}
+                return {"flow": conv_rawadc_to_flow(int(f.read()), offset), "result": "success"}
         except Exception:
             return {"flow": 0, "result": "fail"}
 
 else:
     import random
 
-    def get_flow():
+    def get_flow(offset=0):  # noqa: ARG001
         if STAT_PATH_VALVE_OPEN.exists():
             if get_flow.prev_flow == 0:
                 flow = FLOW_SCALE_MAX
@@ -151,7 +151,7 @@ def control_worker(config, queue):  # noqa: PLR0912, PLR0915, C901
             break
 
         if time_open_start is not None:
-            flow = get_flow()["flow"]
+            flow = get_flow(config["flow"]["offset"])["flow"]
             flow_sum += flow
             count_flow += 1
 
@@ -205,7 +205,7 @@ def control_worker(config, queue):  # noqa: PLR0912, PLR0915, C901
                 period_sec = my_lib.rpi.gpio_time() - time_open_start
 
                 # NOTE: バルブが閉じられた後，流量が 0 になっていたらトータル流量を報告する
-                if flow < 0.17:
+                if flow < 0.1:
                     count_zero += 1
 
                 if flow > FLOW_ERROR_TH:

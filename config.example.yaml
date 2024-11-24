@@ -11,6 +11,9 @@ webapp:
         log_file_path: flask/data/log.db
         stat_dir_path: /dev/shm
 
+flow:
+    offset: 0.18
+
 fluent:
     host: proxy.green-rabbit.net
 

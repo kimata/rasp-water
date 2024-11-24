@@ -53,6 +53,17 @@
                 "timezone"
             ]
         },
+        "flow": {
+            "type": "object",
+            "properties": {
+                "offset": {
+                    "type": "number"
+                }
+            },
+            "required": [
+                "offset"
+            ]
+        },
         "fluent": {
             "type": "object",
             "properties": {
@@ -270,6 +281,7 @@
         }
     },
     "required": [
+        "flow",
         "fluent",
         "influxdb",
         "liveness",
