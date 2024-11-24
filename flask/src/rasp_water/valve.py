@@ -205,7 +205,7 @@ def control_worker(config, queue):  # noqa: PLR0912, PLR0915, C901
                 period_sec = my_lib.rpi.gpio_time() - time_open_start
 
                 # NOTE: バルブが閉じられた後，流量が 0 になっていたらトータル流量を報告する
-                if flow < 0.15:
+                if flow < 0.17:
                     count_zero += 1
 
                 if flow > FLOW_ERROR_TH:
