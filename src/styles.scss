@@ -1,9 +1,9 @@
+@use "bootstrap/scss/bootstrap";
+@use "../node_modules/bootstrap-icons/font/bootstrap-icons";
+
 $theme-colors: (
     "primary": #28a745,
 );
-
-@use "bootstrap/scss/bootstrap";
-@use "../node_modules/bootstrap-icons/font/bootstrap-icons";
 
 @import "@fortawesome/fontawesome-free/css/all.css";
 
