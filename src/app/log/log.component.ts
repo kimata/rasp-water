@@ -42,8 +42,7 @@ export interface LogResponse {
     selector: 'app-log',
     templateUrl: './log.component.html',
     styleUrls: ['./log.component.scss'],
-    standalone: true,
-    imports: [NgIf, NgFor, NgbPagination, SlicePipe, NewlinePipe],
+    imports: [NgIf, NgFor, NgbPagination, SlicePipe, NewlinePipe]
 })
 export class LogComponent implements OnInit {
     private subscription: Subscription = Subscription.EMPTY;

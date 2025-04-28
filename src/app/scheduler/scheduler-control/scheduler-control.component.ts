@@ -17,8 +17,7 @@ import { Subscription } from 'rxjs';
     selector: 'app-scheduler-control',
     templateUrl: './scheduler-control.component.html',
     styleUrls: ['./scheduler-control.component.scss'],
-    standalone: true,
-    imports: [NgIf, SchedulerEntryComponent],
+    imports: [NgIf, SchedulerEntryComponent]
 })
 export class SchedulerControlComponent implements OnInit {
     constructor(

@@ -2,8 +2,8 @@ $theme-colors: (
     "primary": #28a745,
 );
 
-@import "bootstrap/scss/bootstrap";
-@import "../node_modules/bootstrap-icons/font/bootstrap-icons";
+@use "bootstrap/scss/bootstrap";
+@use "../node_modules/bootstrap-icons/font/bootstrap-icons";
 
 @import "@fortawesome/fontawesome-free/css/all.css";
 

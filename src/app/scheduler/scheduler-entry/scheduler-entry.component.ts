@@ -15,8 +15,7 @@ export interface ScheduleEntry {
     selector: 'app-scheduler-entry',
     templateUrl: './scheduler-entry.component.html',
     styleUrls: ['./scheduler-entry.component.scss'],
-    standalone: true,
-    imports: [FormsModule, NgFor],
+    imports: [FormsModule, NgFor]
 })
 export class SchedulerEntryComponent implements OnInit {
     private _state = {

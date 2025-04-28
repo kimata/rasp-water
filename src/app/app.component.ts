@@ -10,7 +10,6 @@ import { HeaderComponent } from './header/header.component';
     selector: 'app-root',
     templateUrl: './app.component.html',
     styleUrls: ['./app.component.scss'],
-    standalone: true,
     imports: [
         HeaderComponent,
         ValveControlComponent,
@@ -18,6 +17,6 @@ import { HeaderComponent } from './header/header.component';
         LogComponent,
         FooterComponent,
         ToastComponent,
-    ],
+    ]
 })
 export class AppComponent {}

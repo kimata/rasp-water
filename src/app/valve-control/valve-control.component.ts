@@ -22,8 +22,7 @@ export interface FlowResponse {
     selector: 'app-valve-control',
     templateUrl: './valve-control.component.html',
     styleUrls: ['./valve-control.component.scss'],
-    standalone: true,
-    imports: [NgIf, FormsModule, DecimalPipe, PercentPipe],
+    imports: [NgIf, FormsModule, DecimalPipe, PercentPipe]
 })
 export class ValveControlComponent implements OnInit {
     private subscription: Subscription = Subscription.EMPTY;
