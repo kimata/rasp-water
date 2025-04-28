@@ -1269,6 +1269,8 @@ def test_schedule_ctrl_write_fail(client, mocker):
     )
     assert response.status_code == 200
 
+    time.sleep(1)
+
     ctrl_log_check([])
     app_log_check(client, ["CLEAR", "FAIL_WRITE", "SCHEDULE", "SCHEDULE"], False)
     check_notify_slack("スケジュール設定の保存に失敗しました。", 0)
