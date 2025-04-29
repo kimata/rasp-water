@@ -151,7 +151,7 @@ def ctrl_log_check(expect_list, is_strict=True, is_error=True):
                     assert (hist_list[i] == expect_list[i]) or (
                         hist_list[i]
                         == {
-                            "high_period": expect_list[i]["period"] - 1,
+                            "high_period": expect_list[i]["high_period"] - 1,
                             "state": expect_list[i]["state"],
                         }
                     ), f"{i} 番目の操作が期待値と異なります。({hist_list[i]} != {expect_list[i]})"
