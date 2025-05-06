@@ -25,9 +25,9 @@ RUN --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
 FROM python:3.12.4-slim-bookworm AS prod
 
 ARG IMAGE_BUILD_DATE
+ENV IMAGE_BUILD_DATE=${IMAGE_BUILD_DATE}
 
 ENV TZ=Asia/Tokyo
-ENV IMAGE_BUILD_DATE=${IMAGE_BUILD_DATE}
 
 COPY --from=build /usr/local/lib/python3.12/site-packages /usr/local/lib/python3.12/site-packages
 
