@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import enum
 import inspect
 import logging
 import os
@@ -7,7 +8,6 @@ import threading
 import time
 import traceback
 from builtins import open as valve_open
-from enum import IntEnum
 
 import my_lib.footprint
 import my_lib.rpi
@@ -57,12 +57,12 @@ TIME_OVER_FAIL = 5
 TIME_ZERO_TAIL = 5
 
 
-class VALVE_STATE(IntEnum):  # noqa: N801
+class VALVE_STATE(enum.IntEnum):  # noqa: N801
     OPEN = my_lib.rpi.gpio.level.HIGH.value
     CLOSE = my_lib.rpi.gpio.level.LOW.value
 
 
-class CONTROL_MODE(IntEnum):  # noqa: N801
+class CONTROL_MODE(enum.IntEnum):  # noqa: N801
     TIMER = 1
     IDLE = 0
 

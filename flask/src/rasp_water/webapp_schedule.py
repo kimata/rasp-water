@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 import json
+import multiprocessing
 import threading
 import urllib.parse
-from multiprocessing import Queue
 
 import flask_cors
 import my_lib.flask_util
@@ -11,9 +11,9 @@ import my_lib.webapp.event
 import my_lib.webapp.log
 import rasp_water.scheduler
 
-from flask import Blueprint, jsonify, request, url_for
+import flask
 
-blueprint = Blueprint("rasp-water-schedule", __name__, url_prefix=my_lib.webapp.config.URL_PREFIX)
+blueprint = flask.Blueprint("rasp-water-schedule", __name__, url_prefix=my_lib.webapp.config.URL_PREFIX)
 
 schedule_lock = threading.Lock()
 schedule_queue = None
@@ -29,7 +29,7 @@ def init(config):
     if worker is not None:
         raise ValueError("worker should be None")  # noqa: TRY003, EM101
 
-    schedule_queue = Queue()
+    schedule_queue = multiprocessing.Queue()
     rasp_water.scheduler.init()
     worker = threading.Thread(
         target=rasp_water.scheduler.schedule_worker,
@@ -80,19 +80,19 @@ def schedule_str(schedule):
 @my_lib.flask_util.support_jsonp
 @flask_cors.cross_origin()
 def api_schedule_ctrl():
-    cmd = request.args.get("cmd", None)
-    data = request.args.get("data", None)
+    cmd = flask.request.args.get("cmd", None)
+    data = flask.request.args.get("data", None)
     if cmd == "set":
         schedule_data = json.loads(data)
 
         if not rasp_water.scheduler.schedule_validate(schedule_data):
             my_lib.webapp.log.error("😵 スケジュールの指定が不正です。")
-            return jsonify(rasp_water.scheduler.schedule_load())
+            return flask.jsonify(rasp_water.scheduler.schedule_load())
 
         with schedule_lock:
             endpoint = urllib.parse.urljoin(
-                request.url_root,
-                url_for("rasp-water-valve.api_valve_ctrl"),
+                flask.request.url_root,
+                flask.url_for("rasp-water-valve.api_valve_ctrl"),
             )
 
             for entry in schedule_data:
@@ -105,7 +105,7 @@ def api_schedule_ctrl():
 
             my_lib.webapp.event.notify_event(my_lib.webapp.event.EVENT_TYPE.SCHEDULE)
 
-            user = my_lib.flask_util.auth_user(request)
+            user = my_lib.flask_util.auth_user(flask.request)
             my_lib.webapp.log.info(
                 "📅 スケジュールを更新しました。\n{schedule}\n{by}".format(
                     schedule=schedule_str(schedule_data),
@@ -113,4 +113,4 @@ def api_schedule_ctrl():
                 )
             )
 
-    return jsonify(rasp_water.scheduler.schedule_load())
+    return flask.jsonify(rasp_water.scheduler.schedule_load())

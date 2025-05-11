@@ -218,8 +218,8 @@ def schedule_worker(config, queue):
 
 if __name__ == "__main__":
     import datetime
-    from multiprocessing import Queue
-    from multiprocessing.pool import ThreadPool
+    import multiprocessing
+    import multiprocessing.pool
 
     import logger
     import my_lib.webapp.config
@@ -231,9 +231,9 @@ if __name__ == "__main__":
 
         should_terminate.set()
 
-    queue = Queue()
+    queue = multiprocessing.Queue()
 
-    pool = ThreadPool(processes=1)
+    pool = multiprocessing.pool.ThreadPool(processes=1)
     result = pool.apply_async(schedule_worker, (queue,))
 
     exec_time = datetime.datetime.now(my_lib.webapp.config.TIMEZONE) + datetime.timedelta(seconds=5)
