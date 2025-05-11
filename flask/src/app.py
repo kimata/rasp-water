@@ -36,13 +36,13 @@ def sig_handler(num, frame):  # noqa: ARG001
 
 
 def create_app(config, dummy_mode=False):
-    # NOTE: オプションでダミーモードが指定された場合，環境変数もそれに揃えておく
+    # NOTE: オプションでダミーモードが指定された場合、環境変数もそれに揃えておく
     if dummy_mode:
         os.environ["DUMMY_MODE"] = "true"
     else:  # pragma: no cover
         os.environ["DUMMY_MODE"] = "false"
 
-    # NOTE: テストのため，環境変数 DUMMY_MODE をセットしてからロードしたいのでこの位置
+    # NOTE: テストのため、環境変数 DUMMY_MODE をセットしてからロードしたいのでこの位置
     import my_lib.webapp.config
 
     my_lib.webapp.config.URL_PREFIX = "/rasp-water"

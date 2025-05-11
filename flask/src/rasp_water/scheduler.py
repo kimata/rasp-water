@@ -27,7 +27,7 @@ def init():
 
 def valve_auto_control_impl(config, period):
     try:
-        # NOTE: Web 経由だと認証つけた場合に困るので，直接関数を呼ぶ
+        # NOTE: Web 経由だと認証つけた場合に困るので、直接関数を呼ぶ
         rasp_water.webapp_valve.set_valve_state(config, 1, period * 60, True, "scheduler")
         return True
 
@@ -205,7 +205,7 @@ def schedule_worker(config, queue):
             logging.debug("Sleep %.1f sec...", sleep_sec)
             time.sleep(sleep_sec)
         except OverflowError:  # pragma: no cover
-            # NOTE: テストする際，freezer 使って日付をいじるとこの例外が発生する
+            # NOTE: テストする際、freezer 使って日付をいじるとこの例外が発生する
             logging.debug(traceback.format_exc())
 
         if i % (10 / sleep_sec) == 0:

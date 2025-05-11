@@ -45,7 +45,7 @@ def get_rain_fall(config):
     if weather_info is None:
         return (False, 0)
 
-    # NOTE: YAhoo の場合，1 時間後までしか情報がとれないことに注意
+    # NOTE: YAhoo の場合、1 時間後までしか情報がとれないことに注意
     rainfall_list = [
         x["Rainfall"]
         for x in filter(

@@ -53,7 +53,7 @@ def app():
 
         yield app
 
-        # NOTE: 特定のテストのみ実行したときのため，ここでも呼ぶ
+        # NOTE: 特定のテストのみ実行したときのため、ここでも呼ぶ
         test_terminate()
 
 
@@ -125,7 +125,7 @@ def ctrl_log_check(expect_list, is_strict=True, is_error=True):
     time.sleep(1)
 
     hist_list = my_lib.rpi.gpio.hist_get()
-    # NOTE: GPIO は1本しか使わないので，チェック対象から外す
+    # NOTE: GPIO は1本しか使わないので、チェック対象から外す
     hist_list = [{k: v for k, v in d.items() if k not in "pin_num"} for i, d in enumerate(hist_list)]
 
     logging.debug(json.dumps(hist_list, indent=2, ensure_ascii=False))
@@ -173,7 +173,7 @@ def app_log_check(  # noqa: PLR0912, C901
     logging.debug(json.dumps(log_list, indent=2, ensure_ascii=False))
 
     if is_strict:
-        # NOTE: クリアする直前のログが残っている可能性があるので，+1 でも OK とする
+        # NOTE: クリアする直前のログが残っている可能性があるので、+1 でも OK とする
         assert (len(log_list) == len(expect_list)) or (len(log_list) == (len(expect_list) + 1))
 
     for i, expect in enumerate(reversed(expect_list)):
@@ -236,9 +236,9 @@ def check_notify_slack(message, index=-1):
     logging.debug(notify_hist)
 
     if message is None:
-        assert notify_hist == [], "正常なはずなのに，エラー通知がされています。"
+        assert notify_hist == [], "正常なはずなのに、エラー通知がされています。"
     else:
-        assert len(notify_hist) != 0, "異常が発生したはずなのに，エラー通知がされていません。"
+        assert len(notify_hist) != 0, "異常が発生したはずなのに、エラー通知がされていません。"
         assert notify_hist[index].find(message) != -1, f"「{message}」が Slack で通知されていません。"
 
 
@@ -491,7 +491,7 @@ def test_valve_ctrl_auto_rainfall(client, mocker):
 
     time.sleep(period + 5)
 
-    # NOTE: ダミーモードの場合は，天気に関わらず水やりする
+    # NOTE: ダミーモードの場合は、天気に関わらず水やりする
     ctrl_log_check([{"state": "HIGH"}, {"high_period": period, "state": "LOW"}], is_strict=False)
     app_log_check(client, ["CLEAR", "START_AUTO", "STOP_AUTO"])
 
@@ -559,7 +559,7 @@ def test_valve_ctrl_auto_forecast_error_1(client, mocker):
 
     time.sleep(period + 5)
 
-    # NOTE: get_weather_info_yahoo == None の場合，水やりは行う
+    # NOTE: get_weather_info_yahoo == None の場合、水やりは行う
     ctrl_log_check([{"state": "HIGH"}, {"high_period": period, "state": "LOW"}], is_strict=False)
     app_log_check(client, ["CLEAR", "START_AUTO", "STOP_AUTO"])
     check_notify_slack(None)
@@ -805,7 +805,7 @@ def test_valve_flow_open_over_1(client, mocker):
     flow_mock.return_value = {"flow": 100, "result": "success"}
 
     mocker.patch("rasp_water.valve.TIME_OVER_FAIL", 0.5)
-    # NOTE: これをやっておかないと，後続のテストに影響がでる
+    # NOTE: これをやっておかないと、後続のテストに影響がでる
     mocker.patch("rasp_water.valve.TIME_ZERO_TAIL", 1)
 
     period = 3
@@ -837,7 +837,7 @@ def test_valve_flow_open_over_2(client, mocker):
     flow_mock.return_value = {"flow": 100, "result": "success"}
 
     mocker.patch("rasp_water.valve.TIME_CLOSE_FAIL", 1)
-    # NOTE: これをやっておかないと，後続のテストに影響がでる
+    # NOTE: これをやっておかないと、後続のテストに影響がでる
     mocker.patch("rasp_water.valve.TIME_ZERO_TAIL", 1)
 
     period = 3
@@ -1261,7 +1261,7 @@ def test_schedule_ctrl_write_fail(client, mocker):
 
     mocker.patch("pickle.dump", side_effect=dump_orig)
 
-    # NOTE: 次回のテストに向けて，正常なものに戻しておく
+    # NOTE: 次回のテストに向けて、正常なものに戻しておく
     schedule_data = gen_schedule_data()
     response = client.get(
         f"{my_lib.webapp.config.URL_PREFIX}/api/schedule_ctrl",

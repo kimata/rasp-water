@@ -36,14 +36,14 @@ weather:
                 lat: 35.68
                 lon: 139.73
             threshold:
-                # NOTE: 6時間前から 3mm 以上の降雨があったら，見合わせる
+                # NOTE: 6時間前から 3mm 以上の降雨があったら、見合わせる
                 before_hour: 6
                 sum: 3
         sensor:
             name: rasp-weather-1
             type: sensor.rasp
             threshold:
-                # NOTE: 前回水やりしてから 10mm 以上の降雨があったら，見合わせる
+                # NOTE: 前回水やりしてから 10mm 以上の降雨があったら、見合わせる
                 sum: 10
 
 slack:

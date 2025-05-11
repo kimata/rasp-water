@@ -99,8 +99,8 @@ def api_schedule_ctrl():
                 entry["endpoint"] = endpoint
             schedule_queue.put(schedule_data)
 
-            # NOTE: 本来は schedule_worker の中だけで呼んでるので不要だけど，
-            # レスポンスを schedule_load() で返したいので，ここでも呼ぶ。
+            # NOTE: 本来は schedule_worker の中だけで呼んでるので不要だけど、
+            # レスポンスを schedule_load() で返したいので、ここでも呼ぶ。
             rasp_water.scheduler.schedule_store(schedule_data)
 
             my_lib.webapp.event.notify_event(my_lib.webapp.event.EVENT_TYPE.SCHEDULE)

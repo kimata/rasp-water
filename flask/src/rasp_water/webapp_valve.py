@@ -97,7 +97,7 @@ def flow_notify_worker(config, queue):
 
                 if stat["type"] == "total":
                     my_lib.webapp.log.info(
-                        "🚿 {time_str}間，約 {water:.2f}L の水やりを行いました。".format(
+                        "🚿 {time_str}間、約 {water:.2f}L の水やりを行いました。".format(
                             time_str=second_str(stat["period"]), water=stat["total"]
                         )
                     )
@@ -109,7 +109,7 @@ def flow_notify_worker(config, queue):
                     pass
             time.sleep(sleep_sec)
         except OverflowError:  # pragma: no cover
-            # NOTE: テストする際，freezer 使って日付をいじるとこの例外が発生する
+            # NOTE: テストする際、freezer 使って日付をいじるとこの例外が発生する
             logging.debug(traceback.format_exc())
 
         if i % (10 / sleep_sec) == 0:
@@ -141,7 +141,7 @@ def judge_execute(config, state, auto):
 
     rainfall_judge, rain_fall_sum = rasp_water.weather_forecast.get_rain_fall(config)
     if rainfall_judge:
-        # NOTE: ダミーモードの場合，とにかく水やりする (CI テストの為)
+        # NOTE: ダミーモードの場合、とにかく水やりする (CI テストの為)
         if os.environ.get("DUMMY_MODE", "false") == "true":
             return True
 
@@ -152,7 +152,7 @@ def judge_execute(config, state, auto):
 
     rainfall_judge, rain_fall_sum = rasp_water.weather_sensor.get_rain_fall(config)
     if rainfall_judge:
-        # NOTE: ダミーモードの場合，とにかく水やりする (CI テストの為)
+        # NOTE: ダミーモードの場合、とにかく水やりする (CI テストの為)
         if os.environ.get("DUMMY_MODE", "false") == "true":
             return True
 

@@ -25,6 +25,6 @@ export class ToastService {
     }
 
     remove(toast: any) {
-        // NOTE: ひとまず，何もしない
+        // NOTE: ひとまず、何もしない
     }
 }

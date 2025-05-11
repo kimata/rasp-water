@@ -121,7 +121,7 @@ export class ValveControlComponent implements OnInit {
                     this.flowZeroCount = 0;
                 }
 
-                // NOTE: バルブを閉じてから，流量が 0 になって落ち着いたら，
+                // NOTE: バルブを閉じてから、流量が 0 になって落ち着いたら、
                 // 流量バーの更新を停止する．
                 if (this.flowZeroCount == 10 && !this.state) {
                     this.unwatchFlow();

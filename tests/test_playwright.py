@@ -19,7 +19,7 @@ PERIOD_MIN = 1
 def check_log(page, message, timeout_sec=3):
     expect(page.locator("//app-log//div").first).to_contain_text(message, timeout=timeout_sec * 1000)
 
-    # NOTE: ログクリアする場合，ログの内容が変化しているので，ここで再取得する
+    # NOTE: ログクリアする場合、ログの内容が変化しているので、ここで再取得する
     log_list = page.locator("//app-log//div")
     for i in range(log_list.count()):
         expect(log_list.nth(i)).not_to_contain_text("失敗")
@@ -111,7 +111,7 @@ def test_valve(page, host, port):
 
     period = int(page.locator('//input[@id="momentaryPeriod"]').input_value())
 
-    # NOTE: checkbox 自体は hidden にして，CSS で表示しているので，
+    # NOTE: checkbox 自体は hidden にして、CSS で表示しているので、
     # 通常の locator では操作できない
     page.locator('//input[@id="valveSwitch"]').evaluate("node => node.click()")
 
@@ -171,7 +171,7 @@ def test_schedule_run(page, host, port):
     time.sleep(1)
     check_log(page, "ログがクリアされました")
 
-    # NOTE: 次の「分」で実行させるにあたって，秒数を調整する
+    # NOTE: 次の「分」で実行させるにあたって、秒数を調整する
     time.sleep((90 - datetime.datetime.now(my_lib.webapp.config.TIMEZONE).second) % 60)
 
     enable_checkbox = page.locator('//input[contains(@id,"schedule-entry-")]')
@@ -180,17 +180,17 @@ def test_schedule_run(page, host, port):
     time_input = page.locator('//input[@type="time"]')
     period_input = page.locator('//input[contains(@id,"schedule-period-")]')
     for i in range(enable_checkbox.count()):
-        # NOTE: checkbox 自体は hidden にして，CSS で表示しているので，
+        # NOTE: checkbox 自体は hidden にして、CSS で表示しているので、
         # 通常の locator では操作できない
         enable_checkbox.nth(i).evaluate("node => node.checked = false")
         enable_checkbox.nth(i).evaluate("node => node.click()")
 
-        # NOTE: 片方はランダム，他方はテスト用に全てチェック
+        # NOTE: 片方はランダム、他方はテスト用に全てチェック
         for j in range(7):
             if enable_wday_index[i * 7 + j] or (i == 1):
                 wday_checkbox.nth(i * 7 + j).check()
 
-        # NOTE: 片方はランダム，他方はテスト用に 1 分後に設定
+        # NOTE: 片方はランダム、他方はテスト用に 1 分後に設定
         if i == 0:
             time_input.nth(i).fill(time_str_random())
         else:
@@ -223,7 +223,7 @@ def test_schedule_disable(page, host, port):
     time_input = page.locator('//input[@type="time"]')
     period_input = page.locator('//input[contains(@id,"schedule-period-")]')
     for i in range(enable_checkbox.count()):
-        # NOTE: checkbox 自体は hidden にして，CSS で表示しているので，
+        # NOTE: checkbox 自体は hidden にして、CSS で表示しているので、
         # 通常の locator では操作できない
         enable_checkbox.nth(i).evaluate("node => node.checked = false")
         enable_checkbox.nth(i).evaluate("node => node.click()")
@@ -233,7 +233,7 @@ def test_schedule_disable(page, host, port):
             if enable_wday_index[i * 7 + j]:
                 wday_checkbox.nth(i * 7 + j).check()
 
-        # NOTE: 片方はランダム，他方はテスト用に 1 分後に設定
+        # NOTE: 片方はランダム、他方はテスト用に 1 分後に設定
         if i == 0:
             time_input.nth(i).fill(time_str_random())
         else:

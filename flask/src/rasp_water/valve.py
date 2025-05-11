@@ -26,7 +26,7 @@ STAT_PATH_VALVE_OPEN = None
 STAT_PATH_VALVE_CLOSE = None
 
 # 電磁弁制御用の GPIO 端子番号。
-# この端子が H になった場合に，水が出るように回路を組んでおく。
+# この端子が H になった場合に、水が出るように回路を組んでおく。
 GPIO_PIN_DEFAULT = 18
 
 
@@ -43,17 +43,17 @@ ADC_SCALE_VALUE = 3
 # 流量計のアナログ出力値 (ADS1015 のドライバ ti_ads1015 が公開)
 ADC_VALUE_PATH = "/sys/bus/iio/devices/iio:device0/in_voltage0_raw"
 
-# 電磁弁を開いてからこの時間経過しても，水が流れていなかったらエラーにする
+# 電磁弁を開いてからこの時間経過しても、水が流れていなかったらエラーにする
 TIME_CLOSE_FAIL = 45
 
-# 電磁弁を閉じてからこの時間経過しても，水が流れていたらエラーにする
-# (Pytest によるテストの際，時間を分単位で制御する関係上，60 より大きい値にしておく)
+# 電磁弁を閉じてからこの時間経過しても、水が流れていたらエラーにする
+# (Pytest によるテストの際、時間を分単位で制御する関係上、60 より大きい値にしておく)
 TIME_OPEN_FAIL = 61
 
-# この時間の間，異常な流量になっていたらエラーにする
+# この時間の間、異常な流量になっていたらエラーにする
 TIME_OVER_FAIL = 5
 
-# この時間の間，流量が 0 だったら，今回の計測を停止する。
+# この時間の間、流量が 0 だったら、今回の計測を停止する。
 TIME_ZERO_TAIL = 5
 
 
@@ -120,9 +120,9 @@ worker = None
 should_terminate = threading.Event()
 
 
-# NOTE: STAT_PATH_VALVE_CONTROL_COMMAND の内容に基づいて，
+# NOTE: STAT_PATH_VALVE_CONTROL_COMMAND の内容に基づいて、
 # バルブを一定時間開けます。
-# 時間を操作したテストを行うため，この関数の中では，
+# 時間を操作したテストを行うため、この関数の中では、
 # time.time() の代わりに my_lib.rpi.gpio_time() を使う。
 def control_worker(config, queue):  # noqa: PLR0912, PLR0915, C901
     global should_terminate
@@ -168,23 +168,23 @@ def control_worker(config, queue):  # noqa: PLR0912, PLR0915, C901
                 notify_last_flow_sum = flow_sum
                 notify_last_count = count_flow
 
-        # NOTE: 以下の処理はファイルシステムへのアクセスが発生するので，実施頻度を落とす
+        # NOTE: 以下の処理はファイルシステムへのアクセスが発生するので、実施頻度を落とす
         if i % 5 == 0:
             if time_open_start is None:
                 if STAT_PATH_VALVE_OPEN.exists():
-                    # NOTE: バルブが開かれていたら，状態を変更してトータルの水量の集計を開始する
+                    # NOTE: バルブが開かれていたら、状態を変更してトータルの水量の集計を開始する
                     time_open_start = my_lib.rpi.gpio_time()
                     notify_last_time = time_open_start
                     # NOTE: バルブを閉じてから流量が 0 になるまでに再度開いた場合にエラーにならないようにする
                     time_close = None
             else:
                 if STAT_PATH_VALVE_CONTROL_COMMAND.exists():
-                    # NOTE: バルブコマンドが存在したら，閉じる時間をチェックして，必要に応じて閉じる
+                    # NOTE: バルブコマンドが存在したら、閉じる時間をチェックして、必要に応じて閉じる
                     try:
                         with valve_open(STAT_PATH_VALVE_CONTROL_COMMAND) as f:
                             time_to_close = float(f.read())
 
-                            # NOTE: テストの際に時間を操作する関係で，
+                            # NOTE: テストの際に時間を操作する関係で、
                             # 単純な大小比較だけではなく差分絶対値の比較も行う
                             if (my_lib.rpi.gpio_time() > time_to_close) or (
                                 abs(my_lib.rpi.gpio_time() - time_to_close) < 0.01
@@ -197,14 +197,14 @@ def control_worker(config, queue):  # noqa: PLR0912, PLR0915, C901
                     except Exception:
                         logging.warning(traceback.format_exc())
                 if (time_close is None) and STAT_PATH_VALVE_CLOSE.exists():
-                    # NOTE: 常にバルブコマンドで制御するので，基本的にここには来ない
+                    # NOTE: 常にバルブコマンドで制御するので、基本的にここには来ない
                     logging.warning("BUG?")
                     time_close = my_lib.rpi.gpio_time()
 
             if (time_close is not None) and (time_open_start is not None):
                 period_sec = my_lib.rpi.gpio_time() - time_open_start
 
-                # NOTE: バルブが閉じられた後，流量が 0 になっていたらトータル流量を報告する
+                # NOTE: バルブが閉じられた後、流量が 0 になっていたらトータル流量を報告する
                 if flow < 0.1:
                     count_zero += 1
 
