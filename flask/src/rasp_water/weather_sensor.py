@@ -3,11 +3,12 @@
 雨量データを取得します．
 
 Usage:
-  weather_sensor.py [-c CONFIG] [-d DAYS]
+  weather_sensor.py [-c CONFIG] [-d DAYS] [-D]
 
 Options:
-  -c CONFIG    : CONFIG を設定ファイルとして読み込んで実行します．[default: config.yaml]
-  -d DAYS      : 集計する日数を指定します．[default: 1]
+  -c CONFIG         : CONFIG を設定ファイルとして読み込んで実行します．[default: config.yaml]
+  -d DAYS           : 集計する日数を指定します．[default: 1]
+  -D                : デバッグモードで動作します．
 """
 
 import datetime
@@ -53,6 +54,7 @@ def get_rain_fall(config):
 
 
 if __name__ == "__main__":
+    # TEST Code
     import docopt
     import my_lib.config
     import my_lib.logger
@@ -62,8 +64,9 @@ if __name__ == "__main__":
 
     config_file = args["-c"]
     days = int(args["-d"])
+    debug_mode = args["-D"]
 
-    my_lib.logger.init("test", level=logging.INFO)
+    my_lib.logger.init("test", level=logging.DEBUG if debug_mode else logging.INFO)
 
     config = my_lib.config.load(config_file)
 

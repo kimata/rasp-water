@@ -8,8 +8,8 @@ Usage:
 Options:
   -c CONFIG         : CONFIG を設定ファイルとして読み込んで実行します．[default: config.yaml]
   -p PORT           : WEB サーバのポートを指定します．[default: 5000]
-  -D                : ダミーモードで実行します．CI テストで利用することを想定しています．
-  -d                : デバッグモードで動作します．
+  -d                : ダミーモードで実行します．CI テストで利用することを想定しています．
+  -D                : デバッグモードで動作します．
 """
 
 import atexit
@@ -111,8 +111,8 @@ if __name__ == "__main__":
 
     config_file = args["-c"]
     port = args["-p"]
-    dummy_mode = args["-D"]
-    debug_mode = args["-d"]
+    dummy_mode = args["-d"]
+    debug_mode = args["-D"]
 
     my_lib.logger.init("hems.rasp-water", level=logging.DEBUG if debug_mode else logging.INFO)
 
@@ -121,6 +121,6 @@ if __name__ == "__main__":
     app = create_app(config, dummy_mode)
 
     # NOTE: スクリプトの自動リロード停止したい場合は use_reloader=False にする
-    app.run(host="0.0.0.0", port=port, threaded=True, use_reloader=True)  # noqa: S104
+    app.run(host="0.0.0.0", port=port, threaded=True, use_reloader=True, debug=debug_mode)  # noqa: S104
 
     signal.signal(signal.SIGTERM, sig_handler)
