@@ -1,7 +1,7 @@
 [project]
 name = "rasp-water"
 version = "0.1.0"
-description = "Raspberry Pi を使って自動的に水やりをするシステムです．"
+description = "Raspberry Pi を使って自動的に水やりをするシステムです。"
 authors = [
     { name = "KIMATA Tetsuya", email = "kimata@green-rabbit.net" }
 ]
@@ -17,7 +17,7 @@ dependencies = [
     "slack-sdk>=3.31.0",
     "rpi-lgpio>=0.6",
     "schedule==1.2.2",
-    "my-lib @ git+https://github.com/kimata/my-py-lib@e3b1074bbbc99225da970440b7304fa748fb0220",
+    "my-lib @ git+https://github.com/kimata/my-py-lib@5689b2e60b1c1c92ea7f14769db59b6287b46bac",
 ]
 
 [build-system]

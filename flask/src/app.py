@@ -6,10 +6,10 @@ Usage:
   app.py [-c CONFIG] [-p PORT] [-D] [-d]
 
 Options:
-  -c CONFIG         : CONFIG を設定ファイルとして読み込んで実行します．[default: config.yaml]
-  -p PORT           : WEB サーバのポートを指定します．[default: 5000]
-  -d                : ダミーモードで実行します．CI テストで利用することを想定しています．
-  -D                : デバッグモードで動作します．
+  -c CONFIG         : CONFIG を設定ファイルとして読み込んで実行します。[default: config.yaml]
+  -p PORT           : WEB サーバのポートを指定します。[default: 5000]
+  -d                : ダミーモードで実行します。CI テストで利用することを想定しています。
+  -D                : デバッグモードで動作します。
 """
 
 import atexit
@@ -72,7 +72,7 @@ def create_app(config, dummy_mode=False):
 
         def notify_terminate():  # pragma: no cover
             rasp_water.valve.set_state(rasp_water.valve.VALVE_STATE.CLOSE)
-            my_lib.webapp.log.info("🏃 アプリを再起動します．")
+            my_lib.webapp.log.info("🏃 アプリを再起動します。")
             my_lib.webapp.log.term()
 
         atexit.register(notify_terminate)

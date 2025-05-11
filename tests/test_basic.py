@@ -204,7 +204,7 @@ def app_log_check(  # noqa: PLR0912, C901
         elif expect == "CLEAR":
             assert "クリアされました" in log_list[i]["message"]
         else:
-            raise AssertionError(f"テストコードのバグです．({expect})")  # noqa: EM102
+            raise AssertionError(f"テストコードのバグです。({expect})")  # noqa: EM102
 
 
 def ctrl_log_clear():

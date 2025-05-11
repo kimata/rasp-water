@@ -13,20 +13,20 @@ import my_lib.footprint
 import my_lib.rpi
 import my_lib.webapp.config
 
-# バルブを一定期間開く際に作られるファイル．
-# ファイルの内容はバルブを閉じるべき UNIX 時間．
+# バルブを一定期間開く際に作られるファイル。
+# ファイルの内容はバルブを閉じるべき UNIX 時間。
 STAT_PATH_VALVE_CONTROL_COMMAND = None
 
-# 実際にバルブを開いた際に作られるファイル．
-# 実際にバルブを閉じた際に削除される．
+# 実際にバルブを開いた際に作られるファイル。
+# 実際にバルブを閉じた際に削除される。
 STAT_PATH_VALVE_OPEN = None
 
-# 実際にバルブを閉じた際に作られるファイル．
-# 実際にバルブを開いた際に削除される．
+# 実際にバルブを閉じた際に作られるファイル。
+# 実際にバルブを開いた際に削除される。
 STAT_PATH_VALVE_CLOSE = None
 
-# 電磁弁制御用の GPIO 端子番号．
-# この端子が H になった場合に，水が出るように回路を組んでおく．
+# 電磁弁制御用の GPIO 端子番号。
+# この端子が H になった場合に，水が出るように回路を組んでおく。
 GPIO_PIN_DEFAULT = 18
 
 
@@ -53,7 +53,7 @@ TIME_OPEN_FAIL = 61
 # この時間の間，異常な流量になっていたらエラーにする
 TIME_OVER_FAIL = 5
 
-# この時間の間，流量が 0 だったら，今回の計測を停止する．
+# この時間の間，流量が 0 だったら，今回の計測を停止する。
 TIME_ZERO_TAIL = 5
 
 
@@ -121,9 +121,9 @@ should_terminate = threading.Event()
 
 
 # NOTE: STAT_PATH_VALVE_CONTROL_COMMAND の内容に基づいて，
-# バルブを一定時間開けます．
+# バルブを一定時間開けます。
 # 時間を操作したテストを行うため，この関数の中では，
-# time.time() の代わりに my_lib.rpi.gpio_time() を使う．
+# time.time() の代わりに my_lib.rpi.gpio_time() を使う。
 def control_worker(config, queue):  # noqa: PLR0912, PLR0915, C901
     global should_terminate
 
@@ -314,7 +314,7 @@ def term():
     my_lib.rpi.gpio.cleanup()
 
 
-# NOTE: 実際にバルブを開きます．
+# NOTE: 実際にバルブを開きます。
 def set_state(valve_state):
     global pin_no
 
