@@ -1,10 +1,3 @@
-kind: Namespace
-apiVersion: v1
-metadata:
-    name: hems
-    labels:
-        name: hems
----
 kind: PersistentVolume
 apiVersion: v1
 metadata:
@@ -17,7 +10,7 @@ spec:
     accessModes:
         - ReadWriteOnce
     local:
-        path: /home/ubuntu/rasp-water/flask/data
+        path: /home/ubuntu/github/rasp-water/flask/data
     nodeAffinity:
         required:
             nodeSelectorTerms:
@@ -79,26 +72,20 @@ spec:
                   imagePullPolicy: Always
                   ports:
                     - containerPort: 5000
-
                   volumeMounts:
                     - name: data
                       mountPath: /opt/rasp-water/flask/data
-
                     - name: dev-gpio
                       mountPath: /dev/gpiomem
-
                     - name: dev-adc
                       mountPath: /sys/bus/iio/devices/iio:device0
-
                   securityContext:
                     privileged: true
-
                   resources:
                     requests:
                         memory: 128Mi
                     limits:
                         memory: 256Mi
-
                   livenessProbe:
                     exec:
                         command:
@@ -108,7 +95,6 @@ spec:
                     timeoutSeconds: 30
                     successThreshold: 1
                     failureThreshold: 3
-
             volumes:
                 - name: data
                   persistentVolumeClaim:
@@ -119,8 +105,61 @@ spec:
                 - name: dev-adc
                   hostPath:
                     path: /sys/bus/iio/devices/iio:device0
-
             dnsPolicy: ClusterFirst
-
             nodeSelector:
                 kubernetes.io/hostname: rasp-water-1
+---
+kind: Service
+apiVersion: v1
+metadata:
+    name: rasp-water-demo
+    namespace: hems
+    annotations:
+        metallb.universe.tf/address-pool: default
+        external-dns.alpha.kubernetes.io/hostname: rasp-water-demo.kubernetes.green-rabbit.net
+spec:
+    selector:
+        app: rasp-water-demo
+    ports:
+        - port: 5000
+          targetPort: 5000
+    type: LoadBalancer
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: rasp-water-demo
+    namespace: hems
+    labels:
+        app: rasp-water-demo
+spec:
+    replicas: 1
+    selector:
+        matchLabels:
+            app: rasp-water-demo
+    template:
+        metadata:
+            labels:
+                app: rasp-water-demo
+        spec:
+            containers:
+                - name: rasp-water-demo
+                  image: registry.green-rabbit.net:5000/kimata/rasp-water:latest
+                  command: [./flask/src/app.py, -D]
+                  imagePullPolicy: Always
+                  ports:
+                    - containerPort: 5000
+                  resources:
+                    requests:
+                        memory: 128Mi
+                    limits:
+                        memory: 256Mi
+                  livenessProbe:
+                    exec:
+                        command: [./flask/src/healthz.py]
+                    initialDelaySeconds: 120
+                    periodSeconds: 120
+                    timeoutSeconds: 30
+                    successThreshold: 1
+                    failureThreshold: 3
+            dnsPolicy: ClusterFirst

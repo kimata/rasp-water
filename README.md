@@ -12,7 +12,7 @@ Raspberry Pi を使って自動的に水やりをするシステムです。
 ## 構成
 
 Angular で作られた UI と，Flask で作られたアプリケーションサーバで構成
-されます。raspi-gpio を使って GPIO を制御し，その先につながった電磁弁
+されます。raspi-lgpio を使って GPIO を制御し，その先につながった電磁弁
 で蛇口の開閉を行います。
 
 ハード関係は[ブログ](https://rabbit-note.com/2018/12/31/raspberry-pi-watering-system-hard/)で紹介しています。
@@ -27,7 +27,17 @@ https://rasp-water-demo.kubernetes.green-rabbit.net/rasp-water/
 
 <img src="screenshot.png" width="777">
 
+## 設定
+
+同封されている `config.example.yaml` を `config.yaml` に名前変更して，お手元の環境に合わせて書き換えてください。
+
 ## 準備
+
+#### ライブラリのインストール
+
+```bash:bash
+sudo apt install npm docker
+```
 
 ### ADS1015 のドライバの有効化
 
@@ -37,42 +47,33 @@ https://rasp-water-demo.kubernetes.green-rabbit.net/rasp-water/
 dtoverlay=ads1015,cha_gain=0
 ```
 
-## 設定
+## 実行 (Docker 使用)
 
-`src/config.example.yml` を `src/config.yml` に名前変更します。
-環境に合わせて適宜書き換えてください。
+```bash:bash
+npm ci
+npm run build
 
-Slack を使っていない場合は，Slack の設定をコメントアウトしてください。
+docker compose run --build --rm --publish 5000:5000 rasp-water
+```
 
-## 実行
+## 実行 (Docker 未使用)
 
-`docker build` でイメージを構築し，`flask/app/app.py` を動かします。
+[Rye](https://rye.astral.sh/) がインストールされた環境であれば，
+下記のようにして Docker を使わずに実行できます．
 
-Kubernetes 用の設定ファイルが `kubernetes/outdoor_unit_cooler.yml` に入っていますので，
-これを参考にしていただくと良いと思います。
+```bash:bash
+rye sync
+rye run python flask/src/app.py
+```
 
-カスタマイズが必要になりそうなのは下記の項目になります。
+## Kubernetes で動かす場合
 
-<dl>
-  <dt>namespace</dt>
-  <dd> `hems` というネームスペースを作っていますので，環境に合わせて変更します。</dd>
-
-  <dt>PersistentVolume</dt>
-  <dd>スケジュールデータを格納する場所を確保します。</dd>
-
-  <dt>external-dns.alpha.kubernetes.io/hostname</dt>
-  <dd>ExternalDNS で設定するホスト名を指定します。環境に合わせて変更いただくか，不要であれば削除します。</dd>
-
-  <dt>image</dt>
-  <dd>ビルドしたイメージを登録してあるコンテナリポジトリに書き換えます。</dd>
-
-  <dt>nodeSelector</dt>
-  <dd>Pod を配置したいノード名に変更します。</dd>
-</dl>
+Kubernetes で実行するため設定ファイルが `kubernetes/rasp-water.yaml` に入っていますので，
+適宜カスタマイズして使っていただければと思います。
 
 ## カスタマイズ
 
-電磁弁の制御は rasp_water.py の {set,get}\_valve_state で行っていますの
+電磁弁の制御は `flask/src/rasp_water/valve.py` の `{set,get}\_state` で行っていますの
 で，ここを書き換えることで制御方法を変えることができます。
 
 ## テスト結果

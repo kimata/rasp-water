@@ -1,0 +1,16 @@
+services:
+    rasp-water:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        tty: true
+        stdin_open: true
+        volumes:
+            - ./flask/data:/opt/rasp-shutter/flask/data
+        ports:
+            - "5000:5000"
+
+        privileged: true
+        devices:
+            - "/dev/gpiomem:/dev/gpiomem"
+            - "/sys/bus/iio/devices/iio:device0:/sys/bus/iio/devices/iio:device0"
