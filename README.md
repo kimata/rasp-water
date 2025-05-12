@@ -33,7 +33,7 @@ https://rasp-water-demo.kubernetes.green-rabbit.net/rasp-water/
 
 ## 準備
 
-#### ライブラリのインストール
+#### パッケージのインストール
 
 ```bash:bash
 sudo apt install npm docker
