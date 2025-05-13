@@ -56,7 +56,7 @@ npm run build
 docker compose run --build --rm --publish 5000:5000 rasp-water
 ```
 
-## 実行 (Docker 未使用)
+## 実行 (Docker 不使用)
 
 [Rye](https://rye.astral.sh/) がインストールされた環境であれば，
 下記のようにして Docker を使わずに実行できます．
@@ -80,3 +80,7 @@ Kubernetes で実行するため設定ファイルが `kubernetes/rasp-water.yam
 
 -   https://kimata.github.io/rasp-water/
 -   https://kimata.github.io/rasp-water/coverage/
+
+# ライセンス
+
+Apache License Version 2.0 を適用します。
