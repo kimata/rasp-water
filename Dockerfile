@@ -1,4 +1,4 @@
-FROM python:3.12.4-bookworm AS build
+FROM python:3.13.3-bookworm AS build
 
 RUN --mount=type=cache,target=/var/lib/apt,sharing=locked \
     --mount=type=cache,target=/var/cache/apt,sharing=locked \
@@ -26,7 +26,7 @@ RUN --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
     pip install --no-cache-dir -r requirements.lock
 
 
-FROM python:3.12.4-slim-bookworm AS prod
+FROM python:3.13.3-slim-bookworm AS prod
 
 ARG IMAGE_BUILD_DATE
 ENV IMAGE_BUILD_DATE=${IMAGE_BUILD_DATE}
