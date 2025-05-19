@@ -29,19 +29,8 @@ STAT_PATH_VALVE_CLOSE = None
 # この端子が H になった場合に、水が出るように回路を組んでおく。
 GPIO_PIN_DEFAULT = 18
 
-
-# 流量計の A/D 値が 5V の時の流量
-FLOW_SCALE_MAX = 12
-
 # 異常とみなす流量
 FLOW_ERROR_TH = 20
-
-# 流量計をモニタする ADC の設定 (ADS1015 のドライバ ti_ads1015 が公開)
-ADC_SCALE_PATH = "/sys/bus/iio/devices/iio:device0/in_voltage0_scale"
-ADC_SCALE_VALUE = 3
-
-# 流量計のアナログ出力値 (ADS1015 のドライバ ti_ads1015 が公開)
-ADC_VALUE_PATH = "/sys/bus/iio/devices/iio:device0/in_voltage0_raw"
 
 # 電磁弁を開いてからこの時間経過しても、水が流れていなかったらエラーにする
 TIME_CLOSE_FAIL = 45
@@ -72,7 +61,18 @@ if (os.environ.get("DUMMY_MODE", "false") != "true") and (
 ):  # pragma: no cover
 
     def conv_rawadc_to_flow(adc, offset):
-        flow = max(((adc * ADC_SCALE_VALUE * FLOW_SCALE_MAX) / 5000.0) - offset, 0)
+        flow = max(
+            (
+                (
+                    adc
+                    * config["flow"]["sensor"]["adc"]["scale_value"]
+                    * config["flow"]["sensor"]["scale"]["max"]
+                )
+                / 5000.0
+            )
+            - offset,
+            0,
+        )
         if flow < 0.01:
             flow = 0
 
@@ -80,7 +80,7 @@ if (os.environ.get("DUMMY_MODE", "false") != "true") and (
 
     def get_flow(offset=0):
         try:
-            with pathlib.Path(ADC_VALUE_PATH).open(mode="r") as f:
+            with pathlib.Path(config["flow"]["sensor"]["adc"]["value_file"]).open(mode="r") as f:
                 return {"flow": conv_rawadc_to_flow(int(f.read()), offset), "result": "success"}
         except Exception:
             return {"flow": 0, "result": "fail"}
@@ -91,13 +91,14 @@ else:
     def get_flow(offset=0):  # noqa: ARG001
         if STAT_PATH_VALVE_OPEN.exists():
             if get_flow.prev_flow == 0:
-                flow = FLOW_SCALE_MAX
+                flow = config["flow"]["sensor"]["scale"]["max"]
             else:
                 flow = max(
                     0,
                     min(
-                        get_flow.prev_flow + (random.random() - 0.5) * (FLOW_SCALE_MAX / 5.0),  # noqa: S311
-                        FLOW_SCALE_MAX,
+                        get_flow.prev_flow
+                        + (random.random() - 0.5) * (config["flow"]["sensor"]["scale"]["max"] / 5.0),  # noqa: S311
+                        config["flow"]["sensor"]["scale"]["max"],
                     ),
                 )
 
@@ -288,9 +289,9 @@ def init(config, queue, pin=GPIO_PIN_DEFAULT):
     set_state(VALVE_STATE.CLOSE)
 
     logging.info("Setting scale of ADC")
-    if pathlib.Path(ADC_SCALE_PATH).exists():
-        with pathlib.Path(ADC_SCALE_PATH).open(mode="w") as f:
-            f.write(str(ADC_SCALE_VALUE))
+    if pathlib.Path(config["flow"]["sensor"]["adc"]["scale_file"]).exists():
+        with pathlib.Path(config["flow"]["sensor"]["adc"]["scale_file"]).open(mode="w") as f:
+            f.write(str(config["flow"]["sensor"]["adc"]["scale_value"]))
 
     worker = threading.Thread(
         target=control_worker,
