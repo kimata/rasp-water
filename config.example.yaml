@@ -11,7 +11,18 @@ webapp:
         log_file_path: flask/data/log.db
         stat_dir_path: /dev/shm
 
+control:
+    gpio: 18
+
 flow:
+    sensor:
+        scale:
+            max: 12
+        adc:
+            scale_file: /sys/bus/iio/devices/iio:device0/in_voltage0_scale
+            scale_value: 3
+            value_file: /sys/bus/iio/devices/iio:device0/in_voltage0_raw
+
     offset: 0.18
 
 fluent:
