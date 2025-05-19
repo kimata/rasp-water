@@ -34,8 +34,8 @@ def days_since_last_watering():
 def get_rain_fall_sum(config, days):
     return get_day_sum(
         config["influxdb"],
-        config["weather"]["rain_fall"]["sensor"]["type"],
-        config["weather"]["rain_fall"]["sensor"]["name"],
+        config["weather"]["rain_fall"]["sensor"]["measure"],
+        config["weather"]["rain_fall"]["sensor"]["hostname"],
         "rain",
         days=days,
     )

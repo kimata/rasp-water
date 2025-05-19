@@ -53,15 +53,66 @@
                 "timezone"
             ]
         },
+        "control": {
+            "type": "object",
+            "properties": {
+                "gpio": {
+                    "type": "integer"
+                }
+            },
+            "required": [
+                "gpio"
+            ]
+        },
         "flow": {
             "type": "object",
             "properties": {
+                "sensor": {
+                    "type": "object",
+                    "properties": {
+                        "scale": {
+                            "type": "object",
+                            "properties": {
+                                "max": {
+                                    "type": "integer"
+                                }
+                            },
+                            "required": [
+                                "max"
+                            ]
+                        },
+                        "adc": {
+                            "type": "object",
+                            "properties": {
+                                "scale_file": {
+                                    "type": "string"
+                                },
+                                "scale_value": {
+                                    "type": "integer"
+                                },
+                                "value_file": {
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "scale_file",
+                                "scale_value",
+                                "value_file"
+                            ]
+                        }
+                    },
+                    "required": [
+                        "adc",
+                        "scale"
+                    ]
+                },
                 "offset": {
                     "type": "number"
                 }
             },
             "required": [
-                "offset"
+                "offset",
+                "sensor"
             ]
         },
         "fluent": {
@@ -174,10 +225,10 @@
                         "sensor": {
                             "type": "object",
                             "properties": {
-                                "name": {
+                                "hostname": {
                                     "type": "string"
                                 },
-                                "type": {
+                                "measure": {
                                     "type": "string"
                                 },
                                 "threshold": {
@@ -193,9 +244,9 @@
                                 }
                             },
                             "required": [
-                                "name",
-                                "threshold",
-                                "type"
+                                "hostname",
+                                "measure",
+                                "threshold"
                             ]
                         }
                     },
@@ -281,6 +332,7 @@
         }
     },
     "required": [
+        "control",
         "flow",
         "fluent",
         "influxdb",
