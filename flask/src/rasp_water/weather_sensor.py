@@ -3,49 +3,69 @@
 雨量データを取得します。
 
 Usage:
-  weather_sensor.py [-c CONFIG] [-d DAYS] [-D]
+  weather_sensor.py [-c CONFIG] [-p HOURS] [-D]
 
 Options:
   -c CONFIG         : CONFIG を設定ファイルとして読み込んで実行します。[default: config.yaml]
-  -d DAYS           : 集計する日数を指定します。[default: 1]
+  -p HOURS          : 集計する時間を指定します。[default: 12]
   -D                : デバッグモードで動作します。
 """
 
 import datetime
 import logging
 
+import my_lib.sensor_data
+import my_lib.time
 import rasp_water.scheduler
-from my_lib.sensor_data import get_day_sum
 
 
-def days_since_last_watering():
+def hours_since_last_watering():
     schedule_data = rasp_water.scheduler.schedule_load()
 
-    wday_list = [x or y for x, y in zip(schedule_data[0]["wday"], schedule_data[1]["wday"])]
-    wday = datetime.datetime.now().weekday()  # noqa: DTZ005
+    now = my_lib.time.now()
 
-    for i in range(1, len(wday_list) + 1):
-        index = (wday - i) % len(wday_list)
-        if wday_list[index]:
-            return i
-    return 7
+    last_date = []
+    for schedule in schedule_data:
+        if not schedule["is_active"]:
+            continue
+        time_str = schedule["time"]
+        hour, minute = map(int, time_str.split(":"))
+
+        for days_ago in range(7):
+            day = now - datetime.timedelta(days=days_ago)
+            wday_index = day.weekday()
+            if schedule["wday"][wday_index]:
+                scheduled_date = day.replace(hour=hour, minute=minute, second=0, microsecond=0)
+                last_date.append(scheduled_date)
+                break
+
+    if len(last_date) == 0:
+        return 24 * 7
+
+    minutes = (now - max(last_date)).total_seconds() / 60
+
+    hours = int(minutes // 60)
+    if minutes % 60 >= 30:
+        hours += 1
+
+    return hours
 
 
-def get_rain_fall_sum(config, days):
-    return get_day_sum(
+def get_rain_fall_sum(config, hours):
+    return my_lib.sensor_data.get_hour_sum(
         config["influxdb"],
         config["weather"]["rain_fall"]["sensor"]["measure"],
         config["weather"]["rain_fall"]["sensor"]["hostname"],
         "rain",
-        days=days,
+        hours=hours,
     )
 
 
 def get_rain_fall(config):
-    days = days_since_last_watering()
-    rain_fall_sum = get_rain_fall_sum(config, days)
+    hours = hours_since_last_watering()
+    rain_fall_sum = get_rain_fall_sum(config, hours)
 
-    logging.info("Rain fall sum since last watering: %.1f (%d days)", rain_fall_sum, days)
+    logging.info("Rain fall sum since last watering: %.1f (%d hours)", rain_fall_sum, hours)
 
     rainfall_judge = rain_fall_sum > config["weather"]["rain_fall"]["sensor"]["threshold"]["sum"]
     logging.info("Rain fall sensor judge: %s", rainfall_judge)
@@ -63,7 +83,7 @@ if __name__ == "__main__":
     args = docopt.docopt(__doc__)
 
     config_file = args["-c"]
-    days = int(args["-d"])
+    hours = int(args["-p"])
     debug_mode = args["-D"]
 
     my_lib.logger.init("test", level=logging.DEBUG if debug_mode else logging.INFO)
@@ -73,6 +93,6 @@ if __name__ == "__main__":
     my_lib.webapp.config.init(config)
     rasp_water.scheduler.init()
 
-    logging.info("Sum of rainfall is %.1f", get_rain_fall_sum(config, days))
+    logging.info("Sum of rainfall is %.1f (%d hours)", get_rain_fall_sum(config, hours), hours)
 
     logging.info("Finish.")
