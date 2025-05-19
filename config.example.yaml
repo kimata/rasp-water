@@ -29,6 +29,10 @@ flow:
 
     offset: 0.18
 
+    threshold:
+        # 異常とみなす流量
+        error: 20
+
 fluent:
     host: proxy.green-rabbit.net
 

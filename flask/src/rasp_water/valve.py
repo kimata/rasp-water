@@ -29,8 +29,6 @@ STAT_PATH_VALVE_CLOSE = None
 # この端子が H になった場合に、水が出るように回路を組んでおく。
 GPIO_PIN_DEFAULT = 18
 
-# 異常とみなす流量
-FLOW_ERROR_TH = 20
 
 # 電磁弁を開いてからこの時間経過しても、水が流れていなかったらエラーにする
 TIME_CLOSE_FAIL = 45
@@ -209,7 +207,7 @@ def control_worker(config, queue):  # noqa: PLR0912, PLR0915, C901
                 if flow < 0.1:
                     count_zero += 1
 
-                if flow > FLOW_ERROR_TH:
+                if flow > config["flow"]["threshold"]["error"]:
                     count_over += 1
 
                 if count_over > TIME_OVER_FAIL:
