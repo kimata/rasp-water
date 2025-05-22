@@ -11,6 +11,7 @@ from unittest import mock
 
 import my_lib.config
 import my_lib.notify.slack
+import my_lib.time
 import my_lib.webapp.config
 import pytest
 from app import create_app
@@ -266,14 +267,15 @@ def test_time(time_machine):
     import schedule
 
     logging.debug("datetime.now()                 = %s", datetime.datetime.now())  # noqa: DTZ005
-    logging.debug("datetime.now(JST)              = %s", datetime.datetime.now(my_lib.webapp.config.TIMEZONE))
+    logging.debug("datetime.now(JST)              = %s", datetime.datetime.now(my_lib.time.get_zoneinfo()))
     logging.debug(
         "datetime.now().replace(...)    = %s",
         datetime.datetime.now().replace(hour=0, minute=0, second=0),  # noqa: DTZ005
     )
     logging.debug(
-        "datetime.now(JST).replace(...) = %s",
-        datetime.datetime.now(my_lib.webapp.config.TIMEZONE).replace(hour=0, minute=0, second=0),
+        "datetime.now(%s).replace(...) = %s",
+        my_lib.time.get_tz(),
+        my_lib.time.now().replace(hour=0, minute=0, second=0),
     )
 
     move_to(time_machine, time_test(0))
@@ -282,13 +284,13 @@ def test_time(time_machine):
         "datetime.now()                 = %s",
         datetime.datetime.now(),  # noqa: DTZ005
     )
-    logging.debug("datetime.now(JST)              = %s", datetime.datetime.now(my_lib.webapp.config.TIMEZONE))
+    logging.debug("datetime.now(JST)              = %s", my_lib.time.now())
 
     schedule.clear()
     job_time_str = time_str(time_test(1))
     logging.debug("set schedule at %s", job_time_str)
 
-    job_add = schedule.every().day.at(job_time_str, my_lib.webapp.config.TIMEZONE_PYTZ).do(lambda: True)
+    job_add = schedule.every().day.at(job_time_str, my_lib.time.get_pytz()).do(lambda: True)
 
     for i, job in enumerate(schedule.get_jobs()):
         logging.debug("Current schedule [%d]: %s", i, job.next_run)

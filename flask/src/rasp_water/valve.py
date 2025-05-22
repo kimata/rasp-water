@@ -113,7 +113,7 @@ else:
 
     get_flow.prev_flow = 0
 
-
+config = None
 pin_no = GPIO_PIN_DEFAULT
 worker = None
 should_terminate = threading.Event()
@@ -268,7 +268,8 @@ def control_worker(config, queue):  # noqa: PLR0912, PLR0915, C901
     logging.info("Terminate valve control worker")
 
 
-def init(config, queue, pin=GPIO_PIN_DEFAULT):
+def init(config_, queue, pin=GPIO_PIN_DEFAULT):
+    global config  # noqa: PLW0603
     global worker  # noqa: PLW0603
     global pin_no  # noqa: PLW0603
     global STAT_PATH_VALVE_CONTROL_COMMAND  # noqa: PLW0603
@@ -278,6 +279,8 @@ def init(config, queue, pin=GPIO_PIN_DEFAULT):
     STAT_PATH_VALVE_CONTROL_COMMAND = my_lib.webapp.config.STAT_DIR_PATH / "valve" / "control" / "command"
     STAT_PATH_VALVE_OPEN = my_lib.webapp.config.STAT_DIR_PATH / "valve" / "open"
     STAT_PATH_VALVE_CLOSE = my_lib.webapp.config.STAT_DIR_PATH / "valve" / "close"
+
+    config = config_
 
     if worker is not None:
         raise ValueError("worker should be None")  # noqa: TRY003, EM101

@@ -1,9 +1,22 @@
 #!/usr/bin/env python3
+"""
+降雨予想を取得します。
+
+Usage:
+  weather_forecast.py [-c CONFIG] [-D]
+
+Options:
+  -c CONFIG         : CONFIG を設定ファイルとして読み込んで実行します。[default: config.yaml]
+  -D                : デバッグモードで動作します。
+"""
+
 import datetime
 import functools
 import json
 import logging
 
+import my_lib.pretty
+import my_lib.time
 import my_lib.webapp.config
 import requests
 
@@ -45,15 +58,15 @@ def get_rain_fall(config):
     if weather_info is None:
         return (False, 0)
 
+    logging.debug(my_lib.pretty.format(weather_info))
+
     # NOTE: YAhoo の場合、1 時間後までしか情報がとれないことに注意
     rainfall_list = [
         x["Rainfall"]
         for x in filter(
             lambda x: (
-                datetime.datetime.now(my_lib.webapp.config.TIMEZONE)
-                - datetime.datetime.strptime(x["Date"], "%Y%m%d%H%M").astimezone(
-                    my_lib.webapp.config.TIMEZONE_PYTZ
-                )
+                my_lib.time.now()
+                - datetime.datetime.strptime(x["Date"], "%Y%m%d%H%M").replace(tzinfo=my_lib.time.get_pytz())
             ).total_seconds()
             / (60 * 60)
             < config["weather"]["rain_fall"]["forecast"]["threshold"]["before_hour"],
@@ -74,11 +87,18 @@ def get_rain_fall(config):
 
 
 if __name__ == "__main__":
+    # TEST Code
+    import docopt
     import my_lib.config
     import my_lib.logger
 
-    my_lib.logger.init("test", level=logging.INFO)
+    args = docopt.docopt(__doc__)
 
-    config = my_lib.load()
+    config_file = args["-c"]
+    debug_mode = args["-D"]
 
-    print(get_rain_fall(config))  # noqa: T201
+    my_lib.logger.init("test", level=logging.DEBUG if debug_mode else logging.INFO)
+
+    config = my_lib.config.load(config_file)
+
+    logging.info(my_lib.pretty.format(get_rain_fall(config)))

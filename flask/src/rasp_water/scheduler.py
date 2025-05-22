@@ -129,31 +129,31 @@ def set_schedule(config, schedule_data):  # noqa: C901
             continue
 
         if entry["wday"][0]:
-            schedule.every().sunday.at(entry["time"], my_lib.webapp.config.TIMEZONE_PYTZ).do(
+            schedule.every().sunday.at(entry["time"], my_lib.time.get_pytz()).do(
                 valve_auto_control, config, entry["period"]
             )
         if entry["wday"][1]:
-            schedule.every().monday.at(entry["time"], my_lib.webapp.config.TIMEZONE_PYTZ).do(
+            schedule.every().monday.at(entry["time"], my_lib.time.get_pytz()).do(
                 valve_auto_control, config, entry["period"]
             )
         if entry["wday"][2]:
-            schedule.every().tuesday.at(entry["time"], my_lib.webapp.config.TIMEZONE_PYTZ).do(
+            schedule.every().tuesday.at(entry["time"], my_lib.time.get_pytz()).do(
                 valve_auto_control, config, entry["period"]
             )
         if entry["wday"][3]:
-            schedule.every().wednesday.at(entry["time"], my_lib.webapp.config.TIMEZONE_PYTZ).do(
+            schedule.every().wednesday.at(entry["time"], my_lib.time.get_pytz()).do(
                 valve_auto_control, config, entry["period"]
             )
         if entry["wday"][4]:
-            schedule.every().thursday.at(entry["time"], my_lib.webapp.config.TIMEZONE_PYTZ).do(
+            schedule.every().thursday.at(entry["time"], my_lib.time.get_pytz()).do(
                 valve_auto_control, config, entry["period"]
             )
         if entry["wday"][5]:
-            schedule.every().friday.at(entry["time"], my_lib.webapp.config.TIMEZONE_PYTZ).do(
+            schedule.every().friday.at(entry["time"], my_lib.time.get_pytz()).do(
                 valve_auto_control, config, entry["period"]
             )
         if entry["wday"][6]:
-            schedule.every().saturday.at(entry["time"], my_lib.webapp.config.TIMEZONE_PYTZ).do(
+            schedule.every().saturday.at(entry["time"], my_lib.time.get_pytz()).do(
                 valve_auto_control, config, entry["period"]
             )
 
@@ -167,9 +167,7 @@ def set_schedule(config, schedule_data):  # noqa: C901
 
         logging.info(
             "Now is %s, time to next jobs is %d hour(s) %d minute(s) %d second(s)",
-            datetime.datetime.now(
-                tz=datetime.timezone(datetime.timedelta(hours=my_lib.webapp.config.TIMEZONE_OFFSET))
-            ).strftime("%Y-%m-%d %H:%M"),
+            my_lib.time.now().strftime("%Y-%m-%d %H:%M"),
             hours,
             minutes,
             seconds,
@@ -236,7 +234,7 @@ if __name__ == "__main__":
     pool = multiprocessing.pool.ThreadPool(processes=1)
     result = pool.apply_async(schedule_worker, (queue,))
 
-    exec_time = datetime.datetime.now(my_lib.webapp.config.TIMEZONE) + datetime.timedelta(seconds=5)
+    exec_time = my_lib.time.now() + datetime.timedelta(seconds=5)
     queue.put([{"time": exec_time.strftime("%H:%M"), "func": test_func}])
 
     # NOTE: 終了するのを待つ
