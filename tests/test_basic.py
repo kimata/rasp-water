@@ -1365,15 +1365,17 @@ def test_valve_init(mocker):
     file_mock.write.return_value = True
     orig_open = pathlib.Path.open
 
+    config = my_lib.config.load(CONFIG_FILE)
+
     def open_mock(self, mode="r", *args, **kwargs):
-        if str(self) == rasp_water.valve.ADC_SCALE_PATH:
+        if str(self) == config["flow"]["sensor"]["adc"]["scale_file"]:
             return file_mock
         else:
             return orig_open(self, mode, *args, **kwargs)
 
     mocker.patch("pathlib.Path.open", new=open_mock)
 
-    rasp_water.webapp_valve.init(my_lib.config.load(CONFIG_FILE))
+    rasp_water.webapp_valve.init(config)
 
 
 def test_terminate():
