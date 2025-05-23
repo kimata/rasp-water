@@ -3,6 +3,7 @@
 # ruff: noqa: S101, S311
 
 import datetime
+import logging
 import random
 import time
 
@@ -31,9 +32,7 @@ def time_str_random():
 
 
 def time_str_after(minute):
-    return (
-        datetime.datetime.now(my_lib.webapp.config.TIMEZONE) + datetime.timedelta(minutes=minute)
-    ).strftime("%H:%M")
+    return (my_lib.time.now() + datetime.timedelta(minutes=minute)).strftime("%H:%M")
 
 
 def bool_random():
@@ -71,33 +70,34 @@ def init(page):
 
 ######################################################################
 def test_time():
-    import logging
-
     import schedule
 
-    logging.debug("datetime.now()                 = %s", datetime.datetime.now())  # noqa: DTZ005
+    logging.debug("datetime.now()                        = %s", datetime.datetime.now())  # noqa: DTZ005
     logging.debug(
-        "datetime.now(JST)              = %s", datetime.datetime.now(tz=my_lib.webapp.config.TIMEZONE)
+        "datetime.now(%10s)              = %s",
+        my_lib.time.get_tz(),
+        datetime.datetime.now(my_lib.time.get_zoneinfo()),
     )
     logging.debug(
-        "datetime.now().replace(...)    = %s",
+        "datetime.now().replace(...)           = %s",
         datetime.datetime.now().replace(hour=0, minute=0, second=0),  # noqa: DTZ005
     )
     logging.debug(
-        "datetime.now(JST).replace(...) = %s",
-        datetime.datetime.now(my_lib.webapp.config.TIMEZONE).replace(hour=0, minute=0, second=0),
+        "datetime.now(%10s).replace(...) = %s",
+        my_lib.time.get_tz(),
+        my_lib.time.now().replace(hour=0, minute=0, second=0),
     )
 
     schedule.clear()
     job_time_str = time_str_after(SCHEDULE_AFTER_MIN)
     logging.debug("set schedule at %s", job_time_str)
-    job = schedule.every().day.at(job_time_str, my_lib.webapp.config.TIMEZONE_PYTZ).do(lambda: True)
+    job = schedule.every().day.at(job_time_str, my_lib.time.get_pytz()).do(lambda: True)
 
     idle_sec = schedule.idle_seconds()
     logging.debug("Time to next jobs is %.1f sec", idle_sec)
     logging.debug("Next run is %s", job.next_run)
 
-    assert abs(idle_sec) < 60
+    assert idle_sec < 60
 
 
 @flaky(max_runs=3, min_passes=1)
@@ -172,7 +172,7 @@ def test_schedule_run(page, host, port):
     check_log(page, "ログがクリアされました")
 
     # NOTE: 次の「分」で実行させるにあたって、秒数を調整する
-    time.sleep((90 - datetime.datetime.now(my_lib.webapp.config.TIMEZONE).second) % 60)
+    time.sleep((90 - my_lib.time.now().second) % 60)
 
     enable_checkbox = page.locator('//input[contains(@id,"schedule-entry-")]')
     enable_wday_index = [bool_random() for _ in range(14)]

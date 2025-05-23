@@ -266,14 +266,18 @@ def test_liveness(client):  # noqa: ARG001
 def test_time(time_machine):
     import schedule
 
-    logging.debug("datetime.now()                 = %s", datetime.datetime.now())  # noqa: DTZ005
-    logging.debug("datetime.now(JST)              = %s", datetime.datetime.now(my_lib.time.get_zoneinfo()))
+    logging.debug("datetime.now()                        = %s", datetime.datetime.now())  # noqa: DTZ005
     logging.debug(
-        "datetime.now().replace(...)    = %s",
+        "datetime.now(%10s)              = %s",
+        my_lib.time.get_tz(),
+        datetime.datetime.now(my_lib.time.get_zoneinfo()),
+    )
+    logging.debug(
+        "datetime.now().replace(...)           = %s",
         datetime.datetime.now().replace(hour=0, minute=0, second=0),  # noqa: DTZ005
     )
     logging.debug(
-        "datetime.now(%s).replace(...) = %s",
+        "datetime.now(%10s).replace(...) = %s",
         my_lib.time.get_tz(),
         my_lib.time.now().replace(hour=0, minute=0, second=0),
     )
@@ -281,10 +285,10 @@ def test_time(time_machine):
     move_to(time_machine, time_test(0))
 
     logging.debug(
-        "datetime.now()                 = %s",
+        "datetime.now()                        = %s",
         datetime.datetime.now(),  # noqa: DTZ005
     )
-    logging.debug("datetime.now(JST)              = %s", my_lib.time.now())
+    logging.debug("datetime.now(%10s)              = %s", my_lib.time.get_tz(), my_lib.time.now())
 
     schedule.clear()
     job_time_str = time_str(time_test(1))
