@@ -1338,7 +1338,7 @@ def test_sysinfo(client):
     assert response.status_code == 200
     assert "date" in response.json
     assert "uptime" in response.json
-    assert "loadAverage" in response.json
+    assert "load_average" in response.json
 
 
 def test_snapshot(client):
