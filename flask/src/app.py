@@ -84,7 +84,7 @@ def create_app(config, dummy_mode=False):
     app.config["CONFIG"] = config
     app.config["DUMMY_MODE"] = dummy_mode
 
-    app.config["JSONIFY_PRETTYPRINT_REGULAR"] = True
+    app.json.compat = True
 
     app.register_blueprint(rasp_water.webapp_valve.blueprint)
     app.register_blueprint(rasp_water.webapp_schedule.blueprint)
@@ -120,7 +120,7 @@ if __name__ == "__main__":
 
     app = create_app(config, dummy_mode)
 
+    signal.signal(signal.SIGTERM, sig_handler)
+
     # NOTE: スクリプトの自動リロード停止したい場合は use_reloader=False にする
     app.run(host="0.0.0.0", port=port, threaded=True, use_reloader=True, debug=debug_mode)  # noqa: S104
-
-    signal.signal(signal.SIGTERM, sig_handler)
