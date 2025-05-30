@@ -18,6 +18,7 @@ from app import create_app
 from rasp_water.weather_forecast import get_rain_fall as get_rain_fall_orig
 
 CONFIG_FILE = "config.example.yaml"
+SCHEMA_CONFIG = "config.schema"
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -30,6 +31,13 @@ def env_mock():
         },
     ) as fixture:
         yield fixture
+
+
+@pytest.fixture(scope="session")
+def config():
+    import my_lib.config
+
+    return my_lib.config.load(CONFIG_FILE, pathlib.aPth(SCHEMA_CONFIG))
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -48,9 +56,9 @@ def _clear():
 
 
 @pytest.fixture(scope="session")
-def app():
+def app(config):
     with mock.patch.dict("os.environ", {"WERKZEUG_RUN_MAIN": "true"}):
-        app = create_app(my_lib.config.load(CONFIG_FILE), dummy_mode=True)
+        app = create_app(config, dummy_mode=True)
 
         yield app
 
@@ -244,12 +252,10 @@ def check_notify_slack(message, index=-1):
 
 
 ######################################################################
-def test_liveness(client):  # noqa: ARG001
+def test_liveness(client, config):  # noqa: ARG001
     import healthz
 
-    config = my_lib.config.load(CONFIG_FILE)
-
-    time.sleep(1)
+    time.sleep(2)
 
     assert healthz.check_liveness(
         [
@@ -978,7 +984,7 @@ def test_valve_flow_read_command_fail(client, mocker):
     assert response.json["result"] == "success"
 
 
-def test_schedule_ctrl_execute(client, mocker, time_machine):
+def test_schedule_ctrl_execute(client, mocker, time_machine, config):
     import rasp_water.webapp_valve
 
     rasp_water.webapp_valve.term()
@@ -990,7 +996,7 @@ def test_schedule_ctrl_execute(client, mocker, time_machine):
     time_mock.return_value = time.time()
     time.sleep(1)
 
-    rasp_water.webapp_valve.init(my_lib.config.load(CONFIG_FILE))
+    rasp_water.webapp_valve.init(config)
     ctrl_log_clear()
 
     schedule_data = gen_schedule_data()
@@ -1022,7 +1028,7 @@ def test_schedule_ctrl_execute(client, mocker, time_machine):
     check_notify_slack(None)
 
 
-def test_schedule_ctrl_execute_force(client, mocker, time_machine):
+def test_schedule_ctrl_execute_force(client, mocker, time_machine, config):
     import rasp_water.webapp_valve
 
     rasp_water.webapp_valve.term()
@@ -1035,7 +1041,7 @@ def test_schedule_ctrl_execute_force(client, mocker, time_machine):
     time_mock.return_value = time.time()
     time.sleep(1)
 
-    rasp_water.webapp_valve.init(my_lib.config.load(CONFIG_FILE))
+    rasp_water.webapp_valve.init(config)
     ctrl_log_clear()
 
     schedule_data = gen_schedule_data()
@@ -1064,7 +1070,7 @@ def test_schedule_ctrl_execute_force(client, mocker, time_machine):
     check_notify_slack(None)
 
 
-def test_schedule_ctrl_execute_pending(client, mocker, time_machine):
+def test_schedule_ctrl_execute_pending(client, mocker, time_machine, config):
     import rasp_water.webapp_valve
 
     rasp_water.webapp_valve.term()
@@ -1077,7 +1083,7 @@ def test_schedule_ctrl_execute_pending(client, mocker, time_machine):
     time_mock.return_value = time.time()
     time.sleep(1)
 
-    rasp_water.webapp_valve.init(my_lib.config.load(CONFIG_FILE))
+    rasp_water.webapp_valve.init(config)
     ctrl_log_clear()
 
     schedule_data = gen_schedule_data()
@@ -1106,7 +1112,7 @@ def test_schedule_ctrl_execute_pending(client, mocker, time_machine):
     check_notify_slack(None)
 
 
-def test_schedule_ctrl_error(client, mocker, time_machine):
+def test_schedule_ctrl_error(client, mocker, time_machine, config):
     import rasp_water.webapp_valve
 
     valve_state_moch = mocker.patch("rasp_water.webapp_valve.set_valve_state")
@@ -1121,7 +1127,7 @@ def test_schedule_ctrl_error(client, mocker, time_machine):
     time_mock.return_value = time.time()
     time.sleep(0.6)
 
-    rasp_water.webapp_valve.init(my_lib.config.load(CONFIG_FILE))
+    rasp_water.webapp_valve.init(config)
     ctrl_log_clear()
 
     schedule_data = gen_schedule_data()
@@ -1149,7 +1155,7 @@ def test_schedule_ctrl_error(client, mocker, time_machine):
     check_notify_slack(None)
 
 
-def test_schedule_ctrl_execute_fail(client, mocker, time_machine):
+def test_schedule_ctrl_execute_fail(client, mocker, time_machine, config):
     import rasp_water.webapp_valve
 
     mocker.patch("rasp_water.scheduler.valve_auto_control_impl", return_value=False)
@@ -1163,7 +1169,7 @@ def test_schedule_ctrl_execute_fail(client, mocker, time_machine):
     time_mock.return_value = time.time()
     time.sleep(0.6)
 
-    rasp_water.webapp_valve.init(my_lib.config.load(CONFIG_FILE))
+    rasp_water.webapp_valve.init(config)
     ctrl_log_clear()
 
     schedule_data = gen_schedule_data()
@@ -1201,8 +1207,8 @@ def test_schedule_ctrl_read(client):
     check_notify_slack(None)
 
 
-def test_schedule_ctrl_read_fail_1(client):
-    my_lib.webapp.config.init(my_lib.config.load(CONFIG_FILE))
+def test_schedule_ctrl_read_fail_1(client, config):
+    my_lib.webapp.config.init(config)
 
     with pathlib.Path.open(my_lib.webapp.config.SCHEDULE_FILE_PATH, "wb") as f:
         f.write(b"TEST")
@@ -1216,8 +1222,8 @@ def test_schedule_ctrl_read_fail_1(client):
     check_notify_slack("スケジュール設定の読み出しに失敗しました。")
 
 
-def test_schedule_ctrl_read_fail_2(client):
-    my_lib.webapp.config.init(my_lib.config.load(CONFIG_FILE))
+def test_schedule_ctrl_read_fail_2(client, config):
+    my_lib.webapp.config.init(config)
 
     my_lib.webapp.config.SCHEDULE_FILE_PATH.unlink(missing_ok=True)
 
@@ -1357,7 +1363,7 @@ def test_second_str():
     assert rasp_water.webapp_valve.second_str(61) == "1分1秒"
 
 
-def test_valve_init(mocker):
+def test_valve_init(mocker, config):
     import rasp_water.valve
     import rasp_water.webapp_valve
 
@@ -1368,8 +1374,6 @@ def test_valve_init(mocker):
     file_mock = mocker.MagicMock()
     file_mock.write.return_value = True
     orig_open = pathlib.Path.open
-
-    config = my_lib.config.load(CONFIG_FILE)
 
     def open_mock(self, mode="r", *args, **kwargs):
         if str(self) == config["flow"]["sensor"]["adc"]["scale_file"]:
