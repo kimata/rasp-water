@@ -16,7 +16,7 @@ export interface SysinfoResponse {
     date: string;
     timezone: string;
     uptime: string;
-    loadAverage: string;
+    load_average: string;
 }
 
 @Component({
@@ -65,7 +65,7 @@ export class FooterComponent implements OnInit {
                 this.timezone = res['timezone'];
                 this.uptime = uptime.format('llll');
                 this.uptimeFrom = uptime.fromNow();
-                this.loadAverage = res['loadAverage'];
+                this.loadAverage = res['load_average'];
             },
             (error) => {
                 // ignore
