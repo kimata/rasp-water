@@ -128,8 +128,6 @@ def control_worker(config, queue):  # noqa: PLR0912, PLR0915, C901
 
     sleep_sec = 0.1
 
-    liveness_file = pathlib.Path(config["liveness"]["file"]["valve_control"])
-
     logging.info("Start valve control worker")
 
     time_open_start = None
@@ -261,7 +259,7 @@ def control_worker(config, queue):  # noqa: PLR0912, PLR0915, C901
         time.sleep(sleep_sec)
 
         if i % (10 / sleep_sec) == 0:
-            my_lib.footprint.update(liveness_file)
+            my_lib.footprint.update(config["liveness"]["file"]["valve_control"])
 
         i += 1
 

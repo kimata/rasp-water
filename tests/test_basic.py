@@ -14,7 +14,6 @@ import my_lib.notify.slack
 import my_lib.time
 import my_lib.webapp.config
 import pytest
-from app import create_app
 from rasp_water.weather_forecast import get_rain_fall as get_rain_fall_orig
 
 CONFIG_FILE = "config.example.yaml"
@@ -55,9 +54,11 @@ def _clear():
     my_lib.notify.slack.hist_clear()
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture()
 def app(config):
     with mock.patch.dict("os.environ", {"WERKZEUG_RUN_MAIN": "true"}):
+        from app import create_app
+
         app = create_app(config, dummy_mode=True)
 
         yield app

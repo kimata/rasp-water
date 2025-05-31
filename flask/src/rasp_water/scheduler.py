@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 import datetime
 import logging
-import pathlib
 import re
 import threading
 import time
@@ -181,8 +180,6 @@ def schedule_worker(config, queue):
 
     sleep_sec = 0.25
 
-    liveness_file = pathlib.Path(config["liveness"]["file"]["scheduler"])
-
     logging.info("Load schedule")
     set_schedule(config, schedule_load())
 
@@ -207,7 +204,7 @@ def schedule_worker(config, queue):
             logging.debug(traceback.format_exc())
 
         if i % (10 / sleep_sec) == 0:
-            my_lib.footprint.update(liveness_file)
+            my_lib.footprint.update(config["liveness"]["file"]["scheduler"])
 
         i += 1
 
