@@ -20,7 +20,7 @@ COPY pyproject.toml .python-version README.md .
 RUN rye lock
 
 RUN --mount=type=cache,target=/root/.cache/pip,sharing=locked \
-    pip install --break-system-packages --no-cache-dir -r requirements.lock
+    pip install --break-system-packages -r requirements.lock
 
 
 FROM python:3.12-slim-bookworm AS prod
