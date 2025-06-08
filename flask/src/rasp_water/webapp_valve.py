@@ -151,6 +151,7 @@ def judge_execute(config, state, auto):
         return False
 
     rainfall_judge, rain_fall_sum = rasp_water.weather_forecast.get_rain_fall(config)
+
     if rainfall_judge:
         # NOTE: ダミーモードの場合、とにかく水やりする (CI テストの為)
         if os.environ.get("DUMMY_MODE", "false") == "true":
