@@ -51,8 +51,11 @@ def slack_mock():
 
 @pytest.fixture(autouse=True)
 def _clear():
+    import my_lib.rpi
+
     my_lib.notify.slack.interval_clear()
     my_lib.notify.slack.hist_clear()
+    my_lib.rpi.gpio.hist_clear()
 
 
 @pytest.fixture(scope="session")
@@ -92,12 +95,13 @@ def client(app, mocker):
     test_client = app.test_client()
 
     time.sleep(1)
+
     schedule_clear(test_client)
 
     time.sleep(1)
     app_log_clear(test_client)
+
     app_log_check(test_client, [])
-    ctrl_log_clear()
 
     yield test_client
 
@@ -218,12 +222,6 @@ def app_log_check(  # noqa: PLR0912, C901
             assert "クリアされました" in log_list[i]["message"]
         else:
             raise AssertionError(f"テストコードのバグです。({expect})")  # noqa: EM102
-
-
-def ctrl_log_clear():
-    import my_lib.rpi
-
-    my_lib.rpi.gpio.hist_clear()
 
 
 def schedule_clear(client):
@@ -513,7 +511,6 @@ def test_valve_ctrl_auto_rainfall(client, mocker):
     ctrl_log_check([{"state": "HIGH"}, {"high_period": period, "state": "LOW"}], is_strict=False)
     app_log_check(client, ["CLEAR", "START_AUTO", "STOP_AUTO"])
 
-    ctrl_log_clear()
     app_log_clear(client)
 
     mocker.patch.dict(os.environ, {"DUMMY_MODE": "false"}, clear=True)
@@ -740,10 +737,6 @@ def test_schedule_ctrl_inactive(client, time_machine):
 
 
 def test_schedule_ctrl_invalid(client):
-    import my_lib.notify.slack
-
-    my_lib.notify.slack.interval_clear()
-
     schedule_data = gen_schedule_data()
     del schedule_data[0]["period"]
     response = client.get(
@@ -994,7 +987,6 @@ def test_schedule_ctrl_execute(client, mocker, time_machine, config):
     time.sleep(1)
 
     rasp_water.webapp_valve.init(config)
-    ctrl_log_clear()
 
     schedule_data = gen_schedule_data()
     schedule_data[1]["is_active"] = False
@@ -1039,7 +1031,6 @@ def test_schedule_ctrl_execute_force(client, mocker, time_machine, config):
     time.sleep(1)
 
     rasp_water.webapp_valve.init(config)
-    ctrl_log_clear()
 
     schedule_data = gen_schedule_data()
     schedule_data[1]["is_active"] = False
@@ -1062,7 +1053,7 @@ def test_schedule_ctrl_execute_force(client, mocker, time_machine, config):
     time_mock.return_value = time.time()
     time.sleep(20)
 
-    ctrl_log_check([{"state": "HIGH"}, {"state": "LOW", "high_period": 60}])
+    ctrl_log_check([{"state": "LOW"}, {"state": "HIGH"}, {"state": "LOW", "high_period": 60}])
     app_log_check(client, ["CLEAR", "SCHEDULE", "START_AUTO", "STOP_AUTO"])
     check_notify_slack(None)
 
@@ -1081,7 +1072,6 @@ def test_schedule_ctrl_execute_pending(client, mocker, time_machine, config):
     time.sleep(1)
 
     rasp_water.webapp_valve.init(config)
-    ctrl_log_clear()
 
     schedule_data = gen_schedule_data()
     schedule_data[1]["is_active"] = False
@@ -1104,7 +1094,7 @@ def test_schedule_ctrl_execute_pending(client, mocker, time_machine, config):
     time_mock.return_value = time.time()
     time.sleep(20)
 
-    ctrl_log_check([])
+    ctrl_log_check([{"state": "LOW"}])
     app_log_check(client, ["CLEAR", "SCHEDULE"])
     check_notify_slack(None)
 
@@ -1122,10 +1112,9 @@ def test_schedule_ctrl_error(client, mocker, time_machine, config):
 
     move_to(time_machine, time_test(0))
     time_mock.return_value = time.time()
-    time.sleep(0.6)
+    time.sleep(1)
 
     rasp_water.webapp_valve.init(config)
-    ctrl_log_clear()
 
     schedule_data = gen_schedule_data()
     schedule_data[1]["is_active"] = False
@@ -1147,7 +1136,7 @@ def test_schedule_ctrl_error(client, mocker, time_machine, config):
     move_to(time_machine, time_test(3))
     time_mock.return_value = time.time()
 
-    ctrl_log_check([])
+    ctrl_log_check([{"state": "LOW"}])
     app_log_check(client, ["CLEAR", "SCHEDULE", "FAIL_AUTO"])
     check_notify_slack(None)
 
@@ -1167,7 +1156,6 @@ def test_schedule_ctrl_execute_fail(client, mocker, time_machine, config):
     time.sleep(0.6)
 
     rasp_water.webapp_valve.init(config)
-    ctrl_log_clear()
 
     schedule_data = gen_schedule_data()
     schedule_data[1]["is_active"] = False
@@ -1189,7 +1177,7 @@ def test_schedule_ctrl_execute_fail(client, mocker, time_machine, config):
     move_to(time_machine, time_test(3))
     time_mock.return_value = time.time()
 
-    ctrl_log_check([])
+    ctrl_log_check([{"state": "LOW"}])
     app_log_check(client, ["CLEAR", "SCHEDULE", "FAIL_AUTO"])
     check_notify_slack(None)
 
@@ -1251,7 +1239,7 @@ def test_schedule_ctrl_read_fail_3(client, mocker):
     assert response.status_code == 200
     assert len(response.json) == 2
 
-    ctrl_log_check([])
+    ctrl_log_check([{"state": "LOW"}])
     app_log_check(client, ["CLEAR"])
     check_notify_slack(None)
 
@@ -1280,7 +1268,7 @@ def test_schedule_ctrl_write_fail(client, mocker):
 
     time.sleep(1)
 
-    ctrl_log_check([])
+    ctrl_log_check([{"state": "HIGH"}])
     app_log_check(client, ["CLEAR", "FAIL_WRITE", "SCHEDULE", "SCHEDULE"], False)
     check_notify_slack("スケジュール設定の保存に失敗しました。", 0)
 
@@ -1307,7 +1295,7 @@ def test_log_view(client):
     )
     assert response.status_code == 200
 
-    ctrl_log_check([])
+    ctrl_log_check([{"state": "LOW"}])
     app_log_check(client, ["CLEAR"])
     check_notify_slack(None)
 
