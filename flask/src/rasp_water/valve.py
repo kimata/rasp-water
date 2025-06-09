@@ -178,15 +178,18 @@ def control_worker(config, queue):  # noqa: PLR0912, PLR0915, C901
                 if my_lib.footprint.exists(STAT_PATH_VALVE_CONTROL_COMMAND):
                     # NOTE: バルブコマンドが存在したら、閉じる時間をチェックして、必要に応じて閉じる
 
-                    time_to_close = my_lib.footprint.mtime(STAT_PATH_VALVE_CONTROL_COMMAND)
-                    if (my_lib.rpi.gpio_time() > time_to_close) or (
-                        abs(my_lib.rpi.gpio_time() - time_to_close) < sleep_sec
-                    ):
-                        logging.info("Times is up, close valve")
-                        # NOTE: 下記の関数の中で
-                        # STAT_PATH_VALVE_CONTROL_COMMAND は削除される
-                        set_state(VALVE_STATE.CLOSE)
-                        time_close = my_lib.rpi.gpio_time()
+                    try:
+                        time_to_close = my_lib.footprint.mtime(STAT_PATH_VALVE_CONTROL_COMMAND)
+                        if (my_lib.rpi.gpio_time() > time_to_close) or (
+                            abs(my_lib.rpi.gpio_time() - time_to_close) < sleep_sec
+                        ):
+                            logging.info("Times is up, close valve")
+                            # NOTE: 下記の関数の中で
+                            # STAT_PATH_VALVE_CONTROL_COMMAND は削除される
+                            set_state(VALVE_STATE.CLOSE)
+                            time_close = my_lib.rpi.gpio_time()
+                    except Exception:
+                        logging.exception("Failed to read command")
 
                 if (time_close is None) and my_lib.footprint.exists(STAT_PATH_VALVE_CLOSE):
                     logging.info("May be manually closed")
