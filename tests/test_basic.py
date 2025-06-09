@@ -14,6 +14,7 @@ import my_lib.notify.slack
 import my_lib.time
 import my_lib.webapp.config
 import pytest
+from app import create_app
 from rasp_water.weather_forecast import get_rain_fall as get_rain_fall_orig
 
 CONFIG_FILE = "config.example.yaml"
@@ -54,13 +55,13 @@ def _clear():
     my_lib.notify.slack.hist_clear()
 
 
-@pytest.fixture()
+@pytest.fixture(scope="session")
 def app(config):
+    # NOTE: モジュールインポートより前にURL_PREFIXを設定することが重要
+    my_lib.webapp.config.URL_PREFIX = "/rasp-water"
     my_lib.webapp.config.init(config)
 
     with mock.patch.dict("os.environ", {"WERKZEUG_RUN_MAIN": "true"}):
-        from app import create_app
-
         app = create_app(config, dummy_mode=True)
 
         yield app
@@ -272,7 +273,7 @@ def test_liveness(client, config):  # noqa: ARG001
     )
 
 
-def test_time(time_machine):
+def test_time(time_machine, app):  # noqa: ARG001
     import rasp_water.scheduler
 
     logging.debug("datetime.now()                        = %s", datetime.datetime.now())  # noqa: DTZ005
@@ -317,7 +318,7 @@ def test_time(time_machine):
 
 
 # NOTE: schedule へのテストレポート用
-def test_time2(time_machine):
+def test_time2(time_machine, app):  # noqa: ARG001
     import time
 
     import pytz
@@ -945,19 +946,10 @@ def test_valve_flow_open_fail(client, mocker):
 
 
 def test_valve_flow_read_command_fail(client, mocker):
-    import builtins
-
+    import my_lib.footprint
     import rasp_water.valve
 
-    orig_open = builtins.open
-
-    def open_mock(file, mode="r", *args, **kwargs):
-        if (file == rasp_water.valve.STAT_PATH_VALVE_CONTROL_COMMAND) and (mode == "r"):
-            raise RuntimeError("Failed to open (Test)")  # noqa: EM101, TRY003
-
-        return orig_open(file, mode, *args, **kwargs)
-
-    mocker.patch("rasp_water.valve.valve_open", side_effect=open_mock)
+    mocker.patch("my_lib.footprint.mtime", side_effect=RuntimeError)
 
     period = 3
     response = client.get(
@@ -977,7 +969,7 @@ def test_valve_flow_read_command_fail(client, mocker):
     check_notify_slack(None)
 
     # NOTE: 後始末をしておく
-    rasp_water.valve.STAT_PATH_VALVE_CONTROL_COMMAND.unlink(missing_ok=True)
+    my_lib.footprint.clear(rasp_water.valve.STAT_PATH_VALVE_CONTROL_COMMAND)
     response = client.get(
         f"{my_lib.webapp.config.URL_PREFIX}/api/valve_ctrl",
         query_string={
