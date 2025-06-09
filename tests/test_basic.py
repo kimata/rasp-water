@@ -56,6 +56,8 @@ def _clear():
 
 @pytest.fixture()
 def app(config):
+    my_lib.webapp.config.init(config)
+
     with mock.patch.dict("os.environ", {"WERKZEUG_RUN_MAIN": "true"}):
         from app import create_app
 
@@ -271,7 +273,7 @@ def test_liveness(client, config):  # noqa: ARG001
 
 
 def test_time(time_machine):
-    import schedule
+    import rasp_water.scheduler
 
     logging.debug("datetime.now()                        = %s", datetime.datetime.now())  # noqa: DTZ005
     logging.debug(
@@ -297,16 +299,17 @@ def test_time(time_machine):
     )
     logging.debug("datetime.now(%10s)              = %s", my_lib.time.get_tz(), my_lib.time.now())
 
-    schedule.clear()
+    scheduler = rasp_water.scheduler.get_scheduler()
+    scheduler.clear()
     job_time_str = time_str(time_test(1))
     logging.debug("set schedule at %s", job_time_str)
 
-    job_add = schedule.every().day.at(job_time_str, my_lib.time.get_pytz()).do(lambda: True)
+    job_add = scheduler.every().day.at(job_time_str, my_lib.time.get_pytz()).do(lambda: True)
 
-    for i, job in enumerate(schedule.get_jobs()):
+    for i, job in enumerate(scheduler.get_jobs()):
         logging.debug("Current schedule [%d]: %s", i, job.next_run)
 
-    idle_sec = schedule.idle_seconds()
+    idle_sec = scheduler.idle_seconds
     logging.info("Time to next jobs is %.1f sec", idle_sec)
     logging.debug("Next run is %s", job_add.next_run)
 
@@ -318,7 +321,7 @@ def test_time2(time_machine):
     import time
 
     import pytz
-    import schedule
+    import rasp_water.scheduler
 
     TIMEZONE = datetime.timezone(datetime.timedelta(hours=9), "JST")
 
@@ -338,7 +341,8 @@ def test_time2(time_machine):
     logging.debug("datetime.now()                 = %s", datetime.datetime.now())  # noqa: DTZ005
     logging.debug("datetime.now(JST)              = %s", datetime.datetime.now(TIMEZONE))
 
-    schedule.clear()
+    scheduler = rasp_water.scheduler.get_scheduler()
+    scheduler.clear()
 
     schedule_time = datetime.datetime.now(tz=datetime.timezone(datetime.timedelta(hours=9))).replace(
         hour=0, minute=1, second=0
@@ -346,9 +350,9 @@ def test_time2(time_machine):
     schedule_time_str = schedule_time.strftime("%H:%M")
     logging.debug("set schedule at %s", schedule_time_str)
 
-    job_add = schedule.every().day.at(schedule_time_str, pytz.timezone("Asia/Tokyo")).do(lambda: True)
+    job_add = scheduler.every().day.at(schedule_time_str, pytz.timezone("Asia/Tokyo")).do(lambda: True)
 
-    idle_sec = schedule.idle_seconds()
+    idle_sec = scheduler.idle_seconds
     logging.info("Time to next jobs is %.1f sec", idle_sec)
     logging.debug("Next run is %s", job_add.next_run)
 
