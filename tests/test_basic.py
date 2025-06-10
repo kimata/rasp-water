@@ -1195,11 +1195,8 @@ def test_schedule_ctrl_read(client):
     check_notify_slack(None)
 
 
-def test_schedule_ctrl_read_fail_1(client, config):
-    my_lib.webapp.config.init(config)
-
-    with pathlib.Path.open(my_lib.webapp.config.SCHEDULE_FILE_PATH, "wb") as f:
-        f.write(b"TEST")
+def test_schedule_ctrl_read_fail_1(client, mocker):
+    mocker.patch("pickle.load", side_effect=RuntimeError())
 
     response = client.get(f"{my_lib.webapp.config.URL_PREFIX}/api/schedule_ctrl")
     assert response.status_code == 200
@@ -1210,9 +1207,7 @@ def test_schedule_ctrl_read_fail_1(client, config):
     check_notify_slack("スケジュール設定の読み出しに失敗しました。")
 
 
-def test_schedule_ctrl_read_fail_2(client, config):
-    my_lib.webapp.config.init(config)
-
+def test_schedule_ctrl_read_fail_2(client):
     my_lib.webapp.config.SCHEDULE_FILE_PATH.unlink(missing_ok=True)
 
     response = client.get(f"{my_lib.webapp.config.URL_PREFIX}/api/schedule_ctrl")
@@ -1227,14 +1222,17 @@ def test_schedule_ctrl_read_fail_2(client, config):
 def test_schedule_ctrl_read_fail_3(client, mocker):
     pickle_mock = mocker.patch("pickle.load")
 
+    # 最初に不正データ（配列長1）を返す
     schedule_data = gen_schedule_data()
     schedule_data.pop(0)
     pickle_mock.return_value = schedule_data
 
     response = client.get(f"{my_lib.webapp.config.URL_PREFIX}/api/schedule_ctrl")
     assert response.status_code == 200
+    # 不正データの場合、デフォルト値が返されるので配列長は2
     assert len(response.json) == 2
 
+    # 2回目は正常データを返す
     schedule_data = gen_schedule_data()
     pickle_mock.return_value = schedule_data
 
