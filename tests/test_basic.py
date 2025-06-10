@@ -492,6 +492,10 @@ def test_valve_ctrl_auto(client, mocker):
 
 
 def test_valve_ctrl_auto_rainfall(client, mocker):
+    # NOTE: 並列実行時のログ汚染を防ぐため、テスト開始時にログをクリア
+    app_log_clear(client)
+    ctrl_log_clear()
+
     mocker.patch("rasp_water.weather_forecast.get_rain_fall", return_value=(True, 10))
 
     period = 2
@@ -1349,7 +1353,7 @@ def test_second_str():
     assert rasp_water.webapp_valve.second_str(61) == "1分1秒"
 
 
-def test_valve_init(mocker, config):
+def test_valve_init(mocker, config, app):  # noqa: ARG001
     import rasp_water.valve
     import rasp_water.webapp_valve
 

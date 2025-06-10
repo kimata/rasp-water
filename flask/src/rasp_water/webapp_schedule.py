@@ -51,7 +51,6 @@ def term():
     worker.join()
 
     worker = None
-    rasp_water.scheduler.should_terminate.clear()
 
 
 def wday_str_list(wday_list):

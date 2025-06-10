@@ -36,7 +36,16 @@ def get_scheduler():
 
 def init():
     global schedule_lock  # noqa: PLW0603
+    global should_terminate
+
     schedule_lock = threading.Lock()
+    should_terminate.clear()
+
+
+def term():
+    global should_terminate
+
+    should_terminate.set()
 
 
 def valve_auto_control_impl(config, period):
