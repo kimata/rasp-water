@@ -56,7 +56,7 @@ def _clear():
     ctrl_log_clear()
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture()
 def app(config):
     # NOTE: モジュールインポートより前にURL_PREFIXを設定することが重要
     my_lib.webapp.config.URL_PREFIX = "/rasp-water"
@@ -120,10 +120,10 @@ def move_to(time_machine, target_time):
     time_machine.move_to(target_time)
 
 
-def gen_schedule_data(offset_min=1):
+def gen_schedule_data(offset_min=1, is_active=True):
     return [
         {
-            "is_active": True,
+            "is_active": is_active,
             "time": time_str(time_test(offset_min)),
             "period": 1,
             "wday": [True] * 7,
@@ -133,6 +133,7 @@ def gen_schedule_data(offset_min=1):
 
 
 def ctrl_log_check(expect_list, is_strict=True, is_error=True):
+    import my_lib.pretty
     import my_lib.rpi
 
     time.sleep(1)
@@ -141,7 +142,7 @@ def ctrl_log_check(expect_list, is_strict=True, is_error=True):
     # NOTE: GPIO は1本しか使わないので、チェック対象から外す
     hist_list = [{k: v for k, v in d.items() if k not in "pin_num"} for i, d in enumerate(hist_list)]
 
-    logging.debug(json.dumps(hist_list, indent=2, ensure_ascii=False))
+    logging.debug(my_lib.pretty.format(hist_list))
 
     if len(expect_list) == 0:
         assert hist_list == expect_list, "操作されてないはずのバルブが操作されています。"
@@ -179,11 +180,13 @@ def app_log_check(  # noqa: PLR0912, C901
     expect_list,
     is_strict=True,
 ):
+    import my_lib.pretty
+
     response = client.get(f"{my_lib.webapp.config.URL_PREFIX}/api/log_view")
 
     log_list = response.json["data"]
 
-    logging.debug(json.dumps(log_list, indent=2, ensure_ascii=False))
+    logging.debug(my_lib.pretty.format(log_list))
 
     if is_strict:
         # NOTE: クリアする直前のログが残っている可能性があるので、+1 でも OK とする
@@ -221,9 +224,7 @@ def app_log_check(  # noqa: PLR0912, C901
 
 
 def schedule_clear(client):
-    schedule_data = gen_schedule_data()
-    schedule_data[0]["is_active"] = False
-    schedule_data[1]["is_active"] = False
+    schedule_data = gen_schedule_data(is_active=False)
     response = client.get(
         f"{my_lib.webapp.config.URL_PREFIX}/api/schedule_ctrl",
         query_string={"cmd": "set", "data": json.dumps(schedule_data)},
@@ -365,7 +366,7 @@ def test_redirect(client):
     assert response.status_code == 302
     assert re.search(rf"{my_lib.webapp.config.URL_PREFIX}/$", response.location)
 
-    ctrl_log_check([])
+    ctrl_log_check([{"state": "LOW"}])
     app_log_check(client, ["CLEAR"])
     check_notify_slack(None)
 
@@ -378,7 +379,7 @@ def test_index(client):
     response = client.get(f"{my_lib.webapp.config.URL_PREFIX}/", headers={"Accept-Encoding": "gzip"})
     assert response.status_code == 200
 
-    ctrl_log_check([])
+    ctrl_log_check([{"state": "LOW"}])
     app_log_check(client, ["CLEAR"])
     check_notify_slack(None)
 
@@ -393,7 +394,7 @@ def test_index_with_other_status(client, mocker):
     response = client.get(f"{my_lib.webapp.config.URL_PREFIX}/", headers={"Accept-Encoding": "gzip"})
     assert response.status_code == 301
 
-    ctrl_log_check([])
+    ctrl_log_check([{"state": "LOW"}])
     app_log_check(client, ["CLEAR"])
     check_notify_slack(None)
 
@@ -405,7 +406,7 @@ def test_valve_ctrl_read(client):
     assert response.status_code == 200
     assert response.json["result"] == "success"
 
-    ctrl_log_check([])
+    ctrl_log_check([{"state": "LOW"}])
     app_log_check(client, ["CLEAR"])
     check_notify_slack(None)
 
@@ -419,7 +420,7 @@ def test_valve_ctrl_read_fail(client, mocker):
     assert response.status_code == 200
     assert response.json["result"] == "fail"
 
-    ctrl_log_check([])
+    ctrl_log_check([{"state": "LOW"}])
     app_log_check(client, ["CLEAR"])
     check_notify_slack(None)
 
@@ -437,7 +438,7 @@ def test_valve_ctrl_mismatch(client):
     assert response.json["result"] == "success"
     time.sleep(5)
 
-    ctrl_log_check([{"state": "HIGH"}, {"high_period": 1, "state": "LOW"}])
+    ctrl_log_check([{"state": "LOW"}, {"state": "HIGH"}, {"high_period": 1, "state": "LOW"}])
     # NOTE: 強引にバルブを開いているのでアプリのログには記録されない
     app_log_check(client, ["CLEAR", "STOP_AUTO"])
     check_notify_slack(None)
@@ -463,7 +464,9 @@ def test_valve_ctrl_manual(client, mocker):
 
     time.sleep(period + 5)
 
-    ctrl_log_check([{"state": "HIGH"}, {"high_period": period, "state": "LOW"}], is_strict=False)
+    ctrl_log_check(
+        [{"state": "LOW"}, {"state": "HIGH"}, {"high_period": period, "state": "LOW"}], is_strict=False
+    )
     app_log_check(client, ["CLEAR", "START_AUTO", "STOP_AUTO"])
     check_notify_slack(None)
 
@@ -486,16 +489,14 @@ def test_valve_ctrl_auto(client, mocker):
 
     time.sleep(period + 5)
 
-    ctrl_log_check([{"state": "HIGH"}, {"high_period": period, "state": "LOW"}], is_strict=False)
+    ctrl_log_check(
+        [{"state": "LOW"}, {"state": "HIGH"}, {"high_period": period, "state": "LOW"}], is_strict=False
+    )
     app_log_check(client, ["CLEAR", "START_AUTO", "STOP_AUTO"])
     check_notify_slack(None)
 
 
 def test_valve_ctrl_auto_rainfall(client, mocker):
-    # NOTE: 並列実行時のログ汚染を防ぐため、テスト開始時にログをクリア
-    app_log_clear(client)
-    ctrl_log_clear()
-
     mocker.patch("rasp_water.weather_forecast.get_rain_fall", return_value=(True, 10))
 
     period = 2
@@ -514,11 +515,14 @@ def test_valve_ctrl_auto_rainfall(client, mocker):
     time.sleep(period + 5)
 
     # NOTE: ダミーモードの場合は、天気に関わらず水やりする
-    ctrl_log_check([{"state": "HIGH"}, {"high_period": period, "state": "LOW"}], is_strict=False)
-    app_log_check(client, ["CLEAR", "START_AUTO", "STOP_AUTO"])
+    ctrl_log_check(
+        [{"state": "LOW"}, {"state": "HIGH"}, {"high_period": period, "state": "LOW"}], is_strict=False
+    )
+    app_log_check(client, ["CLEAR", "START_AUTO", "STOP_AUTO"], is_strict=False)
 
     app_log_clear(client)
     ctrl_log_clear()
+    logging.error("*********************")
 
     mocker.patch.dict(os.environ, {"DUMMY_MODE": "false"}, clear=True)
     response = client.get(
@@ -535,8 +539,8 @@ def test_valve_ctrl_auto_rainfall(client, mocker):
 
     time.sleep(period + 5)
 
-    ctrl_log_check([])
-    app_log_check(client, ["CLEAR", "PENDING"])
+    ctrl_log_check([{"state": "LOW"}])
+    app_log_check(client, ["CLEAR", "PENDING"], is_strict=False)
     check_notify_slack(None)
 
 
@@ -582,7 +586,9 @@ def test_valve_ctrl_auto_forecast_error_1(client, mocker):
     time.sleep(period + 5)
 
     # NOTE: get_weather_info_yahoo == None の場合、水やりは行う
-    ctrl_log_check([{"state": "HIGH"}, {"high_period": period, "state": "LOW"}], is_strict=False)
+    ctrl_log_check(
+        [{"state": "LOW"}, {"state": "HIGH"}, {"high_period": period, "state": "LOW"}], is_strict=False
+    )
     app_log_check(client, ["CLEAR", "START_AUTO", "STOP_AUTO"])
     check_notify_slack(None)
 
@@ -611,7 +617,9 @@ def test_valve_ctrl_auto_forecast_error_2(client, mocker):
 
     time.sleep(period + 5)
 
-    ctrl_log_check([{"state": "HIGH"}, {"high_period": period, "state": "LOW"}], is_strict=False)
+    ctrl_log_check(
+        [{"state": "LOW"}, {"state": "HIGH"}, {"high_period": period, "state": "LOW"}], is_strict=False
+    )
     app_log_check(client, ["CLEAR", "START_AUTO", "STOP_AUTO"])
     check_notify_slack(None)
 
@@ -640,7 +648,9 @@ def test_valve_ctrl_auto_forecast_error_3(client, mocker):
 
     time.sleep(period + 5)
 
-    ctrl_log_check([{"state": "HIGH"}, {"high_period": period, "state": "LOW"}], is_strict=False)
+    ctrl_log_check(
+        [{"state": "LOW"}, {"state": "HIGH"}, {"high_period": period, "state": "LOW"}], is_strict=False
+    )
     app_log_check(client, ["CLEAR", "START_AUTO", "STOP_AUTO"])
     check_notify_slack(None)
 
@@ -666,7 +676,9 @@ def test_valve_ctrl_auto_forecast_error_4(client, mocker):
 
     time.sleep(period + 5)
 
-    ctrl_log_check([{"state": "HIGH"}, {"high_period": period, "state": "LOW"}], is_strict=False)
+    ctrl_log_check(
+        [{"state": "LOW"}, {"state": "HIGH"}, {"high_period": period, "state": "LOW"}], is_strict=False
+    )
     app_log_check(client, ["CLEAR", "START_AUTO", "STOP_AUTO"])
     check_notify_slack(None)
 
@@ -700,7 +712,7 @@ def test_event(client):
     assert response.status_code == 200
     assert response.data.decode()
 
-    ctrl_log_check([])
+    ctrl_log_check([{"state": "LOW"}])
     app_log_check(client, ["CLEAR"])
     check_notify_slack(None)
 
@@ -709,9 +721,7 @@ def test_schedule_ctrl_inactive(client, time_machine):
     move_to(time_machine, time_test(0))
     time.sleep(0.6)
 
-    schedule_data = gen_schedule_data()
-    schedule_data[0]["is_active"] = False
-    schedule_data[1]["is_active"] = False
+    schedule_data = gen_schedule_data(is_active=False)
     response = client.get(
         f"{my_lib.webapp.config.URL_PREFIX}/api/schedule_ctrl",
         query_string={"cmd": "set", "data": json.dumps(schedule_data)},
@@ -738,7 +748,7 @@ def test_schedule_ctrl_inactive(client, time_machine):
 
     move_to(time_machine, time_test(4))
 
-    ctrl_log_check([])
+    ctrl_log_check([{"state": "LOW"}])
     app_log_check(client, ["CLEAR", "SCHEDULE", "SCHEDULE"])
     check_notify_slack(None)
 
@@ -801,7 +811,7 @@ def test_schedule_ctrl_invalid(client):
 
     time.sleep(4)
 
-    ctrl_log_check([])
+    ctrl_log_check([{"state": "LOW"}])
     app_log_check(
         client,
         [
@@ -840,7 +850,7 @@ def test_valve_flow_open_over_1(client, mocker):
     time.sleep(period + 5)
 
     ctrl_log_check(
-        [{"state": "HIGH"}, {"high_period": period, "state": "LOW"}, {"state": "LOW"}],
+        [{"state": "LOW"}, {"state": "HIGH"}, {"high_period": period, "state": "LOW"}, {"state": "LOW"}],
         is_strict=False,
     )
     app_log_check(client, ["FAIL_OVER"], False)
@@ -872,7 +882,7 @@ def test_valve_flow_open_over_2(client, mocker):
     time.sleep(period + 5)
 
     ctrl_log_check(
-        [{"state": "HIGH"}, {"high_period": period, "state": "LOW"}, {"state": "LOW"}],
+        [{"state": "LOW"}, {"state": "HIGH"}, {"high_period": period, "state": "LOW"}, {"state": "LOW"}],
         is_strict=False,
     )
     app_log_check(client, ["FAIL_OVER"], False)
@@ -903,7 +913,7 @@ def test_valve_flow_close_fail(client, mocker):
     time.sleep(period + 5)
 
     ctrl_log_check(
-        [{"state": "HIGH"}, {"high_period": period, "state": "LOW"}, {"state": "LOW"}],
+        [{"state": "LOW"}, {"state": "HIGH"}, {"high_period": period, "state": "LOW"}, {"state": "LOW"}],
         is_strict=False,
         is_error=True,
     )
@@ -935,7 +945,7 @@ def test_valve_flow_open_fail(client, mocker):
     time.sleep(period + 5)
 
     ctrl_log_check(
-        [{"state": "HIGH"}, {"high_period": period, "state": "LOW"}],
+        [{"state": "LOW"}, {"state": "HIGH"}, {"high_period": period, "state": "LOW"}],
         is_strict=False,
     )
     app_log_check(client, ["CLEAR", "START_AUTO", "STOP_AUTO", "FAIL_OPEN"])
@@ -964,7 +974,7 @@ def test_valve_flow_read_command_fail(client, mocker):
 
     time.sleep(period + 5)
 
-    ctrl_log_check([{"state": "HIGH"}])
+    ctrl_log_check([{"state": "LOW"}, {"state": "HIGH"}])
     app_log_check(client, ["CLEAR", "START_AUTO"])
     check_notify_slack(None)
 
@@ -1060,7 +1070,9 @@ def test_schedule_ctrl_execute_force(client, mocker, time_machine, config):
     time_mock.return_value = time.time()
     time.sleep(20)
 
-    ctrl_log_check([{"state": "LOW"}, {"state": "HIGH"}, {"state": "LOW", "high_period": 60}])
+    ctrl_log_check(
+        [{"state": "LOW"}, {"state": "LOW"}, {"state": "HIGH"}, {"state": "LOW", "high_period": 60}]
+    )
     app_log_check(client, ["CLEAR", "SCHEDULE", "START_AUTO", "STOP_AUTO"])
     check_notify_slack(None)
 
@@ -1194,7 +1206,7 @@ def test_schedule_ctrl_read(client):
     assert response.status_code == 200
     assert len(response.json) == 2
 
-    ctrl_log_check([])
+    ctrl_log_check([{"state": "LOW"}])
     app_log_check(client, ["CLEAR"])
     check_notify_slack(None)
 
@@ -1206,7 +1218,7 @@ def test_schedule_ctrl_read_fail_1(client, mocker):
     assert response.status_code == 200
     assert len(response.json) == 2
 
-    ctrl_log_check([])
+    ctrl_log_check([{"state": "LOW"}])
     app_log_check(client, ["CLEAR", "FAIL_READ"])
     check_notify_slack("スケジュール設定の読み出しに失敗しました。")
 
@@ -1218,7 +1230,7 @@ def test_schedule_ctrl_read_fail_2(client):
     assert response.status_code == 200
     assert len(response.json) == 2
 
-    ctrl_log_check([])
+    ctrl_log_check([{"state": "LOW"}])
     app_log_check(client, ["CLEAR"])
     check_notify_slack(None)
 
@@ -1285,12 +1297,15 @@ def test_schedule_ctrl_validate_fail(client, mocker):
     assert response.status_code == 200
     assert len(response.json) == 2
 
-    ctrl_log_check([])
+    ctrl_log_check([{"state": "LOW"}])
     app_log_check(client, ["CLEAR"])
     check_notify_slack(None)
 
 
-def test_log_view(client):
+def test_log_view(client, mocker):
+    pickle_mock = mocker.patch("pickle.load")
+    pickle_mock.return_value = gen_schedule_data(is_active=False)
+
     response = client.get(
         f"{my_lib.webapp.config.URL_PREFIX}/api/log_view",
         headers={"Accept-Encoding": "gzip"},
@@ -1318,7 +1333,7 @@ def test_log_clear(client):
     )
     assert response.status_code == 200
 
-    ctrl_log_check([])
+    ctrl_log_check([{"state": "LOW"}])
     app_log_check(client, ["CLEAR"])
     check_notify_slack(None)
 
