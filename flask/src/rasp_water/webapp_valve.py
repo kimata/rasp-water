@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 import logging
+import multiprocessing
 import os
 import pathlib
 import threading
 import time
 import traceback
-from multiprocessing import Queue
 
 import flask_cors
 import fluent.sender
@@ -23,16 +23,22 @@ import flask
 blueprint = flask.Blueprint("rasp-water-valve", __name__, url_prefix=my_lib.webapp.config.URL_PREFIX)
 
 worker = None
+flow_stat_manager = None
 should_terminate = threading.Event()
 
 
 def init(config):
     global worker  # noqa: PLW0603
+    global flow_stat_manager  # noqa: PLW0603
 
     if worker is not None:
         raise ValueError("worker should be None")  # noqa: TRY003, EM101
 
-    flow_stat_queue = Queue()
+    if flow_stat_manager is not None:
+        flow_stat_manager.shutdown()
+
+    flow_stat_manager = multiprocessing.Manager()
+    flow_stat_queue = flow_stat_manager.Queue()
     rasp_water.valve.init(config, flow_stat_queue)
     worker = threading.Thread(target=flow_notify_worker, args=(config, flow_stat_queue))
     worker.start()
