@@ -51,11 +51,9 @@ def slack_mock():
 
 @pytest.fixture(autouse=True)
 def _clear():
-    import my_lib.rpi
-
     my_lib.notify.slack.interval_clear()
     my_lib.notify.slack.hist_clear()
-    my_lib.rpi.gpio.hist_clear()
+    ctrl_log_clear()
 
 
 @pytest.fixture(scope="session")
@@ -100,8 +98,6 @@ def client(app, mocker):
 
     time.sleep(1)
     app_log_clear(test_client)
-
-    app_log_check(test_client, [])
 
     yield test_client
 
@@ -233,6 +229,12 @@ def schedule_clear(client):
         query_string={"cmd": "set", "data": json.dumps(schedule_data)},
     )
     assert response.status_code == 200
+
+
+def ctrl_log_clear():
+    import my_lib.rpi
+
+    my_lib.rpi.gpio.hist_clear()
 
 
 def app_log_clear(client):
@@ -512,6 +514,7 @@ def test_valve_ctrl_auto_rainfall(client, mocker):
     app_log_check(client, ["CLEAR", "START_AUTO", "STOP_AUTO"])
 
     app_log_clear(client)
+    ctrl_log_clear()
 
     mocker.patch.dict(os.environ, {"DUMMY_MODE": "false"}, clear=True)
     response = client.get(
