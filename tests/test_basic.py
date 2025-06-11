@@ -11,7 +11,6 @@ from unittest import mock
 
 import my_lib.config
 import my_lib.notify.slack
-import my_lib.time
 import my_lib.webapp.config
 import pytest
 from app import create_app
@@ -275,6 +274,7 @@ def test_liveness(client, config):  # noqa: ARG001
 
 
 def test_time(time_machine, app):  # noqa: ARG001
+    import my_lib.time
     import rasp_water.scheduler
 
     logging.debug("datetime.now()                        = %s", datetime.datetime.now())  # noqa: DTZ005
