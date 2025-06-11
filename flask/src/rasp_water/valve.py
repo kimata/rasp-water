@@ -147,6 +147,7 @@ def control_worker(config, queue):  # noqa: PLR0912, PLR0915, C901
 
         if time_open_start is not None:
             flow = get_flow(config["flow"]["offset"])["flow"]
+            logging.debug("Current flow: %.1f", flow)
             flow_sum += flow
             count_flow += 1
 
@@ -211,8 +212,18 @@ def control_worker(config, queue):  # noqa: PLR0912, PLR0915, C901
 
                 # NOTE: バルブが閉じられた後、流量が 0 になっていたらトータル流量を報告する
                 if count_zero > TIME_ZERO_TAIL:
+                    logging.info("Stop flow measurement")
+
                     # NOTE: 流量(L/min)の平均を求めてから期間(min)を掛ける
                     total = float(flow_sum) / count_flow * period_sec / 60
+
+                    logging.debug(
+                        "(flow_sum, count_flow, period_sec, total) = (%1.f, %d, %d, %.1f)",
+                        flow_sum,
+                        count_flow,
+                        period_sec,
+                        total,
+                    )
 
                     queue.put(
                         {

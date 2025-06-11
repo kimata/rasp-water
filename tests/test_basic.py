@@ -136,7 +136,7 @@ def ctrl_log_check(expect_list, is_strict=True, is_error=True):
     import my_lib.pretty
     import my_lib.rpi
 
-    time.sleep(1)
+    time.sleep(2)
 
     hist_list = my_lib.rpi.gpio.hist_get()
     # NOTE: GPIO は1本しか使わないので、チェック対象から外す
@@ -524,7 +524,7 @@ def test_valve_ctrl_auto_rainfall(client, mocker):
     ctrl_log_clear()
     logging.error("*********************")
 
-    mocker.patch.dict(os.environ, {"DUMMY_MODE": "false"}, clear=True)
+    mocker.patch.dict(os.environ, {"DUMMY_MODE": "false"})
     response = client.get(
         f"{my_lib.webapp.config.URL_PREFIX}/api/valve_ctrl",
         query_string={
@@ -809,7 +809,7 @@ def test_schedule_ctrl_invalid(client):
     )
     assert response.status_code == 200
 
-    time.sleep(4)
+    time.sleep(5)
 
     ctrl_log_check([{"state": "LOW"}])
     app_log_check(
@@ -1282,8 +1282,6 @@ def test_schedule_ctrl_write_fail(client, mocker):
         query_string={"cmd": "set", "data": json.dumps(schedule_data)},
     )
     assert response.status_code == 200
-
-    time.sleep(1)
 
     ctrl_log_check([{"state": "HIGH"}])
     app_log_check(client, ["CLEAR", "FAIL_WRITE", "SCHEDULE", "SCHEDULE"], False)
