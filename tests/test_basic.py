@@ -708,17 +708,37 @@ def test_valve_flow(client):
 
 
 def test_event(client):
-    import concurrent.futures
+    import threading
 
-    def log_write():
-        time.sleep(2)
-        client.get(f"{my_lib.webapp.config.URL_PREFIX}/exec/log_write")
+    sse_result = {"response": None, "data": None, "completed": False}
 
-    with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
-        future = executor.submit(log_write)
+    def sse_request():
+        try:
+            sse_result["response"] = client.get(
+                f"{my_lib.webapp.config.URL_PREFIX}/api/event", query_string={"count": "1"}
+            )
+            sse_result["data"] = sse_result["response"].data.decode()
+            sse_result["completed"] = True
+        except Exception:
+            logging.exception("SSE request failed")
+            sse_result["completed"] = False
 
-        client.get(f"{my_lib.webapp.config.URL_PREFIX}/api/event", query_string={"count": "1"})
-        future.result()
+    sse_thread = threading.Thread(target=sse_request)
+    sse_thread.start()
+
+    time.sleep(0.5)
+
+    app_log_clear(client)
+
+    sse_thread.join(timeout=10)
+
+    assert not sse_thread.is_alive(), "SSE thread should complete after receiving 1 event"
+    assert sse_result["completed"], "SSE request should complete successfully"
+    assert sse_result["response"] is not None, "SSE should return a response"
+    assert sse_result["response"].status_code == 200, "SSE should return status 200"
+    assert sse_result["data"], "SSE should receive event data"
+
+    logging.debug("SSE received data: %r", sse_result["data"])
 
     ctrl_log_check([{"state": "LOW"}])
     app_log_check(client, ["CLEAR"])
