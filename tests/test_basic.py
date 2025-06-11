@@ -44,7 +44,7 @@ def config():
 def slack_mock():
     with mock.patch(
         "my_lib.notify.slack.slack_sdk.web.client.WebClient.chat_postMessage",
-        retunr_value=True,
+        return_value=True,
     ) as fixture:
         yield fixture
 
@@ -600,7 +600,7 @@ def test_valve_ctrl_auto_forecast_error_2(client, mocker):
 
     response_mock = mocker.Mock()
     response_mock.status_code = 404
-    mocker.patch.object(rasp_water.weather_forecast.requests, "get", retrun_value=response_mock)
+    mocker.patch.object(rasp_water.weather_forecast.requests, "get", return_value=response_mock)
 
     period = 2
     response = client.get(
