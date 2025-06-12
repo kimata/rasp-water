@@ -1332,19 +1332,6 @@ def test_schedule_ctrl_write_fail(client, mocker):
     )
     assert response.status_code == 200
 
-    # 並列実行でのタイミング問題回避: pickle.dump失敗のログが確実に出力されるまで待機
-    time.sleep(1)
-
-    # FAIL_WRITEログが出力されていることを確認
-    response = client.get(f"{my_lib.webapp.config.URL_PREFIX}/api/log_view")
-    log_list = response.json["data"]
-    fail_write_found = False
-    for log in log_list:
-        if "保存に失敗" in log["message"]:
-            fail_write_found = True
-            break
-    assert fail_write_found, "FAIL_WRITE log should be present after pickle.dump failure"
-
     mocker.patch("pickle.dump", side_effect=dump_orig)
 
     # NOTE: 次回のテストに向けて、正常なものに戻しておく
@@ -1355,28 +1342,8 @@ def test_schedule_ctrl_write_fail(client, mocker):
     )
     assert response.status_code == 200
 
-    # 並列実行でのタイミング問題回避: 2回目のスケジュール更新完了まで待機
-    time.sleep(1)
-
     ctrl_log_check([{"state": "HIGH"}])
-    # 並列実行でのタイミング問題回避: 厳密なログ順序チェックを緩和し、特定のメッセージの存在のみチェック
-    response = client.get(f"{my_lib.webapp.config.URL_PREFIX}/api/log_view")
-    log_list = response.json["data"]
-
-    # CLEAR, FAIL_WRITE メッセージが存在することを確認（順序は問わない）
-    clear_found = False
-    fail_write_found = False
-
-    for log in log_list:
-        if "クリアされました" in log["message"]:
-            clear_found = True
-        elif "保存に失敗" in log["message"]:
-            fail_write_found = True
-
-    assert clear_found, "CLEAR message should be present"
-    assert fail_write_found, "FAIL_WRITE message should be present"
-    # NOTE: 2回目のスケジュール更新は成功するのでSCHEDULEログも存在する
-
+    app_log_check(client, ["CLEAR", "FAIL_WRITE", "SCHEDULE", "SCHEDULE"], False)
     check_notify_slack("スケジュール設定の保存に失敗しました。", 0)
 
 
