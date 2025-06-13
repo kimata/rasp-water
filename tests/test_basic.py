@@ -1332,6 +1332,9 @@ def test_schedule_ctrl_write_fail(client, mocker):
     )
     assert response.status_code == 200
 
+    # ワーカーがキューを処理してエラーログを出力するまで待機
+    time.sleep(1.5)
+
     mocker.patch("pickle.dump", side_effect=dump_orig)
 
     # NOTE: 次回のテストに向けて、正常なものに戻しておく
@@ -1341,6 +1344,9 @@ def test_schedule_ctrl_write_fail(client, mocker):
         query_string={"cmd": "set", "data": json.dumps(schedule_data)},
     )
     assert response.status_code == 200
+
+    # ワーカースレッドがschedule_storeを実行するまで待機
+    time.sleep(1.5)
 
     ctrl_log_check([{"state": "HIGH"}])
     app_log_check(client, ["CLEAR", "FAIL_WRITE", "SCHEDULE", "SCHEDULE"], False)
