@@ -220,7 +220,6 @@ def schedule_worker(config, queue):
             if not queue.empty():
                 schedule_data = queue.get()
                 set_schedule(config, schedule_data)
-                schedule_store(schedule_data)
 
             scheduler.run_pending()
             logging.debug("Sleep %.1f sec...", sleep_sec)
