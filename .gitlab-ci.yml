@@ -109,7 +109,7 @@ test-walk-through:
             - .venv
         - key: ${CI_COMMIT_REF_SLUG}-rye-toolchain
           paths:
-            - /root/.rye/py
+            - /root/.rye
           policy: pull
 
     artifacts:
@@ -132,7 +132,6 @@ test-playwright:
         matrix: *playwright_test_matrix
 
     script:
-        - export RYE_NO_AUTO_INSTALL=1
         - >
           if [ "$TEST_NAME" != "test_time" ]; then
             export GIT_SSL_NO_VERIFY=1
@@ -159,7 +158,7 @@ test-playwright:
           policy: pull
         - key: ${CI_COMMIT_REF_SLUG}-rye-toolchain
           paths:
-            - /root/.rye/py
+            - /root/.rye
           policy: pull
 
     artifacts:
@@ -213,7 +212,7 @@ test-playwright-docker:
           policy: pull
         - key: ${CI_COMMIT_REF_SLUG}-rye-toolchain
           paths:
-            - /root/.rye/py
+            - /root/.rye
           policy: pull
 
     artifacts:
@@ -267,7 +266,7 @@ test-playwright-docker-demo:
           policy: pull
         - key: ${CI_COMMIT_REF_SLUG}-rye-toolchain
           paths:
-            - /root/.rye/py
+            - /root/.rye
           policy: pull
 
     artifacts:
