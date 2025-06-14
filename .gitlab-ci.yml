@@ -231,17 +231,13 @@ test-playwright-docker-demo:
         matrix: *playwright_test_matrix
 
     script:
-        - |
-          docker ps --filter "label=test=${TEST_NAME}" --filter "label=job=test-playwright-docker-demo" | grep hours | cut -d " " -f1 | while read id; do
-              docker stop -t 5 $id
-          done || true
-
+        - docker ps --filter "label=test=${TEST_NAME}" --filter "label=job=test-playwright-docker" | grep hours | cut -d " " -f1 | while read id; do docker stop -t 5 $id; done || true
         - docker pull ${CI_REGISTRY_IMAGE}
-        - export CONTAINER_NAME="test-playwright-docker-demo-${TEST_NAME}-${CI_JOB_ID}"
-        - docker run --rm --detach=true --tty=true --name ${CONTAINER_NAME} --label job=test-playwright-docker-demo --label test=${TEST_NAME} ${CI_REGISTRY_IMAGE} ./flask/src/app.py -d -c config.example.yaml
-        - TARGET_IP=$(docker inspect -f "{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}" ${CONTAINER_NAME})
+        - export CONTAINER_NAME="test-playwright-docker-${TEST_NAME}-${CI_JOB_ID}"
+        - docker run --rm --detach=true --tty=true --name ${CONTAINER_NAME} --label job=test-playwright-docker --label test=${TEST_NAME} ${CI_REGISTRY_IMAGE} ./flask/src/app.py -d
+        - export TARGET_IP=$(docker inspect -f "{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}" ${CONTAINER_NAME})
         - echo "Target: ${TARGET_IP}"
-        - rye run pytest --tracing on --output tests/evidence/playwright --junit-xml=tests/evidence/playwright-docker-demo-${TEST_NAME}-junit.xml "tests/test_playwright.py::${TEST_NAME}" --host ${TARGET_IP}
+        - rye run pytest --tracing on --output tests/evidence/playwright --junit-xml=tests/evidence/playwright-docker-${TEST_NAME}-junit.xml "tests/test_playwright.py::${TEST_NAME}" --host ${TARGET_IP}
         - docker logs ${CONTAINER_NAME} > flask_log.txt
         - docker stop ${CONTAINER_NAME}
 
