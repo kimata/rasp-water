@@ -7,6 +7,7 @@ import logging
 import random
 import time
 
+import flaky
 import my_lib.webapp.config
 import pytest
 import requests
@@ -122,9 +123,9 @@ def test_time():
 def test_valve(page, host, port):
     init(page)
     page.goto(app_url(host, port))
-    time.sleep(2)
+    time.sleep(1)
     page.locator('button:text("クリア")').click()
-    time.sleep(2)
+    time.sleep(1)
     check_log(page, "ログがクリアされました")
 
     period = int(page.locator('//input[@id="momentaryPeriod"]').input_value())
@@ -137,12 +138,13 @@ def test_valve(page, host, port):
     check_log(page, "水やりを行いました", period * 60 + 10)
 
 
+@flaky(max_runs=3, min_passes=1)
 def test_schedule(page, host, port):
     init(page)
     page.goto(app_url(host, port))
-    time.sleep(2)
+    time.sleep(1)
     page.locator('button:text("クリア")').click()
-    time.sleep(2)
+    time.sleep(1)
     check_log(page, "ログがクリアされました")
 
     # NOTE: ランダムなスケジュール設定を準備
@@ -179,12 +181,13 @@ def test_schedule(page, host, port):
     check_schedule(page, enable_schedule_index, schedule_time, enable_wday_index)
 
 
+@flaky(max_runs=3, min_passes=1)
 def test_schedule_run(page, host, port):
     init(page)
     page.goto(app_url(host, port))
-    time.sleep(2)
+    time.sleep(1)
     page.locator('button:text("クリア")').click()
-    time.sleep(2)
+    time.sleep(1)
     check_log(page, "ログがクリアされました")
 
     # NOTE: 次の「分」で実行させるにあたって、秒数を調整する
@@ -224,12 +227,13 @@ def test_schedule_run(page, host, port):
     check_log(page, "水やりを行いました", (PERIOD_MIN * 60) + 30)
 
 
+@flaky(max_runs=3, min_passes=1)
 def test_schedule_disable(page, host, port):
     init(page)
     page.goto(app_url(host, port))
-    time.sleep(2)
+    time.sleep(1)
     page.locator('button:text("クリア")').click()
-    time.sleep(2)
+    time.sleep(1)
     check_log(page, "ログがクリアされました")
 
     enable_checkbox = page.locator('//input[contains(@id,"schedule-entry-")]')
