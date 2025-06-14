@@ -157,12 +157,13 @@ test-playwright-docker:
         - |
           if [ "$TEST_NAME" != "test_time" ]; then
             docker pull ${CI_REGISTRY_IMAGE}
-            docker run --rm --detach=true --tty=true --name ${CI_JOB_NAME}-${CI_JOB_ID} --label job=${CI_JOB_NAME} ${CI_REGISTRY_IMAGE} ./flask/src/app.py -d
-            TARGET_IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${CI_JOB_NAME}-${CI_JOB_ID})
+            CONTAINER_NAME="test-playwright-docker-${CI_JOB_ID}"
+            docker run --rm --detach=true --tty=true --name ${CONTAINER_NAME} --label job=${CI_JOB_NAME} ${CI_REGISTRY_IMAGE} ./flask/src/app.py -d
+            TARGET_IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${CONTAINER_NAME})
             echo "Target: ${TARGET_IP}"
             rye run pytest --tracing on --output tests/evidence/playwright tests/test_playwright.py::${TEST_NAME} --host ${TARGET_IP}
-            docker logs ${CI_JOB_NAME}-${CI_JOB_ID} > flask_log.txt
-            docker stop ${CI_JOB_NAME}-${CI_JOB_ID}
+            docker logs ${CONTAINER_NAME} > flask_log.txt
+            docker stop ${CONTAINER_NAME}
           else
             rye run pytest --tracing on --output tests/evidence/playwright tests/test_playwright.py::${TEST_NAME}
           fi
@@ -201,12 +202,13 @@ test-playwright-docker-demo:
         - |
           if [ "$TEST_NAME" != "test_time" ]; then
             docker pull ${CI_REGISTRY_IMAGE}
-            docker run --rm --detach=true --tty=true --name ${CI_JOB_NAME}-${CI_JOB_ID} --label job=${CI_JOB_NAME} ${CI_REGISTRY_IMAGE} ./flask/src/app.py -d -c config.example.yaml
-            TARGET_IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${CI_JOB_NAME}-${CI_JOB_ID})
+            CONTAINER_NAME="test-playwright-docker-demo-${CI_JOB_ID}"
+            docker run --rm --detach=true --tty=true --name ${CONTAINER_NAME} --label job=${CI_JOB_NAME} ${CI_REGISTRY_IMAGE} ./flask/src/app.py -d -c config.example.yaml
+            TARGET_IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${CONTAINER_NAME})
             echo "Target: ${TARGET_IP}"
             rye run pytest --tracing on --output tests/evidence/playwright tests/test_playwright.py::${TEST_NAME} --host ${TARGET_IP}
-            docker logs ${CI_JOB_NAME}-${CI_JOB_ID} > flask_log.txt
-            docker stop ${CI_JOB_NAME}-${CI_JOB_ID}
+            docker logs ${CONTAINER_NAME} > flask_log.txt
+            docker stop ${CONTAINER_NAME}
           else
             rye run pytest --tracing on --output tests/evidence/playwright tests/test_playwright.py::${TEST_NAME}
           fi
