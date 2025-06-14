@@ -106,7 +106,7 @@ def test_valve(page, host, port):
     page.goto(app_url(host, port))
 
     page.locator('button:text("クリア")').click()
-    time.sleep(1)
+    time.sleep(2)
     check_log(page, "ログがクリアされました")
 
     period = int(page.locator('//input[@id="momentaryPeriod"]').input_value())
@@ -125,7 +125,7 @@ def test_schedule(page, host, port):
     page.goto(app_url(host, port))
 
     page.locator('button:text("クリア")').click()
-    time.sleep(1)
+    time.sleep(2)
     check_log(page, "ログがクリアされました")
 
     # NOTE: ランダムなスケジュール設定を準備
