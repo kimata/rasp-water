@@ -55,16 +55,10 @@ test-prepare:
     script:
         - rye sync
 
-    artifacts:
-        paths:
-            - .venv
-            - /root/.cache
-
     cache:
         key:
             files:
                 - pyproject.toml
-
         paths:
             - .venv
             - /root/.cache
