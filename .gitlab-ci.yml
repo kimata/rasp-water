@@ -141,22 +141,29 @@ test-playwright-docker:
     needs:
         - build-image
 
+    parallel:
+        matrix:
+            - TEST_NAME: test_time
+            - TEST_NAME: test_valve
+            - TEST_NAME: test_schedule
+            - TEST_NAME: test_schedule_run
+            - TEST_NAME: test_schedule_disable
+
     script:
-        # NOTE: テストに失敗するとテスト用のコンテナが残るので削除する
         - docker ps  --filter "label=job=${CI_JOB_NAME}" | grep hours | cut -d " " -f1 | while read id; do docker stop -t 5 $id; done || true
-
         - python3 -m playwright install
-
-        - docker pull ${CI_REGISTRY_IMAGE}
-        - docker run --rm --detach=true --tty=true --name ${CI_JOB_NAME}-${CI_JOB_ID} --label job=${CI_JOB_NAME} ${CI_REGISTRY_IMAGE} ./flask/src/app.py -d
-
-        - TARGET_IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${CI_JOB_NAME}-${CI_JOB_ID})
-        - 'echo "Target: ${TARGET_IP}"'
-
-        - rye run pytest --tracing on --output tests/evidence/playwright tests/test_playwright.py --host $(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${CI_JOB_NAME}-${CI_JOB_ID})
-
-        - docker logs ${CI_JOB_NAME}-${CI_JOB_ID} > flask_log.txt
-        - docker stop ${CI_JOB_NAME}-${CI_JOB_ID}
+        - |
+          if [ "$TEST_NAME" != "test_time" ]; then
+            docker pull ${CI_REGISTRY_IMAGE}
+            docker run --rm --detach=true --tty=true --name ${CI_JOB_NAME}-${CI_JOB_ID} --label job=${CI_JOB_NAME} ${CI_REGISTRY_IMAGE} ./flask/src/app.py -d
+            TARGET_IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${CI_JOB_NAME}-${CI_JOB_ID})
+            echo "Target: ${TARGET_IP}"
+            rye run pytest --tracing on --output tests/evidence/playwright tests/test_playwright.py::${TEST_NAME} --host ${TARGET_IP}
+            docker logs ${CI_JOB_NAME}-${CI_JOB_ID} > flask_log.txt
+            docker stop ${CI_JOB_NAME}-${CI_JOB_ID}
+          else
+            rye run pytest --tracing on --output tests/evidence/playwright tests/test_playwright.py::${TEST_NAME}
+          fi
 
     cache:
         key: "${CI_JOB_NAME}"
@@ -176,22 +183,29 @@ test-playwright-docker-demo:
     needs:
         - build-image
 
+    parallel:
+        matrix:
+            - TEST_NAME: test_time
+            - TEST_NAME: test_valve
+            - TEST_NAME: test_schedule
+            - TEST_NAME: test_schedule_run
+            - TEST_NAME: test_schedule_disable
+
     script:
-        # NOTE: テストに失敗するとテスト用のコンテナが残るので削除する
         - docker ps  --filter "label=job=${CI_JOB_NAME}" | grep hours | cut -d " " -f1 | while read id; do docker stop -t 5 $id; done || true
-
         - python3 -m playwright install
-
-        - docker pull ${CI_REGISTRY_IMAGE}
-        - docker run --rm --detach=true --tty=true --name ${CI_JOB_NAME}-${CI_JOB_ID} --label job=${CI_JOB_NAME} ${CI_REGISTRY_IMAGE} ./flask/src/app.py -d -c config.example.yaml
-
-        - TARGET_IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${CI_JOB_NAME}-${CI_JOB_ID})
-        - 'echo "Target: ${TARGET_IP}"'
-
-        - rye run pytest --tracing on --output tests/evidence/playwright tests/test_playwright.py --host $(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${CI_JOB_NAME}-${CI_JOB_ID})
-
-        - docker logs ${CI_JOB_NAME}-${CI_JOB_ID} > flask_log.txt
-        - docker stop ${CI_JOB_NAME}-${CI_JOB_ID}
+        - |
+          if [ "$TEST_NAME" != "test_time" ]; then
+            docker pull ${CI_REGISTRY_IMAGE}
+            docker run --rm --detach=true --tty=true --name ${CI_JOB_NAME}-${CI_JOB_ID} --label job=${CI_JOB_NAME} ${CI_REGISTRY_IMAGE} ./flask/src/app.py -d -c config.example.yaml
+            TARGET_IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${CI_JOB_NAME}-${CI_JOB_ID})
+            echo "Target: ${TARGET_IP}"
+            rye run pytest --tracing on --output tests/evidence/playwright tests/test_playwright.py::${TEST_NAME} --host ${TARGET_IP}
+            docker logs ${CI_JOB_NAME}-${CI_JOB_ID} > flask_log.txt
+            docker stop ${CI_JOB_NAME}-${CI_JOB_ID}
+          else
+            rye run pytest --tracing on --output tests/evidence/playwright tests/test_playwright.py::${TEST_NAME}
+          fi
 
     cache:
         key: "${CI_JOB_NAME}"
