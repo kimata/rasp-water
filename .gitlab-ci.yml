@@ -82,6 +82,10 @@ test-prepare:
           paths:
             - .playwright-browsers
           policy: pull-push
+        - key: ${CI_COMMIT_REF_SLUG}-rye-toolchain
+          paths:
+            - /root/.rye/py
+          policy: pull-push
         - key: ${CI_COMMIT_REF_SLUG}-cache
           paths:
             - /root/.cache
@@ -100,9 +104,13 @@ test-walk-through:
         - rye run pytest --timeout=60 --numprocesses=auto --verbosity=1 --junit-xml=tests/evidence/junit-report.xml tests/test_basic.py
 
     cache:
-        key: "${CI_JOB_NAME}"
-        paths:
+        - key: "${CI_JOB_NAME}"
+          paths:
             - .venv
+        - key: ${CI_COMMIT_REF_SLUG}-rye-toolchain
+          paths:
+            - /root/.rye/py
+          policy: pull
 
     artifacts:
         when: always
@@ -147,6 +155,10 @@ test-playwright:
             prefix: ${CI_COMMIT_REF_SLUG}-playwright
           paths:
             - .playwright-browsers
+          policy: pull
+        - key: ${CI_COMMIT_REF_SLUG}-rye-toolchain
+          paths:
+            - /root/.rye/py
           policy: pull
 
     artifacts:
@@ -198,6 +210,10 @@ test-playwright-docker:
           paths:
             - .playwright-browsers
           policy: pull
+        - key: ${CI_COMMIT_REF_SLUG}-rye-toolchain
+          paths:
+            - /root/.rye/py
+          policy: pull
 
     artifacts:
         when: always
@@ -247,6 +263,10 @@ test-playwright-docker-demo:
             prefix: ${CI_COMMIT_REF_SLUG}-playwright
           paths:
             - .playwright-browsers
+          policy: pull
+        - key: ${CI_COMMIT_REF_SLUG}-rye-toolchain
+          paths:
+            - /root/.rye/py
           policy: pull
 
     artifacts:
