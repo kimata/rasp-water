@@ -134,8 +134,9 @@ test-playwright:
     artifacts:
         when: always
         paths:
-            - flask_log.txt
             - tests/evidence/**
+        exclude:
+            - .venv/**
 
 test-playwright-docker:
     stage: test
@@ -179,8 +180,9 @@ test-playwright-docker:
     artifacts:
         when: always
         paths:
-            - flask_log.txt
             - tests/evidence/**
+        exclude:
+            - .venv/**
 
 test-playwright-docker-demo:
     stage: test
@@ -224,8 +226,9 @@ test-playwright-docker-demo:
     artifacts:
         when: always
         paths:
-            - flask_log.txt
             - tests/evidence/**
+        exclude:
+            - .venv/**
 
 test-healthz-docker:
     stage: test
