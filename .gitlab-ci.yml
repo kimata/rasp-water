@@ -1,5 +1,11 @@
 image: registry.green-rabbit.net:5000/kimata/local_ubuntu:241105B
 
+variables:
+    GIT_STRATEGY: clone
+    GIT_DEPTH: 1
+    FF_USE_FASTZIP: "true"
+    ARTIFACT_COMPRESSION_LEVEL: "fastest"
+
 stages:
     - build-webapp
     - build-image
@@ -67,7 +73,6 @@ test-walk-through:
     stage: test
 
     needs:
-        - build-angular
         - test-prepare
 
     script:
@@ -87,8 +92,10 @@ test-playwright:
     stage: test
 
     needs:
-        - build-angular
-        - test-prepare
+        - job: build-angular
+          artifacts: true
+        - job: test-prepare
+          artifacts: true
 
     script:
         # NOTE: テストに失敗するとテスト用のコンテナが残るので削除する
@@ -120,7 +127,6 @@ test-playwright-docker:
 
     needs:
         - build-image
-        - test-prepare
 
     script:
         # NOTE: テストに失敗するとテスト用のコンテナが残るので削除する
@@ -156,7 +162,6 @@ test-playwright-docker-demo:
 
     needs:
         - build-image
-        - test-prepare
 
     script:
         # NOTE: テストに失敗するとテスト用のコンテナが残るので削除する
@@ -192,7 +197,6 @@ test-healthz-docker:
 
     needs:
         - build-image
-        - test-prepare
 
     script:
         # NOTE: テストに失敗するとテスト用のコンテナが残るので削除する
