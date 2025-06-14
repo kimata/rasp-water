@@ -83,7 +83,7 @@ test-walk-through:
           artifacts: true
 
     script:
-        - rye run pytest --timeout=60 --numprocesses=auto --verbosity=1 tests/test_basic.py
+        - rye run pytest --timeout=60 --numprocesses=auto --verbosity=1 --junit-xml=tests/evidence/junit-report.xml tests/test_basic.py
 
     cache:
         key: "${CI_JOB_NAME}"
@@ -94,6 +94,8 @@ test-walk-through:
         when: always
         paths:
             - tests/evidence/**
+        reports:
+            junit: tests/evidence/junit-report.xml
 
 test-playwright:
     stage: test
@@ -115,7 +117,7 @@ test-playwright:
             mv hems_config/rasp-water.yaml config.yaml
             rye run python ./flask/src/app.py -d 2>&1 > flask_log.txt &
           fi
-        - rye run pytest --tracing on --output tests/evidence/playwright tests/test_playwright.py::${TEST_NAME}
+        - rye run pytest --tracing on --output tests/evidence/playwright --junit-xml=tests/evidence/playwright-${TEST_NAME}-junit.xml tests/test_playwright.py::${TEST_NAME}
 
     cache:
         key:
@@ -130,6 +132,8 @@ test-playwright:
         when: always
         paths:
             - tests/evidence/**
+        reports:
+            junit: tests/evidence/playwright-*-junit.xml
 
 test-playwright-docker:
     stage: test
@@ -151,11 +155,11 @@ test-playwright-docker:
             docker run --rm --detach=true --tty=true --name ${CONTAINER_NAME} --label job=test-playwright-docker --label test=${TEST_NAME} ${CI_REGISTRY_IMAGE} ./flask/src/app.py -d
             TARGET_IP=$(docker inspect -f "{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}" ${CONTAINER_NAME})
             echo "Target: ${TARGET_IP}"
-            rye run pytest --tracing on --output tests/evidence/playwright tests/test_playwright.py::${TEST_NAME} --host ${TARGET_IP}
+            rye run pytest --tracing on --output tests/evidence/playwright --junit-xml=tests/evidence/playwright-docker-${TEST_NAME}-junit.xml tests/test_playwright.py::${TEST_NAME} --host ${TARGET_IP}
             docker logs ${CONTAINER_NAME} > flask_log.txt
             docker stop ${CONTAINER_NAME}
           else
-            rye run pytest --tracing on --output tests/evidence/playwright tests/test_playwright.py::${TEST_NAME}
+            rye run pytest --tracing on --output tests/evidence/playwright --junit-xml=tests/evidence/playwright-docker-${TEST_NAME}-junit.xml tests/test_playwright.py::${TEST_NAME}
           fi
 
     cache:
@@ -171,6 +175,8 @@ test-playwright-docker:
         when: always
         paths:
             - tests/evidence/**
+        reports:
+            junit: tests/evidence/playwright-docker-*-junit.xml
 
 test-playwright-docker-demo:
     stage: test
@@ -192,11 +198,11 @@ test-playwright-docker-demo:
             docker run --rm --detach=true --tty=true --name ${CONTAINER_NAME} --label job=test-playwright-docker-demo --label test=${TEST_NAME} ${CI_REGISTRY_IMAGE} ./flask/src/app.py -d -c config.example.yaml
             TARGET_IP=$(docker inspect -f "{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}" ${CONTAINER_NAME})
             echo "Target: ${TARGET_IP}"
-            rye run pytest --tracing on --output tests/evidence/playwright tests/test_playwright.py::${TEST_NAME} --host ${TARGET_IP}
+            rye run pytest --tracing on --output tests/evidence/playwright --junit-xml=tests/evidence/playwright-docker-demo-${TEST_NAME}-junit.xml tests/test_playwright.py::${TEST_NAME} --host ${TARGET_IP}
             docker logs ${CONTAINER_NAME} > flask_log.txt
             docker stop ${CONTAINER_NAME}
           else
-            rye run pytest --tracing on --output tests/evidence/playwright tests/test_playwright.py::${TEST_NAME}
+            rye run pytest --tracing on --output tests/evidence/playwright --junit-xml=tests/evidence/playwright-docker-demo-${TEST_NAME}-junit.xml tests/test_playwright.py::${TEST_NAME}
           fi
 
     cache:
@@ -212,6 +218,8 @@ test-playwright-docker-demo:
         when: always
         paths:
             - tests/evidence/**
+        reports:
+            junit: tests/evidence/playwright-docker-demo-*-junit.xml
 
 test-healthz-docker:
     stage: test
