@@ -8,7 +8,6 @@ import random
 import time
 
 import my_lib.webapp.config
-from flaky import flaky
 from playwright.sync_api import expect
 
 APP_URL_TMPL = "http://{host}:{port}/rasp-water/"
@@ -100,7 +99,6 @@ def test_time():
     assert idle_sec < 60
 
 
-@flaky(max_runs=3, min_passes=1)
 def test_valve(page, host, port):
     init(page)
     page.goto(app_url(host, port))
@@ -119,7 +117,6 @@ def test_valve(page, host, port):
     check_log(page, "水やりを行いました", period * 60 + 10)
 
 
-@flaky(max_runs=3, min_passes=1)
 def test_schedule(page, host, port):
     init(page)
     page.goto(app_url(host, port))
@@ -162,7 +159,6 @@ def test_schedule(page, host, port):
     check_schedule(page, enable_schedule_index, schedule_time, enable_wday_index)
 
 
-@flaky(max_runs=3, min_passes=1)
 def test_schedule_run(page, host, port):
     init(page)
     page.goto(app_url(host, port))
@@ -208,7 +204,6 @@ def test_schedule_run(page, host, port):
     check_log(page, "水やりを行いました", (PERIOD_MIN * 60) + 30)
 
 
-@flaky(max_runs=3, min_passes=1)
 def test_schedule_disable(page, host, port):
     init(page)
     page.goto(app_url(host, port))
