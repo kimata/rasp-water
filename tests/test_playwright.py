@@ -138,7 +138,7 @@ def test_valve(page, host, port):
     check_log(page, "水やりを行いました", period * 60 + 10)
 
 
-@flaky(max_runs=3, min_passes=1)
+@flaky.flaky(max_runs=3, min_passes=1)
 def test_schedule(page, host, port):
     init(page)
     page.goto(app_url(host, port))
@@ -181,7 +181,7 @@ def test_schedule(page, host, port):
     check_schedule(page, enable_schedule_index, schedule_time, enable_wday_index)
 
 
-@flaky(max_runs=3, min_passes=1)
+@flaky.flaky(max_runs=3, min_passes=1)
 def test_schedule_run(page, host, port):
     init(page)
     page.goto(app_url(host, port))
@@ -227,7 +227,7 @@ def test_schedule_run(page, host, port):
     check_log(page, "水やりを行いました", (PERIOD_MIN * 60) + 30)
 
 
-@flaky(max_runs=3, min_passes=1)
+@flaky.flaky(max_runs=3, min_passes=1)
 def test_schedule_disable(page, host, port):
     init(page)
     page.goto(app_url(host, port))
