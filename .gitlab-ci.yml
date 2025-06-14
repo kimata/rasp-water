@@ -62,10 +62,7 @@ test-prepare:
 
     script:
         - rye sync
-        - echo "Installing Playwright browsers to: ${PLAYWRIGHT_BROWSERS_PATH}"
         - rye run python -m playwright install
-        - echo "Playwright installation completed. Contents:"
-        - ls -la ${PLAYWRIGHT_BROWSERS_PATH} || echo "Directory not found"
 
     cache:
         key:
