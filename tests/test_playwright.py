@@ -122,9 +122,9 @@ def test_time():
 def test_valve(page, host, port):
     init(page)
     page.goto(app_url(host, port))
-    time.sleep(1)
+    time.sleep(2)
     page.locator('button:text("クリア")').click()
-    time.sleep(1)
+    time.sleep(2)
     check_log(page, "ログがクリアされました")
 
     period = int(page.locator('//input[@id="momentaryPeriod"]').input_value())
@@ -140,9 +140,9 @@ def test_valve(page, host, port):
 def test_schedule(page, host, port):
     init(page)
     page.goto(app_url(host, port))
-    time.sleep(1)
+    time.sleep(2)
     page.locator('button:text("クリア")').click()
-    time.sleep(1)
+    time.sleep(2)
     check_log(page, "ログがクリアされました")
 
     # NOTE: ランダムなスケジュール設定を準備
@@ -182,9 +182,9 @@ def test_schedule(page, host, port):
 def test_schedule_run(page, host, port):
     init(page)
     page.goto(app_url(host, port))
-    time.sleep(1)
+    time.sleep(2)
     page.locator('button:text("クリア")').click()
-    time.sleep(1)
+    time.sleep(2)
     check_log(page, "ログがクリアされました")
 
     # NOTE: 次の「分」で実行させるにあたって、秒数を調整する
@@ -227,9 +227,9 @@ def test_schedule_run(page, host, port):
 def test_schedule_disable(page, host, port):
     init(page)
     page.goto(app_url(host, port))
-    time.sleep(1)
+    time.sleep(2)
     page.locator('button:text("クリア")').click()
-    time.sleep(1)
+    time.sleep(2)
     check_log(page, "ログがクリアされました")
 
     enable_checkbox = page.locator('//input[contains(@id,"schedule-entry-")]')
