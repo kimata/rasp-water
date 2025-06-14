@@ -32,8 +32,6 @@ RUN --mount=type=cache,target=/root/.cache/pip,sharing=locked \
 # Clean up dependencies
 FROM build AS deps-cleanup
 RUN --mount=type=cache,target=/root/.cache/pip,sharing=locked \
-    pip install --break-system-packages pip-autoremove && \
-    pip-autoremove setuptools wheel pip -y && \
     find /usr/local/lib/python3.12/site-packages -name "*.pyc" -delete && \
     find /usr/local/lib/python3.12/site-packages -name "__pycache__" -type d -delete
 

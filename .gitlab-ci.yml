@@ -73,7 +73,10 @@ test-walk-through:
     stage: test
 
     needs:
-        - test-prepare
+        - job: build-angular
+          artifacts: true
+        - job: test-prepare
+          artifacts: true
 
     script:
         - rye run pytest --timeout=60 --numprocesses=auto --verbosity=1 tests/test_basic.py
