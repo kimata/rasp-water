@@ -139,7 +139,8 @@ test-playwright-docker:
 
     needs:
         - build-image
-        - test-prepare
+        - job: test-prepare
+          artifacts: false
 
     parallel:
         matrix: *playwright_test_matrix
@@ -179,7 +180,8 @@ test-playwright-docker-demo:
 
     needs:
         - build-image
-        - test-prepare
+        - job: test-prepare
+          artifacts: false
 
     parallel:
         matrix: *playwright_test_matrix
