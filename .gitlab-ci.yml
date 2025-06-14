@@ -100,18 +100,28 @@ test-playwright:
         - job: test-prepare
           artifacts: true
 
+    parallel:
+        matrix:
+            - TEST_NAME: test_time
+            - TEST_NAME: test_valve
+            - TEST_NAME: test_schedule
+            - TEST_NAME: test_schedule_run
+            - TEST_NAME: test_schedule_disable
+
     script:
-        # NOTE: テストに失敗するとテスト用のコンテナが残るので削除する
-        - docker ps  --filter "label=job=${CI_JOB_NAME}" | grep hours | cut -d " " -f1 | while read id; do docker stop -t 5 $id; done || true
-
+        - |
+          if [ "$TEST_NAME" != "test_time" ]; then
+            docker ps  --filter "label=job=${CI_JOB_NAME}" | grep hours | cut -d " " -f1 | while read id; do docker stop -t 5 $id; done || true
+          fi
         - python3 -m playwright install
-
-        - export GIT_SSL_NO_VERIFY=1
-        - git clone https://gitlab.green-rabbit.net/kimata/hems_config.git
-        - mv hems_config/rasp-water.yaml config.yaml
-
-        - rye run python ./flask/src/app.py -d 2>&1 > flask_log.txt &
-        - rye run pytest --tracing on --output tests/evidence/playwright tests/test_playwright.py
+        - |
+          if [ "$TEST_NAME" != "test_time" ]; then
+            export GIT_SSL_NO_VERIFY=1
+            git clone https://gitlab.green-rabbit.net/kimata/hems_config.git
+            mv hems_config/rasp-water.yaml config.yaml
+            rye run python ./flask/src/app.py -d 2>&1 > flask_log.txt &
+          fi
+        - rye run pytest --tracing on --output tests/evidence/playwright tests/test_playwright.py::${TEST_NAME}
 
     cache:
         key: "${CI_JOB_NAME}"
