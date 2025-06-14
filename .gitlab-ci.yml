@@ -118,7 +118,7 @@ test-playwright:
         - job: build-angular
           artifacts: true
         - job: test-prepare
-          artifacts: true
+          artifacts: false
 
     parallel:
         matrix: *playwright_test_matrix
