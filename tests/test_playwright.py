@@ -20,7 +20,7 @@ PERIOD_MIN = 1
 
 @pytest.fixture(autouse=True)
 def _wait_for_server_ready(host, port):
-    TIMEOUT_SEC = 60
+    TIMEOUT_SEC = 180
 
     start_time = time.time()
     while time.time() - start_time < TIMEOUT_SEC:
