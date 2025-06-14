@@ -65,7 +65,7 @@ test-prepare:
 
     script:
         - rye sync
-        - rye run python -m playwright install
+        - rye run python -m playwright install --with-deps chromium
 
     cache:
         - key:
