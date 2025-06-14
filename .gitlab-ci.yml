@@ -124,7 +124,9 @@ test-playwright:
         - rye run pytest --tracing on --output tests/evidence/playwright tests/test_playwright.py::${TEST_NAME}
 
     cache:
-        key: "${CI_JOB_NAME}"
+        key:
+            files:
+                - pyproject.toml
         paths:
             - .venv
             - /root/.cache
@@ -166,7 +168,9 @@ test-playwright-docker:
           fi
 
     cache:
-        key: "${CI_JOB_NAME}"
+        key:
+            files:
+                - pyproject.toml
         paths:
             - .venv
             - /root/.cache
@@ -208,7 +212,9 @@ test-playwright-docker-demo:
           fi
 
     cache:
-        key: "${CI_JOB_NAME}"
+        key:
+            files:
+                - pyproject.toml
         paths:
             - .venv
             - /root/.cache
