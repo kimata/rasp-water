@@ -13,6 +13,9 @@ variables:
     FF_USE_FASTZIP: "true"
     ARTIFACT_COMPRESSION_LEVEL: "fastest"
     PLAYWRIGHT_BROWSERS_PATH: ${CI_PROJECT_DIR}/.playwright-browsers
+    CACHE_FALLBACK_KEY: "${CI_COMMIT_REF_SLUG}-fallback"
+    CACHE_COMPRESSION_LEVEL: "fast"
+    CACHE_REQUEST_TIMEOUT: 300
 
 stages:
     - build-webapp
@@ -65,13 +68,24 @@ test-prepare:
         - rye run python -m playwright install
 
     cache:
-        key:
+        - key:
             files:
                 - pyproject.toml
-        paths:
+            prefix: ${CI_COMMIT_REF_SLUG}-venv
+          paths:
             - .venv
-            - /root/.cache
+          policy: pull-push
+        - key:
+            files:
+                - pyproject.toml
+            prefix: ${CI_COMMIT_REF_SLUG}-playwright
+          paths:
             - .playwright-browsers
+          policy: pull-push
+        - key: ${CI_COMMIT_REF_SLUG}-cache
+          paths:
+            - /root/.cache
+          policy: pull-push
 
 test-walk-through:
     stage: test
@@ -120,13 +134,20 @@ test-playwright:
         - rye run pytest --tracing on --output tests/evidence/playwright --junit-xml=tests/evidence/playwright-${TEST_NAME}-junit.xml tests/test_playwright.py::${TEST_NAME}
 
     cache:
-        key:
+        - key:
             files:
                 - pyproject.toml
-        paths:
+            prefix: ${CI_COMMIT_REF_SLUG}-venv
+          paths:
             - .venv
-            - /root/.cache
+          policy: pull
+        - key:
+            files:
+                - pyproject.toml
+            prefix: ${CI_COMMIT_REF_SLUG}-playwright
+          paths:
             - .playwright-browsers
+          policy: pull
 
     artifacts:
         when: always
@@ -163,13 +184,20 @@ test-playwright-docker:
           fi
 
     cache:
-        key:
+        - key:
             files:
                 - pyproject.toml
-        paths:
+            prefix: ${CI_COMMIT_REF_SLUG}-venv
+          paths:
             - .venv
-            - /root/.cache
+          policy: pull
+        - key:
+            files:
+                - pyproject.toml
+            prefix: ${CI_COMMIT_REF_SLUG}-playwright
+          paths:
             - .playwright-browsers
+          policy: pull
 
     artifacts:
         when: always
@@ -206,13 +234,20 @@ test-playwright-docker-demo:
           fi
 
     cache:
-        key:
+        - key:
             files:
                 - pyproject.toml
-        paths:
+            prefix: ${CI_COMMIT_REF_SLUG}-venv
+          paths:
             - .venv
-            - /root/.cache
+          policy: pull
+        - key:
+            files:
+                - pyproject.toml
+            prefix: ${CI_COMMIT_REF_SLUG}-playwright
+          paths:
             - .playwright-browsers
+          policy: pull
 
     artifacts:
         when: always
