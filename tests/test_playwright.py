@@ -8,12 +8,31 @@ import random
 import time
 
 import my_lib.webapp.config
+import pytest
+import requests
 from playwright.sync_api import expect
 
 APP_URL_TMPL = "http://{host}:{port}/rasp-water/"
 
 SCHEDULE_AFTER_MIN = 1
 PERIOD_MIN = 1
+
+
+@pytest.fixture(autouse=True)
+def _wait_for_server_ready(host, port):
+    TIMEOUT_SEC = 60
+
+    start_time = time.time()
+    while time.time() - start_time < TIMEOUT_SEC:
+        try:
+            res = requests.get(f"http://{host}:{port}")  # noqa: S113
+            if res.ok:
+                return
+        except Exception:  # noqa: S110
+            pass
+        time.sleep(1)
+
+    raise RuntimeError(f"サーバーが {TIMEOUT_SEC}秒以内に起動しませんでした。")  # noqa: TRY003, EM102
 
 
 def check_log(page, message, timeout_sec=3):
@@ -104,7 +123,7 @@ def test_valve(page, host, port):
     page.goto(app_url(host, port))
 
     page.locator('button:text("クリア")').click()
-    time.sleep(2)
+    time.sleep(1)
     check_log(page, "ログがクリアされました")
 
     period = int(page.locator('//input[@id="momentaryPeriod"]').input_value())
@@ -122,7 +141,7 @@ def test_schedule(page, host, port):
     page.goto(app_url(host, port))
 
     page.locator('button:text("クリア")').click()
-    time.sleep(2)
+    time.sleep(1)
     check_log(page, "ログがクリアされました")
 
     # NOTE: ランダムなスケジュール設定を準備
@@ -164,7 +183,7 @@ def test_schedule_run(page, host, port):
     page.goto(app_url(host, port))
 
     page.locator('button:text("クリア")').click()
-    time.sleep(2)
+    time.sleep(1)
     check_log(page, "ログがクリアされました")
 
     # NOTE: 次の「分」で実行させるにあたって、秒数を調整する
@@ -209,7 +228,7 @@ def test_schedule_disable(page, host, port):
     page.goto(app_url(host, port))
 
     page.locator('button:text("クリア")').click()
-    time.sleep(2)
+    time.sleep(1)
     check_log(page, "ログがクリアされました")
 
     enable_checkbox = page.locator('//input[contains(@id,"schedule-entry-")]')
