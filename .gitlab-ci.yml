@@ -289,7 +289,7 @@ test-healthz-docker:
         - docker pull ${CI_REGISTRY_IMAGE}
         - docker run --rm --detach=true --tty=true --name ${CI_JOB_NAME}-${CI_JOB_ID} --label job=${CI_JOB_NAME} ${CI_REGISTRY_IMAGE} ./flask/src/app.py -d
 
-        - sleep 10
+        - sleep 20
         - docker exec ${CI_JOB_NAME}-${CI_JOB_ID} ./flask/src/healthz.py
 
         - docker logs ${CI_JOB_NAME}-${CI_JOB_ID} > flask_log.txt
