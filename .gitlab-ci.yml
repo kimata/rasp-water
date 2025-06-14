@@ -135,9 +135,9 @@ test-playwright:
         - >
           if [ "$TEST_NAME" != "test_time" ]; then
             export GIT_SSL_NO_VERIFY=1
-            export RYE_HOME=/tmp/rye_run_$RANDOM
             git clone https://gitlab.green-rabbit.net/kimata/hems_config.git
             mv hems_config/rasp-water.yaml config.yaml
+            rye fetch
             rye run python ./flask/src/app.py -d 2>&1 > flask_log.txt &
           fi
         - rye run pytest --tracing on --output tests/evidence/playwright --junit-xml=tests/evidence/playwright-${TEST_NAME}-junit.xml tests/test_playwright.py::${TEST_NAME}
