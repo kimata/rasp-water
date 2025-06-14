@@ -67,11 +67,6 @@ test-prepare:
         - rye sync
         - rye run python -m playwright install --with-deps chromium
 
-    artifacts:
-        paths:
-            - .playwright-browsers
-        expire_in: 1 day
-
     cache:
         - key:
             files:
@@ -79,6 +74,13 @@ test-prepare:
             prefix: ${CI_COMMIT_REF_SLUG}-venv
           paths:
             - .venv
+          policy: pull-push
+        - key:
+            files:
+                - pyproject.toml
+            prefix: ${CI_COMMIT_REF_SLUG}-playwright
+          paths:
+            - .playwright-browsers
           policy: pull-push
         - key: ${CI_COMMIT_REF_SLUG}-rye-toolchain
           paths:
@@ -124,7 +126,7 @@ test-playwright:
         - job: build-angular
           artifacts: true
         - job: test-prepare
-          artifacts: true
+          artifacts: false
 
     parallel:
         matrix: *playwright_test_matrix
@@ -145,6 +147,13 @@ test-playwright:
           paths:
             - .venv
           policy: pull
+        - key:
+            files:
+                - pyproject.toml
+            prefix: ${CI_COMMIT_REF_SLUG}-playwright
+          paths:
+            - .playwright-browsers
+          policy: pull
         - key: ${CI_COMMIT_REF_SLUG}-rye-toolchain
           paths:
             - /root/.rye
@@ -163,7 +172,7 @@ test-playwright-docker:
     needs:
         - build-image
         - job: test-prepare
-          artifacts: true
+          artifacts: false
 
     parallel:
         matrix: *playwright_test_matrix
@@ -187,6 +196,13 @@ test-playwright-docker:
           paths:
             - .venv
           policy: pull
+        - key:
+            files:
+                - pyproject.toml
+            prefix: ${CI_COMMIT_REF_SLUG}-playwright
+          paths:
+            - .playwright-browsers
+          policy: pull
         - key: ${CI_COMMIT_REF_SLUG}-rye-toolchain
           paths:
             - /root/.rye
@@ -205,7 +221,7 @@ test-playwright-docker-demo:
     needs:
         - build-image
         - job: test-prepare
-          artifacts: true
+          artifacts: false
 
     parallel:
         matrix: *playwright_test_matrix
@@ -228,6 +244,13 @@ test-playwright-docker-demo:
             prefix: ${CI_COMMIT_REF_SLUG}-venv
           paths:
             - .venv
+          policy: pull
+        - key:
+            files:
+                - pyproject.toml
+            prefix: ${CI_COMMIT_REF_SLUG}-playwright
+          paths:
+            - .playwright-browsers
           policy: pull
         - key: ${CI_COMMIT_REF_SLUG}-rye-toolchain
           paths:
