@@ -27,6 +27,7 @@ def _wait_for_server_ready(host, port):
         try:
             res = requests.get(f"http://{host}:{port}")  # noqa: S113
             if res.ok:
+                logging.info("サーバが %s 秒後に起動しました。", time.time() - start_time)
                 return
         except Exception:  # noqa: S110
             pass
