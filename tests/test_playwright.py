@@ -121,7 +121,7 @@ def test_time():
 def test_valve(page, host, port):
     init(page)
     page.goto(app_url(host, port))
-
+    time.sleep(1)
     page.locator('button:text("クリア")').click()
     time.sleep(1)
     check_log(page, "ログがクリアされました")
@@ -139,7 +139,7 @@ def test_valve(page, host, port):
 def test_schedule(page, host, port):
     init(page)
     page.goto(app_url(host, port))
-
+    time.sleep(1)
     page.locator('button:text("クリア")').click()
     time.sleep(1)
     check_log(page, "ログがクリアされました")
@@ -181,7 +181,7 @@ def test_schedule(page, host, port):
 def test_schedule_run(page, host, port):
     init(page)
     page.goto(app_url(host, port))
-
+    time.sleep(1)
     page.locator('button:text("クリア")').click()
     time.sleep(1)
     check_log(page, "ログがクリアされました")
@@ -226,7 +226,7 @@ def test_schedule_run(page, host, port):
 def test_schedule_disable(page, host, port):
     init(page)
     page.goto(app_url(host, port))
-
+    time.sleep(1)
     page.locator('button:text("クリア")').click()
     time.sleep(1)
     check_log(page, "ログがクリアされました")
