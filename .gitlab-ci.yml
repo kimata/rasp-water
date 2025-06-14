@@ -12,6 +12,7 @@ variables:
     GIT_DEPTH: 1
     FF_USE_FASTZIP: "true"
     ARTIFACT_COMPRESSION_LEVEL: "fastest"
+    PLAYWRIGHT_BROWSERS_PATH: ${CI_PROJECT_DIR}/.playwright-browsers
 
 stages:
     - build-webapp
@@ -69,6 +70,7 @@ test-prepare:
         paths:
             - .venv
             - /root/.cache
+            - .playwright-browsers
 
 test-walk-through:
     stage: test
@@ -109,7 +111,6 @@ test-playwright:
           if [ "$TEST_NAME" != "test_time" ]; then
             docker ps  --filter "label=job=${CI_JOB_NAME}" | grep hours | cut -d " " -f1 | while read id; do docker stop -t 5 $id; done || true
           fi
-        - rye run python -m playwright install
         - |
           if [ "$TEST_NAME" != "test_time" ]; then
             export GIT_SSL_NO_VERIFY=1
@@ -126,6 +127,7 @@ test-playwright:
         paths:
             - .venv
             - /root/.cache
+            - .playwright-browsers
 
     artifacts:
         when: always
@@ -144,7 +146,6 @@ test-playwright-docker:
 
     script:
         - docker ps  --filter "label=job=test-playwright-docker" | grep hours | cut -d " " -f1 | while read id; do docker stop -t 5 $id; done || true
-        - rye run python -m playwright install
         - |
           if [ "$TEST_NAME" != "test_time" ]; then
             docker pull ${CI_REGISTRY_IMAGE}
@@ -166,6 +167,7 @@ test-playwright-docker:
         paths:
             - .venv
             - /root/.cache
+            - .playwright-browsers
 
     artifacts:
         when: always
@@ -184,7 +186,6 @@ test-playwright-docker-demo:
 
     script:
         - docker ps  --filter "label=job=test-playwright-docker-demo" | grep hours | cut -d " " -f1 | while read id; do docker stop -t 5 $id; done || true
-        - rye run python -m playwright install
         - |
           if [ "$TEST_NAME" != "test_time" ]; then
             docker pull ${CI_REGISTRY_IMAGE}
@@ -206,6 +207,7 @@ test-playwright-docker-demo:
         paths:
             - .venv
             - /root/.cache
+            - .playwright-browsers
 
     artifacts:
         when: always
