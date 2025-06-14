@@ -110,10 +110,6 @@ test-playwright:
     script:
         - >
           if [ "$TEST_NAME" != "test_time" ]; then
-            docker ps  --filter "label=job=${CI_JOB_NAME}" | grep hours | cut -d " " -f1 | while read id; do docker stop -t 5 $id; done || true
-          fi
-        - >
-          if [ "$TEST_NAME" != "test_time" ]; then
             export GIT_SSL_NO_VERIFY=1
             git clone https://gitlab.green-rabbit.net/kimata/hems_config.git
             mv hems_config/rasp-water.yaml config.yaml
