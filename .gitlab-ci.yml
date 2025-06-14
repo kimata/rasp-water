@@ -132,6 +132,7 @@ test-playwright:
         matrix: *playwright_test_matrix
 
     script:
+        - export RYE_NO_AUTO_INSTALL=1
         - >
           if [ "$TEST_NAME" != "test_time" ]; then
             export GIT_SSL_NO_VERIFY=1
