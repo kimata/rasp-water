@@ -129,8 +129,6 @@ test-playwright:
         when: always
         paths:
             - tests/evidence/**
-        exclude:
-            - .venv/**
 
 test-playwright-docker:
     stage: test
@@ -175,8 +173,6 @@ test-playwright-docker:
         when: always
         paths:
             - tests/evidence/**
-        exclude:
-            - .venv/**
 
 test-playwright-docker-demo:
     stage: test
@@ -221,8 +217,6 @@ test-playwright-docker-demo:
         when: always
         paths:
             - tests/evidence/**
-        exclude:
-            - .venv/**
 
 test-healthz-docker:
     stage: test
