@@ -132,14 +132,11 @@ test-playwright:
         matrix: *playwright_test_matrix
 
     script:
-        - >
-          if [ "$TEST_NAME" != "test_time" ]; then
-            export GIT_SSL_NO_VERIFY=1
-            git clone https://gitlab.green-rabbit.net/kimata/hems_config.git
-            mv hems_config/rasp-water.yaml config.yaml
-            rye fetch
-            rye run python ./flask/src/app.py -d 2>&1 > flask_log.txt &
-          fi
+        - export GIT_SSL_NO_VERIFY=1
+        - git clone https://gitlab.green-rabbit.net/kimata/hems_config.git
+        - mv hems_config/rasp-water.yaml config.yaml
+        - rye fetch
+        - rye run python ./flask/src/app.py -d 2>&1 > flask_log.txt &
         - rye run pytest --tracing on --output tests/evidence/playwright --junit-xml=tests/evidence/playwright-${TEST_NAME}-junit.xml tests/test_playwright.py::${TEST_NAME}
 
     cache:
@@ -182,19 +179,14 @@ test-playwright-docker:
 
     script:
         - docker ps  --filter "label=test=${TEST_NAME}" --filter "label=job=test-playwright-docker" | grep hours | cut -d " " -f1 | while read id; do docker stop -t 5 $id; done || true
-        - >
-          if [ "$TEST_NAME" != "test_time" ]; then
-            docker pull ${CI_REGISTRY_IMAGE}
-            CONTAINER_NAME="test-playwright-docker-${TEST_NAME}-${CI_JOB_ID}"
-            docker run --rm --detach=true --tty=true --name ${CONTAINER_NAME} --label job=test-playwright-docker --label test=${TEST_NAME} ${CI_REGISTRY_IMAGE} ./flask/src/app.py -d
-            TARGET_IP=$(docker inspect -f "{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}" ${CONTAINER_NAME})
-            echo "Target: ${TARGET_IP}"
-            rye run pytest --tracing on --output tests/evidence/playwright --junit-xml=tests/evidence/playwright-docker-${TEST_NAME}-junit.xml tests/test_playwright.py::${TEST_NAME} --host ${TARGET_IP}
-            docker logs ${CONTAINER_NAME} > flask_log.txt
-            docker stop ${CONTAINER_NAME}
-          else
-            rye run pytest --tracing on --output tests/evidence/playwright --junit-xml=tests/evidence/playwright-docker-${TEST_NAME}-junit.xml tests/test_playwright.py::${TEST_NAME}
-          fi
+        - docker pull ${CI_REGISTRY_IMAGE}
+        - export CONTAINER_NAME="test-playwright-docker-${TEST_NAME}-${CI_JOB_ID}"
+        - docker run --rm --detach=true --tty=true --name ${CONTAINER_NAME} --label job=test-playwright-docker --label test=${TEST_NAME} ${CI_REGISTRY_IMAGE} ./flask/src/app.py -d
+        - export TARGET_IP=$(docker inspect -f "{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}" ${CONTAINER_NAME})
+        - echo "Target: ${TARGET_IP}"
+        - rye run pytest --tracing on --output tests/evidence/playwright --junit-xml=tests/evidence/playwright-docker-${TEST_NAME}-junit.xml tests/test_playwright.py::${TEST_NAME} --host ${TARGET_IP}
+        - docker logs ${CONTAINER_NAME} > flask_log.txt
+        - docker stop ${CONTAINER_NAME}
 
     cache:
         - key:
@@ -236,19 +228,14 @@ test-playwright-docker-demo:
 
     script:
         - docker ps  --filter "label=test=${TEST_NAME}" --filter "label=job=test-playwright-docker-demo" | grep hours | cut -d " " -f1 | while read id; do docker stop -t 5 $id; done || true
-        - >
-          if [ "$TEST_NAME" != "test_time" ]; then
-            docker pull ${CI_REGISTRY_IMAGE}
-            CONTAINER_NAME="test-playwright-docker-demo-${TEST_NAME}-${CI_JOB_ID}"
-            docker run --rm --detach=true --tty=true --name ${CONTAINER_NAME} --label job=test-playwright-docker-demo --label test=${TEST_NAME} ${CI_REGISTRY_IMAGE} ./flask/src/app.py -d -c config.example.yaml
-            TARGET_IP=$(docker inspect -f "{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}" ${CONTAINER_NAME})
-            echo "Target: ${TARGET_IP}"
-            rye run pytest --tracing on --output tests/evidence/playwright --junit-xml=tests/evidence/playwright-docker-demo-${TEST_NAME}-junit.xml tests/test_playwright.py::${TEST_NAME} --host ${TARGET_IP}
-            docker logs ${CONTAINER_NAME} > flask_log.txt
-            docker stop ${CONTAINER_NAME}
-          else
-            rye run pytest --tracing on --output tests/evidence/playwright --junit-xml=tests/evidence/playwright-docker-demo-${TEST_NAME}-junit.xml tests/test_playwright.py::${TEST_NAME}
-          fi
+        - docker pull ${CI_REGISTRY_IMAGE}
+        - export CONTAINER_NAME="test-playwright-docker-demo-${TEST_NAME}-${CI_JOB_ID}"
+        - docker run --rm --detach=true --tty=true --name ${CONTAINER_NAME} --label job=test-playwright-docker-demo --label test=${TEST_NAME} ${CI_REGISTRY_IMAGE} ./flask/src/app.py -d -c config.example.yaml
+        - TARGET_IP=$(docker inspect -f "{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}" ${CONTAINER_NAME})
+        - echo "Target: ${TARGET_IP}"
+        - rye run pytest --tracing on --output tests/evidence/playwright --junit-xml=tests/evidence/playwright-docker-demo-${TEST_NAME}-junit.xml tests/test_playwright.py::${TEST_NAME} --host ${TARGET_IP}
+        - docker logs ${CONTAINER_NAME} > flask_log.txt
+        - docker stop ${CONTAINER_NAME}
 
     cache:
         - key:
