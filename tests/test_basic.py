@@ -931,7 +931,8 @@ def test_valve_flow_open_over_2(client, mocker):
     )
     assert response.status_code == 200
 
-    time.sleep(period + 5)
+    # NOTE: TIME_OVER_FAIL=5秒で流量過多エラーが発生する
+    time.sleep(period + 7)
 
     ctrl_log_check(
         [{"state": "LOW"}, {"state": "HIGH"}, {"high_period": period, "state": "LOW"}, {"state": "LOW"}],
@@ -940,8 +941,8 @@ def test_valve_flow_open_over_2(client, mocker):
     app_log_check(client, ["FAIL_OVER"], False)
     check_notify_slack("水が流れすぎています。")
 
+    # NOTE: テスト後のクリーンアップのために流量を0にする
     flow_mock.return_value = {"flow": 0, "result": "success"}
-    time.sleep(1)
 
 
 def test_valve_flow_close_fail(client, mocker):
