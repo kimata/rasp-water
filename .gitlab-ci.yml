@@ -135,6 +135,7 @@ test-playwright-docker:
 
     needs:
         - build-image
+        - test-prepare
 
     parallel:
         matrix:
@@ -179,6 +180,7 @@ test-playwright-docker-demo:
 
     needs:
         - build-image
+        - test-prepare
 
     parallel:
         matrix:
