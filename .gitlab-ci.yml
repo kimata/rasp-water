@@ -280,9 +280,9 @@ test-healthz-docker:
         - docker run --rm --detach=true --tty=true --name ${CI_JOB_NAME}-${CI_JOB_ID} --label job=${CI_JOB_NAME} ${CI_REGISTRY_IMAGE} ./flask/src/app.py -d
 
         - sleep 20
-        - docker exec ${CI_JOB_NAME}-${CI_JOB_ID} ./flask/src/healthz.py
 
         - docker logs ${CI_JOB_NAME}-${CI_JOB_ID} > flask_log.txt
+        - docker exec ${CI_JOB_NAME}-${CI_JOB_ID} ./flask/src/healthz.py
         - docker stop ${CI_JOB_NAME}-${CI_JOB_ID}
     artifacts:
         when: always
