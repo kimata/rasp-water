@@ -26,10 +26,6 @@ def _page_init(page, host, port):
     page.on("console", lambda msg: print(msg.text))  # noqa: T201
     page.set_viewport_size({"width": 2400, "height": 1600})
 
-    page.goto(app_url(host, port))
-    safe_click(page, 'button:text("クリア")')
-    check_log(page, "ログがクリアされました")
-
 
 def wait_for_server_ready(host, port):
     TIMEOUT_SEC = 180
@@ -46,6 +42,12 @@ def wait_for_server_ready(host, port):
         time.sleep(1)
 
     raise RuntimeError(f"サーバーが {TIMEOUT_SEC}秒以内に起動しませんでした。")  # noqa: TRY003, EM102
+
+
+def clear_log(page, host, port):
+    page.goto(app_url(host, port))
+    safe_click(page, 'button:text("クリア")')
+    check_log(page, "ログがクリアされました")
 
 
 def check_log(page, message, timeout_sec=3):
@@ -145,7 +147,9 @@ def test_valve(page):
 
 
 @flaky.flaky(max_runs=3, min_passes=1)
-def test_schedule(page):
+def test_schedule(page, host, port):
+    clear_log(page, host, port)
+
     # NOTE: ランダムなスケジュール設定を準備
     schedule_time = [time_str_random(), time_str_random()]
     enable_schedule_index = int(2 * random.random())
@@ -181,7 +185,9 @@ def test_schedule(page):
 
 
 @flaky.flaky(max_runs=3, min_passes=1)
-def test_schedule_run(page):
+def test_schedule_run(page, host, port):
+    clear_log(page, host, port)
+
     # NOTE: 次の「分」で実行させるにあたって、秒数を調整する
     time.sleep((90 - my_lib.time.now().second) % 60)
 
@@ -220,7 +226,9 @@ def test_schedule_run(page):
 
 
 @flaky.flaky(max_runs=3, min_passes=1)
-def test_schedule_disable(page):
+def test_schedule_disable(page, host, port):
+    clear_log(page, host, port)
+
     enable_checkbox = page.locator('//input[contains(@id,"schedule-entry-")]')
     enable_wday_index = [bool_random() for _ in range(14)]
     wday_checkbox = page.locator('//input[@name="wday"]')
