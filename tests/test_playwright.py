@@ -20,7 +20,18 @@ PERIOD_MIN = 1
 
 
 @pytest.fixture(autouse=True)
-def _wait_for_server_ready(host, port):
+def _page_init(page, host, port):
+    wait_for_server_ready(host, port)
+
+    page.on("console", lambda msg: print(msg.text))  # noqa: T201
+    page.set_viewport_size({"width": 2400, "height": 1600})
+
+    page.goto(app_url(host, port))
+    safe_click(page, 'button:text("クリア")')
+    check_log(page, "ログがクリアされました")
+
+
+def wait_for_server_ready(host, port):
     TIMEOUT_SEC = 180
 
     start_time = time.time()
@@ -35,16 +46,6 @@ def _wait_for_server_ready(host, port):
         time.sleep(1)
 
     raise RuntimeError(f"サーバーが {TIMEOUT_SEC}秒以内に起動しませんでした。")  # noqa: TRY003, EM102
-
-
-@pytest.fixture(autouse=True)
-def _page_init(page, host, port):
-    page.on("console", lambda msg: print(msg.text))  # noqa: T201
-    page.set_viewport_size({"width": 2400, "height": 1600})
-
-    page.goto(app_url(host, port))
-    safe_click(page, 'button:text("クリア")')
-    check_log(page, "ログがクリアされました")
 
 
 def check_log(page, message, timeout_sec=3):
