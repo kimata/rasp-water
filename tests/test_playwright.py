@@ -135,7 +135,9 @@ def test_time():
 
 
 @flaky.flaky(max_runs=3, min_passes=1)
-def test_valve(page):
+def test_valve(page, host, port):
+    clear_log(page, host, port)
+
     period = int(page.locator('//input[@id="momentaryPeriod"]').input_value())
 
     # NOTE: checkbox 自体は hidden にして、CSS で表示しているので、
