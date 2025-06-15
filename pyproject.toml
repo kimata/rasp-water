@@ -57,6 +57,7 @@ testpaths = [
 ]
 filterwarnings = [
     "ignore:datetime\\.datetime\\.utcfromtimestamp\\(\\) is deprecated:DeprecationWarning",
+    "ignore::DeprecationWarning:multiprocessing\\.popen_fork"
 ]
 
 [tool.coverage.run]

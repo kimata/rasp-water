@@ -37,8 +37,20 @@ def _wait_for_server_ready(host, port):
     raise RuntimeError(f"サーバーが {TIMEOUT_SEC}秒以内に起動しませんでした。")  # noqa: TRY003, EM102
 
 
+@pytest.fixture(autouse=True)
+def _page_init(page, host, port):
+    page.on("console", lambda msg: print(msg.text))  # noqa: T201
+    page.set_viewport_size({"width": 2400, "height": 1600})
+
+    page.goto(app_url(host, port))
+    safe_click(page, 'button:text("クリア")')
+    check_log(page, "ログがクリアされました")
+
+
 def check_log(page, message, timeout_sec=3):
     expect(page.locator("//app-log//div").first).to_contain_text(message, timeout=timeout_sec * 1000)
+
+    time.sleep(1)
 
     # NOTE: ログクリアする場合、ログの内容が変化しているので、ここで再取得する
     log_list = page.locator("//app-log//div")
@@ -57,6 +69,10 @@ def time_str_after(minute):
 
 def bool_random():
     return random.random() >= 0.5
+
+
+def safe_click(page, selector):
+    page.locator(selector).click()
 
 
 def check_schedule(page, enable_schedule_index, schedule_time, enable_wday_index):
@@ -81,11 +97,6 @@ def check_schedule(page, enable_schedule_index, schedule_time, enable_wday_index
 
 def app_url(server, port):
     return APP_URL_TMPL.format(host=server, port=port)
-
-
-def init(page):
-    page.on("console", lambda msg: print(msg.text))  # noqa: T201
-    page.set_viewport_size({"width": 2400, "height": 1600})
 
 
 ######################################################################
@@ -121,14 +132,7 @@ def test_time():
 
 
 @flaky.flaky(max_runs=3, min_passes=1)
-def test_valve(page, host, port):
-    init(page)
-    page.goto(app_url(host, port))
-    time.sleep(1)
-    page.locator('button:text("クリア")').click()
-    time.sleep(1)
-    check_log(page, "ログがクリアされました")
-
+def test_valve(page):
     period = int(page.locator('//input[@id="momentaryPeriod"]').input_value())
 
     # NOTE: checkbox 自体は hidden にして、CSS で表示しているので、
@@ -140,14 +144,7 @@ def test_valve(page, host, port):
 
 
 @flaky.flaky(max_runs=3, min_passes=1)
-def test_schedule(page, host, port):
-    init(page)
-    page.goto(app_url(host, port))
-    time.sleep(1)
-    page.locator('button:text("クリア")').click()
-    time.sleep(1)
-    check_log(page, "ログがクリアされました")
-
+def test_schedule(page):
     # NOTE: ランダムなスケジュール設定を準備
     schedule_time = [time_str_random(), time_str_random()]
     enable_schedule_index = int(2 * random.random())
@@ -183,14 +180,7 @@ def test_schedule(page, host, port):
 
 
 @flaky.flaky(max_runs=3, min_passes=1)
-def test_schedule_run(page, host, port):
-    init(page)
-    page.goto(app_url(host, port))
-    time.sleep(1)
-    page.locator('button:text("クリア")').click()
-    time.sleep(1)
-    check_log(page, "ログがクリアされました")
-
+def test_schedule_run(page):
     # NOTE: 次の「分」で実行させるにあたって、秒数を調整する
     time.sleep((90 - my_lib.time.now().second) % 60)
 
@@ -229,14 +219,7 @@ def test_schedule_run(page, host, port):
 
 
 @flaky.flaky(max_runs=3, min_passes=1)
-def test_schedule_disable(page, host, port):
-    init(page)
-    page.goto(app_url(host, port))
-    time.sleep(1)
-    page.locator('button:text("クリア")').click()
-    time.sleep(1)
-    check_log(page, "ログがクリアされました")
-
+def test_schedule_disable(page):
     enable_checkbox = page.locator('//input[contains(@id,"schedule-entry-")]')
     enable_wday_index = [bool_random() for _ in range(14)]
     wday_checkbox = page.locator('//input[@name="wday"]')
