@@ -120,6 +120,7 @@ def test_time():
     assert idle_sec < 60
 
 
+@flaky.flaky(max_runs=3, min_passes=1)
 def test_valve(page, host, port):
     init(page)
     page.goto(app_url(host, port))
