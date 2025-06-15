@@ -51,7 +51,7 @@ def wait_for_server_ready(host, port):
 def check_log(page, message, timeout_sec=3):
     expect(page.locator("//app-log//div").first).to_contain_text(message, timeout=timeout_sec * 1000)
 
-    time.sleep(1)
+    time.sleep(2)
 
     # NOTE: ログクリアする場合、ログの内容が変化しているので、ここで再取得する
     log_list = page.locator("//app-log//div")
