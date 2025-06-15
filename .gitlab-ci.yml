@@ -74,13 +74,13 @@ test-prepare:
           paths:
             - .venv
           policy: pull-push
-        - key:
-            files:
-                - pyproject.toml
-            prefix: ${CI_COMMIT_REF_SLUG}-playwright
-          paths:
-            - .playwright-browsers
-          policy: pull-push
+        # - key:
+        #     files:
+        #         - pyproject.toml
+        #     prefix: ${CI_COMMIT_REF_SLUG}-playwright
+        #   paths:
+        #     - .playwright-browsers
+        #   policy: pull-push
         - key: ${CI_COMMIT_REF_SLUG}-rye-toolchain
           paths:
             - /root/.rye/py
@@ -147,13 +147,13 @@ test-playwright:
           paths:
             - .venv
           policy: pull
-        - key:
-            files:
-                - pyproject.toml
-            prefix: ${CI_COMMIT_REF_SLUG}-playwright
-          paths:
-            - .playwright-browsers
-          policy: pull
+        # - key:
+        #     files:
+        #         - pyproject.toml
+        #     prefix: ${CI_COMMIT_REF_SLUG}-playwright
+        #   paths:
+        #     - .playwright-browsers
+        #   policy: pull
         - key: ${CI_COMMIT_REF_SLUG}-rye-toolchain
           paths:
             - /root/.rye
@@ -197,13 +197,13 @@ test-playwright-docker:
           paths:
             - .venv
           policy: pull
-        - key:
-            files:
-                - pyproject.toml
-            prefix: ${CI_COMMIT_REF_SLUG}-playwright
-          paths:
-            - .playwright-browsers
-          policy: pull
+        # - key:
+        #     files:
+        #         - pyproject.toml
+        #     prefix: ${CI_COMMIT_REF_SLUG}-playwright
+        #   paths:
+        #     - .playwright-browsers
+        #   policy: pull
         - key: ${CI_COMMIT_REF_SLUG}-rye-toolchain
           paths:
             - /root/.rye
@@ -247,13 +247,13 @@ test-playwright-docker-demo:
           paths:
             - .venv
           policy: pull
-        - key:
-            files:
-                - pyproject.toml
-            prefix: ${CI_COMMIT_REF_SLUG}-playwright
-          paths:
-            - .playwright-browsers
-          policy: pull
+        # - key:
+        #     files:
+        #         - pyproject.toml
+        #     prefix: ${CI_COMMIT_REF_SLUG}-playwright
+        #   paths:
+        #     - .playwright-browsers
+        #   policy: pull
         - key: ${CI_COMMIT_REF_SLUG}-rye-toolchain
           paths:
             - /root/.rye
