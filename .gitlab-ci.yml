@@ -360,15 +360,20 @@ deploy-webapp-demo:
     image:
         name: bitnami/kubectl:latest
         entrypoint: [""]
+
     script:
         - kubectl config get-contexts
         - kubectl config use-context kimata/rasp-water:pod-rollout
         - kubectl --insecure-skip-tls-verify=true rollout restart -n hems deployment rasp-water-demo
+
     rules:
         # NOTE: 自動実行ではデプロイしない
-        - if: '$CI_PIPELINE_SOURCE == "schedule"'
+        - if: $CI_PIPELINE_SOURCE == "schedule"
+          when: never
+        - if: $CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH
           when: never
         - when: on_success
+
 
 renovate:
     stage: renovate
