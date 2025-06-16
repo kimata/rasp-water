@@ -305,7 +305,11 @@ tag-latest:
     stage: tag-latest
 
     needs:
-        - test-walk-through # テストが成功した場合のみ実行
+        - test-walk-through
+        - test-playwright
+        - test-playwright-docker
+        - test-playwright-docker-demo
+        - test-healthz-docker
 
     script:
         - 'TAG="$(date +%y%m%d)_${CI_COMMIT_SHORT_SHA}"'
