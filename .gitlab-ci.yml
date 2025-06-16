@@ -63,6 +63,9 @@ test-prepare:
     stage: pre-test
 
     script:
+        - apt update
+        - apt install --yes swig
+
         - uv sync --locked --no-editable
 
     artifacts:
