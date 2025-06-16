@@ -139,7 +139,7 @@ test-playwright:
         - git clone https://gitlab.green-rabbit.net/kimata/hems_config.git
         - mv hems_config/rasp-water.yaml config.yaml
 
-        - uv run laywright install --with-deps chromium # NOTE: キャッシュを使うより速い
+        - uv run playwright install --with-deps chromium # NOTE: キャッシュを使うより速い
         - uv run python ./flask/src/app.py -d 2>&1 > flask_log.txt &
         - uv run pytest --tracing on --output tests/evidence/playwright --junit-xml=tests/evidence/playwright-${TEST_NAME}-junit.xml tests/test_playwright.py::${TEST_NAME}
 
