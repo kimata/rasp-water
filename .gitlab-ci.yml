@@ -96,9 +96,7 @@ test-walk-through:
 
     needs:
         - job: build-angular
-          artifacts: true
         - job: test-prepare
-          artifacts: true
 
     script:
         - uv run pytest --timeout=60 --numprocesses=auto --verbosity=1 --junit-xml=tests/evidence/junit-report.xml tests/test_basic.py
@@ -130,7 +128,6 @@ test-playwright:
 
     needs:
         - job: build-angular
-          artifacts: true
         - job: test-prepare
           artifacts: false
 
@@ -168,28 +165,31 @@ test-playwright:
         reports:
             junit: tests/evidence/playwright-*-junit.xml
 
-test-playwright-docker:
+.test-playwright-docker-base:
     stage: test
 
     needs:
         - build-image
-        - job: test-prepare
-          artifacts: false
+        - test-prepare
 
     parallel:
         matrix: *playwright_test_matrix
 
+    variables:
+        JOB_TYPE: docker
+        CONFIG_ARGS: "-d"
+
     script:
-        - docker ps --filter "label=test=${TEST_NAME}" --filter "label=job=test-playwright-docker" | grep hours | cut -d " " -f1 | while read id; do docker stop -t 5 $id; done || true
+        - docker ps --filter "label=test=${TEST_NAME}" --filter "label=job=test-playwright-${JOB_TYPE}" | grep hours | cut -d " " -f1 | while read id; do docker stop -t 5 $id; done || true
         - docker pull ${CI_REGISTRY_IMAGE}
-        - export CONTAINER_NAME="test-playwright-docker-${TEST_NAME}-${CI_JOB_ID}"
-        - docker run --rm --detach=true --tty=true --name ${CONTAINER_NAME} --label job=test-playwright-docker --label test=${TEST_NAME} ${CI_REGISTRY_IMAGE} ./flask/src/app.py -d
+        - export CONTAINER_NAME="test-playwright-${JOB_TYPE}-${TEST_NAME}-${CI_JOB_ID}"
+        - docker run --rm --detach=true --tty=true --name ${CONTAINER_NAME} --label job=test-playwright-${JOB_TYPE} --label test=${TEST_NAME} ${CI_REGISTRY_IMAGE} ./flask/src/app.py ${CONFIG_ARGS}
 
         - TARGET_IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${CONTAINER_NAME})
         - 'echo "Target: ${TARGET_IP}"'
 
         - uv run playwright install --with-deps chromium # NOTE: キャッシュを使うより速い
-        - uv run pytest --tracing on --output tests/evidence/playwright --junit-xml=tests/evidence/playwright-docker-${TEST_NAME}-junit.xml "tests/test_playwright.py::${TEST_NAME}" --host ${TARGET_IP}
+        - uv run pytest --tracing on --output tests/evidence/playwright --junit-xml=tests/evidence/playwright-${JOB_TYPE}-${TEST_NAME}-junit.xml "tests/test_playwright.py::${TEST_NAME}" --host ${TARGET_IP}
 
         - docker logs ${CONTAINER_NAME} > flask_log.txt
         - docker stop ${CONTAINER_NAME}
@@ -214,55 +214,16 @@ test-playwright-docker:
         paths:
             - tests/evidence/**
         reports:
-            junit: tests/evidence/playwright-docker-*-junit.xml
+            junit: tests/evidence/playwright-${JOB_TYPE}-*-junit.xml
+
+test-playwright-docker:
+    extends: .test-playwright-docker-base
 
 test-playwright-docker-demo:
-    stage: test
-
-    needs:
-        - build-image
-        - job: test-prepare
-          artifacts: false
-
-    parallel:
-        matrix: *playwright_test_matrix
-
-    script:
-        - docker ps --filter "label=test=${TEST_NAME}" --filter "label=job=test-playwright-docker-demo" | grep hours | cut -d " " -f1 | while read id; do docker stop -t 5 $id; done || true
-        - docker pull ${CI_REGISTRY_IMAGE}
-        - export CONTAINER_NAME="test-playwright-docker-demo-${TEST_NAME}-${CI_JOB_ID}"
-        - docker run --rm --detach=true --tty=true --name ${CONTAINER_NAME} --label job=test-playwright-docker-demo --label test=${TEST_NAME} ${CI_REGISTRY_IMAGE} ./flask/src/app.py -d -c config.example.yaml
-
-        - TARGET_IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${CONTAINER_NAME})
-        - 'echo "Target: ${TARGET_IP}"'
-
-        - uv run playwright install --with-deps chromium # NOTE: キャッシュを使うより速い
-        - uv run pytest --tracing on --output tests/evidence/playwright --junit-xml=tests/evidence/playwright-docker-demo-${TEST_NAME}-junit.xml "tests/test_playwright.py::${TEST_NAME}" --host ${TARGET_IP}
-
-        - docker logs ${CONTAINER_NAME} > flask_log.txt
-        - docker stop ${CONTAINER_NAME}
-
-    cache:
-        - key:
-            files:
-                - pyproject.toml
-                - .gitlab-ci.yml
-            prefix: ${CI_COMMIT_REF_SLUG}-venv
-          paths:
-            - .venv
-          policy: pull
-
-        - key: ${CI_COMMIT_REF_SLUG}-uv-toolchain
-          paths:
-            - .uv_python
-          policy: pull
-
-    artifacts:
-        when: always
-        paths:
-            - tests/evidence/**
-        reports:
-            junit: tests/evidence/playwright-docker-demo-*-junit.xml
+    extends: .test-playwright-docker-base
+    variables:
+        JOB_TYPE: docker-demo
+        CONFIG_ARGS: "-d -c config.example.yaml"
 
 test-healthz-docker:
     stage: test
