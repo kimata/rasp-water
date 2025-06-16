@@ -30,7 +30,7 @@ packages = ["flask/src/rasp_water"]
 [tool.hatch.metadata]
 allow-direct-references = true
 
-[tool.rye]
+[tool.uv]
 managed = true
 dev-dependencies = [
     "flaky>=3.8.1",
@@ -44,7 +44,6 @@ dev-dependencies = [
     "pytest>=8.3.2",
     "pytest-timeout>=2.4.0",
 ]
-
 
 [tool.pytest.ini_options]
 minversion = "6.0"
