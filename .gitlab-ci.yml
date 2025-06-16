@@ -338,9 +338,11 @@ deploy-webapp:
         name: bitnami/kubectl:latest
         entrypoint: [""]
     script:
+        - 'TAG="$(date +%y%m%d)_${CI_COMMIT_SHORT_SHA}"'
         - kubectl config get-contexts
         - kubectl config use-context kimata/rasp-water:pod-rollout
-        - kubectl --insecure-skip-tls-verify=true rollout restart -n hems deployment rasp-water
+        - kubectl --insecure-skip-tls-verify=true -n hems set image deployment/rasp-water-deployment rasp-water=${CI_REGISTRY_IMAGE}:${TAG}
+        - kubectl --insecure-skip-tls-verify=true -n hems rollout status deployment/rasp-water-deployment
     rules:
         # NOTE: 自動実行ではデプロイしない
         - if: '$CI_PIPELINE_SOURCE == "schedule"'
@@ -362,9 +364,11 @@ deploy-webapp-demo:
         entrypoint: [""]
 
     script:
+        - 'TAG="$(date +%y%m%d)_${CI_COMMIT_SHORT_SHA}"'
         - kubectl config get-contexts
         - kubectl config use-context kimata/rasp-water:pod-rollout
-        - kubectl --insecure-skip-tls-verify=true rollout restart -n hems deployment rasp-water-demo
+        - kubectl --insecure-skip-tls-verify=true -n hems set image deployment/rasp-water-demo-deployment rasp-water-demo=${CI_REGISTRY_IMAGE}:${TAG}
+        - kubectl --insecure-skip-tls-verify=true -n hems rollout status deployment/rasp-water-demo-deployment
 
     rules:
         # NOTE: 自動実行ではデプロイしない
