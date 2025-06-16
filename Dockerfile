@@ -1,4 +1,4 @@
-FROM python:3.12-bookworm AS build
+FROM python:3.13-bookworm AS build
 
 RUN --mount=type=cache,target=/var/lib/apt,sharing=locked \
     --mount=type=cache,target=/var/cache/apt,sharing=locked \
@@ -28,18 +28,18 @@ RUN --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
 # Clean up dependencies
 FROM build AS deps-cleanup
 RUN --mount=type=cache,target=/root/.cache/pip,sharing=locked \
-    find /usr/local/lib/python3.12/site-packages -name "*.pyc" -delete && \
-    find /usr/local/lib/python3.12/site-packages -name "__pycache__" -type d -delete
+    find /usr/local/lib/python3.13/site-packages -name "*.pyc" -delete && \
+    find /usr/local/lib/python3.13/site-packages -name "__pycache__" -type d -delete
 
 
-FROM python:3.12-slim-bookworm AS prod
+FROM python:3.13-slim-bookworm AS prod
 
 ARG IMAGE_BUILD_DATE
 ENV IMAGE_BUILD_DATE=${IMAGE_BUILD_DATE}
 
 ENV TZ=Asia/Tokyo
 
-COPY --from=deps-cleanup /usr/local/lib/python3.12/site-packages /usr/local/lib/python3.12/site-packages
+COPY --from=deps-cleanup /usr/local/lib/python3.13/site-packages /usr/local/lib/python3.13/site-packages
 
 WORKDIR /opt/rasp-water
 
