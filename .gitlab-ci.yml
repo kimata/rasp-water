@@ -289,7 +289,7 @@ tag-latest:
         - when: on_success
 
 
-deploy-webapp:
+deploy:
     stage: deploy
 
     needs:
@@ -304,36 +304,25 @@ deploy-webapp:
         entrypoint: [""]
     script:
         - 'TAG="$(date +%y%m%d)_${CI_COMMIT_SHORT_SHA}"'
+        - 'IMAGE="${CI_REGISTRY_IMAGE}:${TAG}"'
+        - 'echo "Deploying image: $IMAGE"'
+
+        # イメージの存在確認
+        - 'echo "Checking if image exists..."'
+        - 'docker manifest inspect $IMAGE >/dev/null || (echo "Error: Image $IMAGE not found" && exit 1)'
+        - 'echo "✓ Image $IMAGE found"'
+
         - kubectl config get-contexts
         - kubectl config use-context kimata/rasp-water:pod-rollout
-        - kubectl --insecure-skip-tls-verify=true -n hems set image deployment/rasp-water rasp-water=${CI_REGISTRY_IMAGE}:${TAG}
-        - kubectl --insecure-skip-tls-verify=true -n hems rollout status deployment/rasp-water
-    rules:
-        # NOTE: 自動実行ではデプロイしない
-        - if: '$CI_PIPELINE_SOURCE == "schedule"'
-          when: never
-        - when: on_success
 
-deploy-webapp-demo:
-    stage: deploy
+        - kubectl --insecure-skip-tls-verify=true -n hems set image deployment/rasp-water rasp-water=$IMAGE --record
+        - kubectl --insecure-skip-tls-verify=true -n hems set image deployment/rasp-water-demo rasp-water-demo=$IMAGE --record
 
-    needs:
-        - test-walk-through
-        - test-playwright
-        - test-playwright-docker
-        - test-playwright-docker-demo
-        - test-healthz-docker
+        - kubectl --insecure-skip-tls-verify=true -n hems rollout status deployment/rasp-water --timeout=120s
+        - kubectl --insecure-skip-tls-verify=true -n hems rollout status deployment/rasp-water-demo --timeout=120s
 
-    image:
-        name: bitnami/kubectl:latest
-        entrypoint: [""]
+        - 'echo "✓ All deployments updated successfully to $TAG"'
 
-    script:
-        - 'TAG="$(date +%y%m%d)_${CI_COMMIT_SHORT_SHA}"'
-        - kubectl config get-contexts
-        - kubectl config use-context kimata/rasp-water:pod-rollout
-        - kubectl --insecure-skip-tls-verify=true -n hems set image deployment/rasp-water-demo rasp-water-demo=${CI_REGISTRY_IMAGE}:${TAG}
-        - kubectl --insecure-skip-tls-verify=true -n hems rollout status deployment/rasp-water-demo
 
     rules:
         # NOTE: 自動実行ではデプロイしない
