@@ -97,6 +97,7 @@ test-walk-through:
     stage: test
 
     needs:
+        - build-angular
         - test-prepare
 
     script:
