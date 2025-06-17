@@ -62,6 +62,8 @@ build-image:
 test-prepare:
     stage: pre-test
 
+    needs: []
+
     script:
         - apt update
         - apt install --yes swig
@@ -95,11 +97,10 @@ test-walk-through:
     stage: test
 
     needs:
-        - job: build-angular
-        - job: test-prepare
+        - test-prepare
 
     script:
-        - uv run pytest --timeout=60 --numprocesses=auto --verbosity=1 --junit-xml=tests/evidence/junit-report.xml tests/test_basic.py
+        - uv run pytest --numprocesses=auto --verbosity=1 --junit-xml=tests/evidence/junit-report.xml tests/test_basic.py
 
     cache:
         - key:
@@ -127,9 +128,9 @@ test-playwright:
     stage: test
 
     needs:
-        - job: build-angular
-        - job: test-prepare
-          artifacts: false
+        - build-angular
+        - test-prepare
+
 
     parallel:
         matrix: *playwright_test_matrix
