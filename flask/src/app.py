@@ -89,8 +89,8 @@ def create_app(config, dummy_mode=False):
     app.register_blueprint(rasp_water.webapp_valve.blueprint)
     app.register_blueprint(rasp_water.webapp_schedule.blueprint)
 
-    app.register_blueprint(my_lib.webapp.base.get_blueprint())
-    app.register_blueprint(my_lib.webapp.base.get_blueprint_default())
+    app.register_blueprint(my_lib.webapp.base.blueprint)
+    app.register_blueprint(my_lib.webapp.base.blueprint_default)
     app.register_blueprint(my_lib.webapp.event.blueprint)
     app.register_blueprint(my_lib.webapp.log.blueprint)
     app.register_blueprint(my_lib.webapp.util.blueprint)
