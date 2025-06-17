@@ -97,7 +97,8 @@ test-walk-through:
     stage: test
 
     needs:
-        - build-angular
+        - job: build-angular
+          artifacts: false
         - test-prepare
 
     script:
@@ -129,7 +130,8 @@ test-playwright:
     stage: test
 
     needs:
-        - build-angular
+        - job: build-angular
+          artifacts: false
         - test-prepare
 
 
@@ -171,7 +173,8 @@ test-playwright:
     stage: test
 
     needs:
-        - build-image
+        - job: build-image
+          artifacts: false
         - test-prepare
 
     parallel:
@@ -232,7 +235,8 @@ test-healthz-docker:
     stage: test
 
     needs:
-        - build-image
+        - job: build-image
+          artifacts: false
 
     script:
         - 'TAG="$(date +%y%m%d)_${CI_COMMIT_SHORT_SHA}"'
@@ -255,7 +259,8 @@ test-healthz-docker:
 pages:
     stage: test
     needs:
-        - test-walk-through
+        - job: test-walk-through
+          artifacts: false
 
     script:
         - mkdir -p public/
@@ -273,11 +278,16 @@ tag-latest:
     stage: tag-latest
 
     needs:
-        - test-walk-through
-        - test-playwright
-        - test-playwright-docker
-        - test-playwright-docker-demo
-        - test-healthz-docker
+        - job: test-walk-through
+          artifacts: false
+        - job: test-playwright
+          artifacts: false
+        - job: test-playwright-docker
+          artifacts: false
+        - job: test-playwright-docker-demo
+          artifacts: false
+        - job: test-healthz-docker
+          artifacts: false
 
     script:
         - 'TAG="$(date +%y%m%d)_${CI_COMMIT_SHORT_SHA}"'
@@ -296,11 +306,16 @@ deploy:
     stage: deploy
 
     needs:
-        - test-walk-through
-        - test-playwright
-        - test-playwright-docker
-        - test-playwright-docker-demo
-        - test-healthz-docker
+        - job: test-walk-through
+          artifacts: false
+        - job: test-playwright
+          artifacts: false
+        - job: test-playwright-docker
+          artifacts: false
+        - job: test-playwright-docker-demo
+          artifacts: false
+        - job: test-healthz-docker
+          artifacts: false
 
     image:
         name: bitnami/kubectl:latest
