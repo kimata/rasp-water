@@ -13,8 +13,11 @@ import my_lib.config
 import my_lib.notify.slack
 import my_lib.webapp.config
 import pytest
-from app import create_app
 from rasp_water.weather_forecast import get_rain_fall as get_rain_fall_orig
+
+# NOTE: モジュールインポートより前にURL_PREFIXを設定することが重要
+my_lib.webapp.config.URL_PREFIX = "/rasp-water"
+
 
 CONFIG_FILE = "config.example.yaml"
 SCHEMA_CONFIG = "config.schema"
@@ -57,8 +60,8 @@ def _clear():
 
 @pytest.fixture()
 def app(config):
-    # NOTE: モジュールインポートより前にURL_PREFIXを設定することが重要
-    my_lib.webapp.config.URL_PREFIX = "/rasp-water"
+    from app import create_app
+
     my_lib.webapp.config.init(config)
 
     with mock.patch.dict("os.environ", {"WERKZEUG_RUN_MAIN": "true"}):
