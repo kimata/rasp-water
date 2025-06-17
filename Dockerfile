@@ -1,4 +1,4 @@
-ARG PYTHON_VERSION=3.12
+ARG PYTHON_VERSION=3.12 # NOTE: 3.13 だと rpi-lgpio のインストールでコケる
 FROM python:${PYTHON_VERSION}-bookworm AS build
 
 RUN --mount=type=cache,target=/var/lib/apt,sharing=locked \
