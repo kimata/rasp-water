@@ -206,6 +206,6 @@ GitHub Actions によるCI/CDパイプライン：
 
 **⭐ このプロジェクトが役に立った場合は、Star をお願いします！**
 
-[🐛 Issue 報告](https://github.com/kimata/my-py-lib/issues) | [💡 Feature Request](https://github.com/kimata/my-py-lib/issues/new?template=feature_request.md) | [📖 Wiki](https://github.com/kimata/my-py-lib/wiki)
+[🐛 Issue 報告](https://github.com/kimata/rasp-water/issues) | [💡 Feature Request](https://github.com/kimata/rasp-water/issues/new?template=feature_request.md) | [📖 Wiki](https://github.com/kimata/rasp-water/wiki)
 
 </div>
