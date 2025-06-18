@@ -20,7 +20,7 @@ Raspberry Pi と電磁弁を使って、植物への水やりを自動化する�
 
 ## 🖼️ スクリーンショット
 
-<img src="screenshot.png" width="777" alt="rasp-water UI">
+<img src="screenshot.png" width="388" alt="rasp-water UI">
 
 ## 🎮 デモ
 
