@@ -332,8 +332,8 @@ deploy:
         - kubectl config get-contexts
         - kubectl config use-context kimata/rasp-water:pod-rollout
 
-        - kubectl --insecure-skip-tls-verify=true -n hems set image deployment/rasp-water rasp-water=${IMAGE} --record
-        - kubectl --insecure-skip-tls-verify=true -n hems set image deployment/rasp-water-demo rasp-water-demo=${IMAGE} --record
+        - kubectl --insecure-skip-tls-verify=true -n hems set image deployment/rasp-water rasp-water=${IMAGE}
+        - kubectl --insecure-skip-tls-verify=true -n hems set image deployment/rasp-water-demo rasp-water-demo=${IMAGE}
 
         - kubectl --insecure-skip-tls-verify=true -n hems rollout status deployment/rasp-water --timeout=120s
         - kubectl --insecure-skip-tls-verify=true -n hems rollout status deployment/rasp-water-demo --timeout=120s
