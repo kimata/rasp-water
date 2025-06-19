@@ -33,7 +33,7 @@ generate-tag:
 build-angular:
     stage: build-webapp
 
-    image: node:22.6
+    image: node:22.16
     script:
         - npm ci --cache .npm --prefer-offline
         - npm run build
