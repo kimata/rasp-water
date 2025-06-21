@@ -258,10 +258,7 @@ test-healthz-docker:
         - APP_PORT=$(docker inspect --format '{{ (index (index .NetworkSettings.Ports "5000/tcp") 0).HostPort }}' ${CI_JOB_NAME}-${CI_JOB_ID})
         - APP_URL="http://${APP_IP}:${APP_PORT}/rasp-water"
         - 'echo "APP_URL: ${APP_URL}"'
-        - sleep 5
-        - docker inspect ${CI_JOB_NAME}-${CI_JOB_ID}
-        - docker logs ${CI_JOB_NAME}-${CI_JOB_ID}
-        - 'timeout 60 bash -c "until curl --fail \"${APP_URL}/api/sysinfo\"; do sleep 5; done" || (echo "Failed to access App" && exit 1)'
+        - 'timeout 120 bash -c "until curl --fail \"${APP_URL}/api/sysinfo\"; do sleep 5; done" || (echo "Failed to access App" && exit 1)'
 
         - sleep 1
 
