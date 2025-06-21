@@ -6,7 +6,8 @@ services:
         tty: true
         stdin_open: true
         volumes:
-            - ./flask/data:/opt/rasp-shutter/flask/data
+            - ./flask/data:/opt/rasp-water/flask/data
+            - ./config.example.yaml:/opt/rasp-water/config.yaml:ro
         ports:
             - "5000:5000"
 
