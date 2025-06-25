@@ -13,7 +13,14 @@
                         "development": {
                             "extractLicenses": false,
                             "namedChunks": true,
-                            "optimization": false,
+                            "optimization": {
+                                "styles": {
+                                    "minify": false,
+                                    "inlineCritical": false
+                                },
+                                "scripts": false,
+                                "fonts": false
+                            },
                             "sourceMap": true
                         },
                         "production": {
@@ -35,6 +42,14 @@
                                     "with": "src/environments/environment.prod.ts"
                                 }
                             ],
+                            "optimization": {
+                                "styles": {
+                                    "inlineCritical": false,
+                                    "removeSpecialComments": false
+                                },
+                                "scripts": true,
+                                "fonts": true
+                            },
                             "outputHashing": "all"
                         }
                     },
@@ -57,6 +72,9 @@
                             "node_modules/bootstrap/dist/js/bootstrap.min.js"
                         ],
                         "styles": ["src/styles.scss"],
+                        "stylePreprocessorOptions": {
+                            "includePaths": ["node_modules"]
+                        },
                         "tsConfig": "tsconfig.app.json"
                     }
                 },
