@@ -42,7 +42,7 @@ export interface LogResponse {
     selector: 'app-log',
     templateUrl: './log.component.html',
     styleUrls: ['./log.component.scss'],
-    imports: [NgIf, NgFor, NgbPagination, SlicePipe, NewlinePipe]
+    imports: [NgIf, NgFor, NgbPagination, SlicePipe, NewlinePipe],
 })
 export class LogComponent implements OnInit {
     private subscription: Subscription = Subscription.EMPTY;
@@ -56,7 +56,7 @@ export class LogComponent implements OnInit {
         private http: HttpClient,
         private pushService: PushService,
         private toast: ToastService,
-        @Inject('ApiEndpoint') private readonly API_URL: string
+        @Inject('ApiEndpoint') private readonly API_URL: string,
     ) {}
 
     ngOnInit() {
@@ -79,24 +79,27 @@ export class LogComponent implements OnInit {
                     title: '成功',
                 });
             },
-            (error) => {}
+            (error) => {},
         );
     }
 
     updateLog() {
-        this.http.jsonp<LogResponse>(`${this.API_URL}/log_view`, 'callback').subscribe(
-            (res: LogResponse) => {
-                this.log = res['data'];
-                for (const entry in this.log) {
-                    const date = dayjs(this.log[entry]['date']);
-                    this.log[entry]['date'] = date.format('M月D日(ddd) HH:mm');
-                    this.log[entry]['fromNow'] = date.fromNow();
-                }
-                this.error = false;
-            },
-            (error) => {
-                this.error = true;
-            }
-        );
+        this.http
+            .jsonp<LogResponse>(`${this.API_URL}/log_view`, 'callback')
+            .subscribe(
+                (res: LogResponse) => {
+                    this.log = res['data'];
+                    for (const entry in this.log) {
+                        const date = dayjs(this.log[entry]['date']);
+                        this.log[entry]['date'] =
+                            date.format('M月D日(ddd) HH:mm');
+                        this.log[entry]['fromNow'] = date.fromNow();
+                    }
+                    this.error = false;
+                },
+                (error) => {
+                    this.error = true;
+                },
+            );
     }
 }

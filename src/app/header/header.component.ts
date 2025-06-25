@@ -5,7 +5,7 @@ import { NgStyle } from '@angular/common';
     selector: 'app-header',
     templateUrl: './header.component.html',
     styleUrls: ['./header.component.scss'],
-    imports: [NgStyle]
+    imports: [NgStyle],
 })
 export class HeaderComponent implements OnInit {
     constructor() {}

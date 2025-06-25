@@ -8,11 +8,14 @@ repos:
           - id: end-of-file-fixer
           - id: check-added-large-files
             args: [--maxkb=4096]
-          - id: check-json
-            exclude: ^.vscode/|tsconfig.spec.json
-          - id: pretty-format-json
-            args: ["--autofix", "--indent=2"]
-            exclude: ^.vscode/|tsconfig.spec.json
+
+    - repo: local
+      hooks:
+          - id: prettier
+            name: Run prettier
+            entry: npx prettier --write
+            language: system
+            files: "\\.(js|ts|json|css|html|ya?ml|md)$"
 
     - repo: https://github.com/astral-sh/ruff-pre-commit
       rev: v0.12.0

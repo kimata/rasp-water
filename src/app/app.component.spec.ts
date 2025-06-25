@@ -1,13 +1,19 @@
 import { TestBed, async } from '@angular/core/testing';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { AppComponent } from './app.component';
-import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import {
+    provideHttpClient,
+    withInterceptorsFromDi,
+} from '@angular/common/http';
 
 describe('AppComponent', () => {
     beforeEach(async(() => {
         TestBed.configureTestingModule({
             imports: [AppComponent],
-            providers: [provideHttpClient(withInterceptorsFromDi()), provideHttpClientTesting()],
+            providers: [
+                provideHttpClient(withInterceptorsFromDi()),
+                provideHttpClientTesting(),
+            ],
         }).compileComponents();
     }));
 
@@ -27,6 +33,8 @@ describe('AppComponent', () => {
         const fixture = TestBed.createComponent(AppComponent);
         fixture.detectChanges();
         const compiled = fixture.debugElement.nativeElement;
-        expect(compiled.querySelector('h1').textContent).toContain('Welcome to waterctrl!');
+        expect(compiled.querySelector('h1').textContent).toContain(
+            'Welcome to waterctrl!',
+        );
     });
 });

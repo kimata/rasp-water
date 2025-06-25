@@ -7,7 +7,7 @@ import { NgFor } from '@angular/common';
     selector: 'app-toast',
     templateUrl: './toast.component.html',
     styleUrls: ['./toast.component.scss'],
-    imports: [NgFor, NgbToast, NgbToastHeader]
+    imports: [NgFor, NgbToast, NgbToastHeader],
 })
 export class ToastComponent implements OnInit {
     constructor(public toastService: ToastService) {}

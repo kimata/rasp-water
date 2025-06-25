@@ -9,7 +9,10 @@ import dayjs from 'dayjs';
 dayjs.locale('ja');
 
 import { PushService } from '../../service/push.service';
-import { SchedulerEntryComponent, ScheduleEntry } from '../scheduler-entry/scheduler-entry.component';
+import {
+    SchedulerEntryComponent,
+    ScheduleEntry,
+} from '../scheduler-entry/scheduler-entry.component';
 import { NgIf } from '@angular/common';
 import { Subscription } from 'rxjs';
 
@@ -17,14 +20,14 @@ import { Subscription } from 'rxjs';
     selector: 'app-scheduler-control',
     templateUrl: './scheduler-control.component.html',
     styleUrls: ['./scheduler-control.component.scss'],
-    imports: [NgIf, SchedulerEntryComponent]
+    imports: [NgIf, SchedulerEntryComponent],
 })
 export class SchedulerControlComponent implements OnInit {
     constructor(
         private http: HttpClient,
         private pushService: PushService,
         public toast: ToastService,
-        @Inject('ApiEndpoint') private readonly API_URL: string
+        @Inject('ApiEndpoint') private readonly API_URL: string,
     ) {}
 
     private subscription: Subscription = Subscription.EMPTY;
@@ -72,7 +75,9 @@ export class SchedulerControlComponent implements OnInit {
             param = param.set('data', JSON.stringify(sendState));
         }
         this.http
-            .jsonp<ScheduleEntry[]>(`${this.API_URL}/schedule_ctrl?${param.toString()}`, 'callback')
+            .jsonp<
+                ScheduleEntry[]
+            >(`${this.API_URL}/schedule_ctrl?${param.toString()}`, 'callback')
             .subscribe(
                 (res: ScheduleEntry[]) => {
                     if (this.savedState == null) {
@@ -91,7 +96,7 @@ export class SchedulerControlComponent implements OnInit {
                 },
                 (error) => {
                     this.error = true;
-                }
+                },
             );
     }
 
@@ -105,13 +110,19 @@ export class SchedulerControlComponent implements OnInit {
         if (time instanceof dayjs) {
             return (time as dayjs.Dayjs).format('HH:mm');
         } else {
-            return dayjs(dayjs().format('YYYY-MM-DD ') + time, 'YYYY-MM-DD HH:mm').format('HH:mm');
+            return dayjs(
+                dayjs().format('YYYY-MM-DD ') + time,
+                'YYYY-MM-DD HH:mm',
+            ).format('HH:mm');
         }
     }
 
     isStateDiffer(a: ScheduleEntry[], b: ScheduleEntry[]) {
         for (let i = 0; i < 2; i++) {
-            if (this.convertTime(a[i]['time']) !== this.convertTime(b[i]['time'])) {
+            if (
+                this.convertTime(a[i]['time']) !==
+                this.convertTime(b[i]['time'])
+            ) {
                 return true;
             }
             if (a[i]['is_active'] !== b[i]['is_active']) {

@@ -1,19 +1,38 @@
 <div class="row mb-4">
-    <div class="col-xl-6 offset-xl-3 col-lg-8 offset-lg-2 col-md-10 offset-md-1">
+    <div
+        class="col-xl-6 offset-xl-3 col-lg-8 offset-lg-2 col-md-10 offset-md-1"
+    >
         <h2>実行ログ</h2>
         <div class="container">
-            <div class="alert alert-danger mt-3" role="alert" *ngIf="error; else elseContent">
+            <div
+                class="alert alert-danger mt-3"
+                role="alert"
+                *ngIf="error; else elseContent"
+            >
                 ログを取得できませんでした。
             </div>
             <ng-template #elseContent>
-                <p *ngIf="log?.length == 0; else elseContent">ログがありません。</p>
+                <p *ngIf="log?.length == 0; else elseContent">
+                    ログがありません。
+                </p>
                 <ng-template #elseContent>
-                    <div class="row" *ngFor="let entry of log | slice: (page - 1) * pageSize:page * pageSize">
+                    <div
+                        class="row"
+                        *ngFor="
+                            let entry of log
+                                | slice: (page - 1) * pageSize : page * pageSize
+                        "
+                    >
                         <div class="col-12 font-weight-bold">
                             {{ entry.date }}
-                            <small class="text-muted">({{ entry.fromNow }})</small>
+                            <small class="text-muted"
+                                >({{ entry.fromNow }})</small
+                            >
                         </div>
-                        <div class="col-12 log-message mb-1" [innerHTML]="entry.message | nl2br"></div>
+                        <div
+                            class="col-12 log-message mb-1"
+                            [innerHTML]="entry.message | nl2br"
+                        ></div>
                         <hr class="dashed" />
                     </div>
                     <ngb-pagination
@@ -28,7 +47,11 @@
         </div>
         <div class="container">
             <div class="row">
-                <button type="button" class="btn btn-primary col" (click)="clear()">
+                <button
+                    type="button"
+                    class="btn btn-primary col"
+                    (click)="clear()"
+                >
                     <i class="bi bi-file-earmark-x"></i>
                     クリア
                 </button>

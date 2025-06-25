@@ -1,31 +1,28 @@
 {
-  "angularCompilerOptions": {
-    "enableI18nLegacyMessageIdFormat": false,
-    "strictInjectionParameters": true,
-    "strictInputAccessModifiers": true,
-    "strictTemplates": true
-  },
-  "compileOnSave": false,
-  "compilerOptions": {
-    "baseUrl": "./",
-    "declaration": false,
-    "esModuleInterop": true,
-    "experimentalDecorators": true,
-    "forceConsistentCasingInFileNames": true,
-    "importHelpers": true,
-    "lib": [
-      "es2020",
-      "dom"
-    ],
-    "module": "es2020",
-    "moduleResolution": "node",
-    "noFallthroughCasesInSwitch": true,
-    "noImplicitOverride": true,
-    "noImplicitReturns": true,
-    "noPropertyAccessFromIndexSignature": true,
-    "outDir": "./dist/out-tsc",
-    "sourceMap": true,
-    "strict": true,
-    "target": "es2022"
-  }
+    "angularCompilerOptions": {
+        "enableI18nLegacyMessageIdFormat": false,
+        "strictInjectionParameters": true,
+        "strictInputAccessModifiers": true,
+        "strictTemplates": true
+    },
+    "compileOnSave": false,
+    "compilerOptions": {
+        "baseUrl": "./",
+        "declaration": false,
+        "esModuleInterop": true,
+        "experimentalDecorators": true,
+        "forceConsistentCasingInFileNames": true,
+        "importHelpers": true,
+        "lib": ["es2020", "dom"],
+        "module": "es2020",
+        "moduleResolution": "node",
+        "noFallthroughCasesInSwitch": true,
+        "noImplicitOverride": true,
+        "noImplicitReturns": true,
+        "noPropertyAccessFromIndexSignature": true,
+        "outDir": "./dist/out-tsc",
+        "sourceMap": true,
+        "strict": true,
+        "target": "es2022"
+    }
 }

@@ -22,7 +22,7 @@ export interface FlowResponse {
     selector: 'app-valve-control',
     templateUrl: './valve-control.component.html',
     styleUrls: ['./valve-control.component.scss'],
-    imports: [NgIf, FormsModule, DecimalPipe, PercentPipe]
+    imports: [NgIf, FormsModule, DecimalPipe, PercentPipe],
 })
 export class ValveControlComponent implements OnInit {
     private subscription: Subscription = Subscription.EMPTY;
@@ -48,7 +48,7 @@ export class ValveControlComponent implements OnInit {
     constructor(
         private http: HttpClient,
         private pushService: PushService,
-        @Inject('ApiEndpoint') private readonly API_URL: string
+        @Inject('ApiEndpoint') private readonly API_URL: string,
     ) {}
 
     ngOnInit() {
@@ -77,7 +77,10 @@ export class ValveControlComponent implements OnInit {
             param = param.set('period', String(this.period * 60));
         }
         this.http
-            .jsonp<ControlResponse>(`${this.API_URL}/valve_ctrl?${param.toString()}`, 'callback')
+            .jsonp<ControlResponse>(
+                `${this.API_URL}/valve_ctrl?${param.toString()}`,
+                'callback',
+            )
             .subscribe(
                 (res: ControlResponse) => {
                     if (res['state'] == '1') {
@@ -91,7 +94,7 @@ export class ValveControlComponent implements OnInit {
                 (error) => {
                     this.error['ctrl'] = true;
                     this.loading = false;
-                }
+                },
             );
     }
 
@@ -111,25 +114,27 @@ export class ValveControlComponent implements OnInit {
     }
 
     updateFlow() {
-        this.http.jsonp<FlowResponse>(`${this.API_URL}/valve_flow`, 'callback').subscribe(
-            (res: FlowResponse) => {
-                this.flow = Math.min(Number(res['flow']), this.FLOW_MAX);
-                this.error['flow'] = false;
-                if (this.flow < 0.03) {
-                    this.flowZeroCount++;
-                } else {
-                    this.flowZeroCount = 0;
-                }
+        this.http
+            .jsonp<FlowResponse>(`${this.API_URL}/valve_flow`, 'callback')
+            .subscribe(
+                (res: FlowResponse) => {
+                    this.flow = Math.min(Number(res['flow']), this.FLOW_MAX);
+                    this.error['flow'] = false;
+                    if (this.flow < 0.03) {
+                        this.flowZeroCount++;
+                    } else {
+                        this.flowZeroCount = 0;
+                    }
 
-                // NOTE: バルブを閉じてから、流量が 0 になって落ち着いたら、
-                // 流量バーの更新を停止する．
-                if (this.flowZeroCount == 10 && !this.state) {
-                    this.unwatchFlow();
-                }
-            },
-            (error) => {
-                this.error['flow'] = true;
-            }
-        );
+                    // NOTE: バルブを閉じてから、流量が 0 になって落ち着いたら、
+                    // 流量バーの更新を停止する．
+                    if (this.flowZeroCount == 10 && !this.state) {
+                        this.unwatchFlow();
+                    }
+                },
+                (error) => {
+                    this.error['flow'] = true;
+                },
+            );
     }
 }

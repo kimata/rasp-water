@@ -31,18 +31,21 @@ Raspberry Pi と電磁弁を使って、植物への水やりを自動化する�
 ## 🏗️ システム構成
 
 ### フロントエンド
+
 - **フレームワーク**: Angular 19
 - **UIライブラリ**: Bootstrap 5 + ng-bootstrap
 - **アイコン**: FontAwesome
 - **日時選択**: Tempus Dominus
 
 ### バックエンド
+
 - **フレームワーク**: Flask (Python)
 - **GPIO制御**: rpi-lgpio
 - **データベース**: SQLite
 - **タスクスケジューラ**: Python schedule
 
 ### ハードウェア
+
 - **制御**: Raspberry Pi + 電磁弁
 - **センサー**: ADS1015 ADC (流量測定用)
 - **詳細**: [ハードウェア構成の詳細はブログ参照](https://rabbit-note.com/2018/12/31/raspberry-pi-watering-system-hard/)
@@ -82,6 +85,7 @@ cp config.example.yaml config.yaml
 ```
 
 設定項目の例：
+
 - GPIO ピン番号
 - センサーのキャリブレーション値
 - 天気予報API設定
@@ -151,6 +155,7 @@ uv run pytest tests/test_playwright.py
 ```
 
 テスト結果：
+
 - HTMLレポート: `tests/evidence/index.htm`
 - カバレッジ: `tests/evidence/coverage/`
 - E2E録画: `tests/evidence/test_*/`
@@ -158,15 +163,18 @@ uv run pytest tests/test_playwright.py
 ## 🎯 API エンドポイント
 
 ### バルブ制御
+
 - `GET /api/valve_ctrl` - バルブ状態取得
 - `POST /api/valve_ctrl` - バルブ開閉制御
 
 ### スケジュール管理
+
 - `GET /api/schedule_ctrl` - スケジュール一覧取得
 - `POST /api/schedule_ctrl` - スケジュール追加/更新
 - `DELETE /api/schedule_ctrl/<id>` - スケジュール削除
 
 ### ログ・履歴
+
 - `GET /api/log` - 水やり履歴取得
 
 ## ☸️ Kubernetes デプロイ
@@ -193,6 +201,7 @@ kubectl apply -f kubernetes/rasp-water.yaml
 ## 📊 CI/CD
 
 GitHub Actions によるCI/CDパイプライン：
+
 - テスト結果: https://kimata.github.io/rasp-water/
 - カバレッジレポート: https://kimata.github.io/rasp-water/coverage/
 

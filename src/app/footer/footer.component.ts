@@ -37,7 +37,10 @@ export class FooterComponent implements OnInit {
     loadAverage = '';
     interval = 0;
 
-    constructor(private http: HttpClient, @Inject('ApiEndpoint') private readonly API_URL: string) {}
+    constructor(
+        private http: HttpClient,
+        @Inject('ApiEndpoint') private readonly API_URL: string,
+    ) {}
 
     ngOnInit() {
         this.updateSysinfo();
@@ -47,29 +50,31 @@ export class FooterComponent implements OnInit {
     }
 
     updateSysinfo() {
-        this.http.jsonp<SysinfoResponse>(`${this.API_URL}/sysinfo`, 'callback').subscribe(
-            (res: SysinfoResponse) => {
-                const date = dayjs(res['date']);
-                const uptime = dayjs(res['uptime']);
+        this.http
+            .jsonp<SysinfoResponse>(`${this.API_URL}/sysinfo`, 'callback')
+            .subscribe(
+                (res: SysinfoResponse) => {
+                    const date = dayjs(res['date']);
+                    const uptime = dayjs(res['uptime']);
 
-                if (res['image_build_date'] !== '') {
-                    const imageBuildDate = dayjs(res['image_build_date']);
-                    this.imageBuildDate = imageBuildDate.format('llll');
-                    this.imageBuildDateFrom = imageBuildDate.fromNow();
-                } else {
-                    this.imageBuildDate = '?';
-                    this.imageBuildDateFrom = '?';
-                }
+                    if (res['image_build_date'] !== '') {
+                        const imageBuildDate = dayjs(res['image_build_date']);
+                        this.imageBuildDate = imageBuildDate.format('llll');
+                        this.imageBuildDateFrom = imageBuildDate.fromNow();
+                    } else {
+                        this.imageBuildDate = '?';
+                        this.imageBuildDateFrom = '?';
+                    }
 
-                this.date = date.format('llll');
-                this.timezone = res['timezone'];
-                this.uptime = uptime.format('llll');
-                this.uptimeFrom = uptime.fromNow();
-                this.loadAverage = res['load_average'];
-            },
-            (error) => {
-                // ignore
-            }
-        );
+                    this.date = date.format('llll');
+                    this.timezone = res['timezone'];
+                    this.uptime = uptime.format('llll');
+                    this.uptimeFrom = uptime.fromNow();
+                    this.loadAverage = res['load_average'];
+                },
+                (error) => {
+                    // ignore
+                },
+            );
     }
 }

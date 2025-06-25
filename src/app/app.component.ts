@@ -17,6 +17,6 @@ import { HeaderComponent } from './header/header.component';
         LogComponent,
         FooterComponent,
         ToastComponent,
-    ]
+    ],
 })
 export class AppComponent {}

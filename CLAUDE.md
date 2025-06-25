@@ -15,24 +15,27 @@ This is a Raspberry Pi automated watering system ("rasp-water") with the followi
 ## Core Components
 
 ### Frontend (Angular)
+
 - Main components: `valve-control`, `scheduler-control`, `log`, `header`, `footer`, `toast`
 - Services: `push.service`, `toast.service` for notifications
 - Built with Bootstrap 5 and ng-bootstrap for UI
 - Uses tempus-dominus for date/time picking and FontAwesome icons
 
 ### Backend (Flask)
+
 - Entry point: `flask/src/app.py` - main Flask server with blueprint registration
 - Core modules in `flask/src/rasp_water/`:
-  - `valve.py` - Electromagnetic valve control (customize {set,get}_state methods here)
-  - `scheduler.py` - Automated watering scheduling with weather integration
-  - `weather_forecast.py` - Yahoo weather API integration for rain predictions
-  - `weather_sensor.py` - Rain sensor data collection
-  - `webapp_*.py` - Web API endpoints for valve and schedule control
+    - `valve.py` - Electromagnetic valve control (customize {set,get}\_state methods here)
+    - `scheduler.py` - Automated watering scheduling with weather integration
+    - `weather_forecast.py` - Yahoo weather API integration for rain predictions
+    - `weather_sensor.py` - Rain sensor data collection
+    - `webapp_*.py` - Web API endpoints for valve and schedule control
 - Uses my-lib dependency for common webapp utilities, logging, and configuration
 
 ## Development Commands
 
 ### Frontend (Angular)
+
 ```bash
 # Install dependencies
 npm ci
@@ -54,6 +57,7 @@ npx eslint 'src/**/*.{ts,tsx}'
 ```
 
 ### Backend (Python)
+
 ```bash
 # Using Rye (recommended)
 rye sync
@@ -71,6 +75,7 @@ rye run python flask/src/app.py -d
 ```
 
 ### Testing
+
 ```bash
 # Run Python tests with coverage
 rye run pytest
@@ -87,6 +92,7 @@ rye run pytest tests/test_playwright.py
 ```
 
 ### Docker Deployment
+
 ```bash
 # Full build and run
 npm ci && npm run build
