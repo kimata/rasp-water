@@ -1,36 +1,36 @@
 # GitHubのDependabot設定例
 version: 2
 updates:
-  # Python dependencies
-  - package-ecosystem: "pip"
-    directory: "/"
-    schedule:
-      interval: "weekly"
-      day: "saturday"
-    groups:
-      python-minor:
-        patterns:
-          - "*"
-        update-types:
-          - "minor"
-          - "patch"
-    
-  # npm dependencies
-  - package-ecosystem: "npm"
-    directory: "/"
-    schedule:
-      interval: "weekly"
-      day: "saturday"
-    groups:
-      npm-minor:
-        patterns:
-          - "*"
-        update-types:
-          - "minor"
-          - "patch"
-    
-  # Docker base images
-  - package-ecosystem: "docker"
-    directory: "/"
-    schedule:
-      interval: "weekly"
+    # Python dependencies
+    - package-ecosystem: "pip"
+      directory: "/"
+      schedule:
+          interval: "weekly"
+          day: "saturday"
+      groups:
+          python-minor:
+              patterns:
+                  - "*"
+              update-types:
+                  - "minor"
+                  - "patch"
+
+    # npm dependencies
+    - package-ecosystem: "npm"
+      directory: "/"
+      schedule:
+          interval: "weekly"
+          day: "saturday"
+      groups:
+          npm-minor:
+              patterns:
+                  - "*"
+              update-types:
+                  - "minor"
+                  - "patch"
+
+    # Docker base images
+    - package-ecosystem: "docker"
+      directory: "/"
+      schedule:
+          interval: "weekly"

@@ -58,7 +58,7 @@ def _clear():
     ctrl_log_clear()
 
 
-@pytest.fixture()
+@pytest.fixture
 def app(config):
     from app import create_app
 
@@ -73,7 +73,7 @@ def app(config):
         test_terminate()
 
 
-@pytest.fixture()
+@pytest.fixture
 def client(app, mocker):
     import slack_sdk
 
@@ -159,9 +159,9 @@ def ctrl_log_check(expect_list, is_strict=True, is_error=True):
             assert len(hist_list) == len(expect_list)
             for i in range(len(expect_list)):
                 if expect_list[i]["state"] == "open":
-                    assert (
-                        hist_list[i] == expect_list[i]
-                    ), f"{i} 番目の操作が期待値と異なります。({hist_list[i]} != {expect_list[i]})"
+                    assert hist_list[i] == expect_list[i], (
+                        f"{i} 番目の操作が期待値と異なります。({hist_list[i]} != {expect_list[i]})"
+                    )
 
                 if "high_period" in expect_list[i]:
                     assert (hist_list[i] == expect_list[i]) or (
@@ -172,9 +172,9 @@ def ctrl_log_check(expect_list, is_strict=True, is_error=True):
                         }
                     ), f"{i} 番目の操作が期待値と異なります。({hist_list[i]} != {expect_list[i]})"
                 else:
-                    assert (
-                        hist_list[i] == expect_list[i]
-                    ), f"{i} 番目の操作が期待値と異なります。({hist_list[i]} != {expect_list[i]})"
+                    assert hist_list[i] == expect_list[i], (
+                        f"{i} 番目の操作が期待値と異なります。({hist_list[i]} != {expect_list[i]})"
+                    )
 
 
 def app_log_check(  # noqa: PLR0912, C901

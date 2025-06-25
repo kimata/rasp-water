@@ -1,16 +1,4 @@
 {
-  "name": "rasp-water",
-  "version": "0.0.0",
-  "type": "module",
-  "scripts": {
-    "ng": "ng",
-    "start": "npx angular-build-info && ng serve --host=0.0.0.0",
-    "build": "npx angular-build-info && ng build --base-href /rasp-water/",
-    "watch": "ng build --watch --configuration development",
-    "test": "ng test",
-    "prepare": "husky"
-  },
-  "private": true,
   "dependencies": {
     "@angular/animations": "~19.2.8",
     "@angular/common": "~19.2.8",
@@ -60,5 +48,17 @@
     "src/**/*.{ts,tsx}": [
       "npx eslint --fix"
     ]
-  }
+  },
+  "name": "rasp-water",
+  "private": true,
+  "scripts": {
+    "build": "npx angular-build-info && ng build --base-href /rasp-water/",
+    "ng": "ng",
+    "prepare": "husky",
+    "start": "npx angular-build-info && ng serve --host=0.0.0.0",
+    "test": "ng test",
+    "watch": "ng build --watch --configuration development"
+  },
+  "type": "module",
+  "version": "0.0.0"
 }

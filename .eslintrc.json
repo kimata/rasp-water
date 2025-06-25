@@ -1,66 +1,97 @@
 {
-    "root": true,
-    "ignorePatterns": ["projects/**/*"],
-    "parserOptions": {
-        "ecmaVersion": 2020
+  "ignorePatterns": [
+    "projects/**/*"
+  ],
+  "overrides": [
+    {
+      "extends": [
+        "plugin:@angular-eslint/template/process-inline-templates"
+      ],
+      "files": [
+        "*.ts"
+      ],
+      "parserOptions": {
+        "createDefaultProgram": true,
+        "project": [
+          "tsconfig.json",
+          "e2e/tsconfig.json"
+        ]
+      },
+      "rules": {
+        "@typescript-eslint/consistent-type-definitions": "error",
+        "@typescript-eslint/dot-notation": "off",
+        "@typescript-eslint/explicit-member-accessibility": [
+          "off",
+          {
+            "accessibility": "explicit"
+          }
+        ],
+        "@typescript-eslint/naming-convention": [
+          "error",
+          {
+            "format": [
+              "camelCase"
+            ],
+            "leadingUnderscore": "allow",
+            "selector": "default",
+            "trailingUnderscore": "allow"
+          },
+          {
+            "format": [
+              "UPPER_CASE"
+            ],
+            "modifiers": [
+              "readonly"
+            ],
+            "selector": "classProperty"
+          },
+          {
+            "format": [
+              "UPPER_CASE"
+            ],
+            "modifiers": [
+              "readonly"
+            ],
+            "selector": "parameterProperty"
+          },
+          {
+            "format": [
+              "camelCase",
+              "UPPER_CASE"
+            ],
+            "leadingUnderscore": "allow",
+            "selector": "variable",
+            "trailingUnderscore": "allow"
+          },
+          {
+            "format": [
+              "PascalCase"
+            ],
+            "selector": "typeLike"
+          }
+        ],
+        "@typescript-eslint/no-use-before-define": "error",
+        "brace-style": [
+          "error",
+          "1tbs"
+        ],
+        "id-blacklist": "off",
+        "id-match": "off",
+        "no-underscore-dangle": "off"
+      }
     },
-    "overrides": [
-        {
-            "files": ["*.ts"],
-            "parserOptions": {
-                "project": ["tsconfig.json", "e2e/tsconfig.json"],
-                "createDefaultProgram": true
-            },
-            "extends": ["plugin:@angular-eslint/template/process-inline-templates"],
-            "rules": {
-                "@typescript-eslint/naming-convention": [
-                    "error",
-                    {
-                        "selector": "default",
-                        "format": ["camelCase"],
-                        "leadingUnderscore": "allow",
-                        "trailingUnderscore": "allow"
-                    },
-                    {
-                        "selector": "classProperty",
-                        "modifiers": ["readonly"],
-                        "format": ["UPPER_CASE"]
-                    },
-                    {
-                        "selector": "parameterProperty",
-                        "modifiers": ["readonly"],
-                        "format": ["UPPER_CASE"]
-                    },
-                    {
-                        "selector": "variable",
-                        "format": ["camelCase", "UPPER_CASE"],
-                        "leadingUnderscore": "allow",
-                        "trailingUnderscore": "allow"
-                    },
-                    {
-                        "selector": "typeLike",
-                        "format": ["PascalCase"]
-                    }
-                ],
-                "@typescript-eslint/consistent-type-definitions": "error",
-                "@typescript-eslint/dot-notation": "off",
-                "@typescript-eslint/explicit-member-accessibility": [
-                    "off",
-                    {
-                        "accessibility": "explicit"
-                    }
-                ],
-                "@typescript-eslint/no-use-before-define": "error",
-                "brace-style": ["error", "1tbs"],
-                "id-blacklist": "off",
-                "id-match": "off",
-                "no-underscore-dangle": "off"
-            }
-        },
-        {
-            "files": ["*.html"],
-            "extends": ["plugin:@angular-eslint/template/recommended"],
-            "rules": {}
-        }
-    ]
+    {
+      "extends": [
+        "plugin:@angular-eslint/template/recommended"
+      ],
+      "files": [
+        "*.html"
+      ],
+      "rules": {}
+    }
+  ],
+  "parserOptions": {
+    "ecmaVersion": 2020
+  },
+  "root": true
 }

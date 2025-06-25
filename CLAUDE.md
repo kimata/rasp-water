@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This is a Raspberry Pi automated watering system ("rasp-water") with the following architecture:
 
-- **Frontend**: Angular 19 application (TypeScript/SCSS) in `src/` 
+- **Frontend**: Angular 19 application (TypeScript/SCSS) in `src/`
 - **Backend**: Flask application in `flask/src/` (Python)
 - **Hardware Control**: Uses rpi-lgpio to control GPIO pins for electromagnetic valves
 - **Data Storage**: SQLite database for logging and scheduling
@@ -16,7 +16,7 @@ This is a Raspberry Pi automated watering system ("rasp-water") with the followi
 
 ### Frontend (Angular)
 - Main components: `valve-control`, `scheduler-control`, `log`, `header`, `footer`, `toast`
-- Services: `push.service`, `toast.service` for notifications  
+- Services: `push.service`, `toast.service` for notifications
 - Built with Bootstrap 5 and ng-bootstrap for UI
 - Uses tempus-dominus for date/time picking and FontAwesome icons
 
@@ -40,7 +40,7 @@ npm ci
 # Development server (accessible on all interfaces)
 npm start
 
-# Build for production 
+# Build for production
 npm run build
 
 # Run tests
@@ -59,7 +59,7 @@ npx eslint 'src/**/*.{ts,tsx}'
 rye sync
 rye run python flask/src/app.py
 
-# Using pip (alternative)  
+# Using pip (alternative)
 pip install -r requirements.lock
 python flask/src/app.py
 
@@ -96,7 +96,7 @@ docker compose run --build --rm --publish 5000:5000 rasp-water
 ## Configuration
 
 - Copy `config.example.yaml` to `config.yaml` and customize
-- Flask app runs on port 5000 by default  
+- Flask app runs on port 5000 by default
 - Angular build outputs to `dist/rasp-water/browser/` with base href `/rasp-water/`
 - Configuration includes GPIO pin settings, sensor calibration, weather API keys
 - Supports InfluxDB, Slack, and weather service integrations
@@ -113,6 +113,6 @@ docker compose run --build --rm --publish 5000:5000 rasp-water
 
 - `flask/src/app.py` - Flask application factory with blueprint registration
 - `src/app/app.component.ts` - Angular root component
-- `config.yaml` - Runtime configuration for hardware, APIs, and integrations  
+- `config.yaml` - Runtime configuration for hardware, APIs, and integrations
 - `compose.yaml` - Docker deployment with hardware device access
 - `pyproject.toml` - Python dependency management and test configuration

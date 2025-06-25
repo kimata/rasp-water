@@ -1,5 +1,5 @@
 name: Regression
-on:
+"on":
     push:
 
 permissions:
@@ -23,17 +23,17 @@ jobs:
             - name: Use Node.js ${{ matrix.node-version }}
               uses: actions/setup-node@v4
               with:
-                node-version: ${{ matrix.node-version }}
+                  node-version: ${{ matrix.node-version }}
 
             - name: Cache node modules
               id: cache-node-modules
               uses: actions/cache@v4
               env:
-                cache-name: cache-node-modules
+                  cache-name: cache-node-modules
               with:
-                path: node_modules
-                key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
-                restore-keys: |
+                  path: node_modules
+                  key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
+                  restore-keys: |
                     ${{ runner.os }}-build-${{ env.cache-name }}-
                     ${{ runner.os }}-build-
                     ${{ runner.os }}-
@@ -50,8 +50,8 @@ jobs:
             - name: Upload built file
               uses: actions/upload-artifact@v4
               with:
-                name: angular-built
-                path: dist
+                  name: angular-built
+                  path: dist
 
     test:
         needs: build
@@ -70,13 +70,13 @@ jobs:
             - name: Set up Python ${{ matrix.python-version }}
               uses: actions/setup-python@v5
               with:
-                python-version: ${{ matrix.python-version }}
+                  python-version: ${{ matrix.python-version }}
 
             - name: Download react built files
               uses: actions/download-artifact@v4
               with:
-                name: angular-built
-                path: dist
+                  name: angular-built
+                  path: dist
 
             - name: Set locale
               run: |
@@ -90,11 +90,11 @@ jobs:
               id: cache-python-modules
               uses: actions/cache@v4
               env:
-                cache-name: cache-python-modules
+                  cache-name: cache-python-modules
               with:
-                path: $HOME/.cache
-                key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('pyproject.toml') }}
-                restore-keys: |
+                  path: $HOME/.cache
+                  key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('pyproject.toml') }}
+                  restore-keys: |
                     ${{ runner.os }}-build-${{ env.cache-name }}-
                     ${{ runner.os }}-build-
                     ${{ runner.os }}-
@@ -110,21 +110,21 @@ jobs:
               uses: dorny/test-reporter@v1
               if: success() || failure()
               with:
-                name: test results
-                path: tests/evidence/junit.xml
-                reporter: java-junit
+                  name: test results
+                  path: tests/evidence/junit.xml
+                  reporter: java-junit
 
             - name: Upload coverage file
               uses: actions/upload-artifact@v4
               if: always()
               with:
-                name: pytest
-                path: tests/evidence
+                  name: pytest
+                  path: tests/evidence
 
             - name: Upload artifact
               uses: actions/upload-pages-artifact@v3
               with:
-                path: tests/evidence
+                  path: tests/evidence
 
     deploy:
         environment:
