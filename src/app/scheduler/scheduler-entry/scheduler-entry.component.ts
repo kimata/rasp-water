@@ -58,7 +58,7 @@ export class SchedulerEntryComponent implements OnInit {
     changeWday(event: Event, i: number) {
         const wday = [...this.state['wday']];
         wday[i] = !wday[i];
-        if (wday.filter((x: Boolean) => x).length == 0) {
+        if (wday.filter((x: boolean) => x).length == 0) {
             this.control.toast.show_info('いずれかの曜日を選択する必要があります。', {
                 title: '通知',
             });

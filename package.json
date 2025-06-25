@@ -7,7 +7,8 @@
     "start": "npx angular-build-info && ng serve --host=0.0.0.0",
     "build": "npx angular-build-info && ng build --base-href /rasp-water/",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "prepare": "husky"
   },
   "private": true,
   "dependencies": {
@@ -44,13 +45,20 @@
     "angular-build-info": "^2.0.1",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.20",
+    "husky": "^9.1.7",
     "jasmine-core": "~5.7.0",
     "karma": "~6.4.4",
     "karma-chrome-launcher": "~3.2.0",
     "karma-coverage": "~2.2.1",
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.1.0",
+    "lint-staged": "^16.1.2",
     "typescript": "~5.8",
     "typescript-eslint": "^8.31.0"
+  },
+  "lint-staged": {
+    "src/**/*.{ts,tsx}": [
+      "npx eslint --fix"
+    ]
   }
 }

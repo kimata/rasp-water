@@ -12,20 +12,18 @@ export class PushService {
     private eventSource: any = null;
 
     constructor(@Inject('ApiEndpoint') private readonly API_URL: string) {
-        const self = this;
         this.connect();
     }
 
     private connect() {
-        const self = this;
         this.eventSource = new EventSource(`${this.API_URL}/event`);
-        this.eventSource.addEventListener('message', function (e: MessageEvent) {
-            self.notify(e.data);
+        this.eventSource.addEventListener('message', (e: MessageEvent) => {
+            this.notify(e.data);
         });
-        this.eventSource.onerror = function () {
-            if (self.eventSource.readyState == 2) {
-                self.eventSource.close();
-                setTimeout(self.connect, 10000);
+        this.eventSource.onerror = () => {
+            if (this.eventSource.readyState == 2) {
+                this.eventSource.close();
+                setTimeout(() => this.connect(), 10000);
             }
         };
     }

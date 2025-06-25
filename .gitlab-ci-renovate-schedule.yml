@@ -1,0 +1,32 @@
+# Renovate専用のスケジュールパイプライン設定例
+# GitLabのCI/CD設定でこのファイルを含めて使用
+
+renovate-scheduled:
+    stage: renovate
+    image:
+        name: renovatebot/renovate:38-full
+        entrypoint: [""]
+    
+    variables:
+        LOG_LEVEL: debug
+        RENOVATE_CONFIG_FILE: renovate.json
+        # Renovateのキャッシュを有効化
+        RENOVATE_REPOSITORY_CACHE: enabled
+        RENOVATE_REPOSITORY_CACHE_TYPE: s3
+        
+    script:
+        - export RENOVATE_TOKEN="${CI_JOB_TOKEN}"
+        - renovate --platform gitlab --endpoint ${CI_SERVER_URL}/api/v4 ${CI_PROJECT_PATH}
+    
+    # より詳細なルール設定
+    rules:
+        - if: '$CI_PIPELINE_SOURCE == "schedule" && $SCHEDULE_TYPE == "renovate"'
+        - if: '$CI_PIPELINE_SOURCE == "web" && $RUN_RENOVATE == "true"'
+          when: manual
+    
+    # Renovate専用のキャッシュ
+    cache:
+        key: renovate-${CI_COMMIT_REF_SLUG}
+        paths:
+            - .cache/renovate
+        policy: pull-push
