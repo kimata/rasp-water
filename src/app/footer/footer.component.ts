@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, VERSION } from '@angular/core';
 import { Inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import build from '../../build';
@@ -30,6 +30,7 @@ export class FooterComponent implements OnInit {
     imageBuildDateFrom = '';
     buildDate = dayjs(build.timestamp).format('llll');
     buildDateFrom = dayjs(build.timestamp).fromNow();
+    angularVersion = VERSION.full;
     date = '';
     timezone = '';
     uptime = '';
