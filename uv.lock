@@ -1119,7 +1119,7 @@ wheels = [
 [[package]]
 name = "my-lib"
 version = "0.1.0"
-source = { git = "https://github.com/kimata/my-py-lib?rev=8d62ee7f13ee0c744a8a451a7ee9abf21339b1aa#8d62ee7f13ee0c744a8a451a7ee9abf21339b1aa" }
+source = { git = "https://github.com/kimata/my-py-lib?rev=6616dab9764fdc76819c32e195ab4b596f292bf8#6616dab9764fdc76819c32e195ab4b596f292bf8" }
 dependencies = [
     { name = "coloredlogs" },
     { name = "docopt-ng" },
@@ -1692,29 +1692,29 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "docopt-ng", specifier = ">=0.9.0" },
-    { name = "flask", specifier = ">=3.0.3" },
-    { name = "flask-cors", specifier = ">=4.0.1" },
+    { name = "flask", specifier = ">=3.1.0" },
+    { name = "flask-cors", specifier = ">=5.0.0" },
     { name = "fluent-logger", specifier = ">=0.11.1" },
-    { name = "influxdb-client", extras = ["ciso"], specifier = ">=1.44.0" },
-    { name = "my-lib", git = "https://github.com/kimata/my-py-lib?rev=8d62ee7f13ee0c744a8a451a7ee9abf21339b1aa" },
+    { name = "influxdb-client", extras = ["ciso"], specifier = ">=1.47.0" },
+    { name = "my-lib", git = "https://github.com/kimata/my-py-lib?rev=6616dab9764fdc76819c32e195ab4b596f292bf8" },
     { name = "rpi-lgpio", specifier = ">=0.6" },
-    { name = "schedule", specifier = "==1.2.2" },
-    { name = "slack-sdk", specifier = ">=3.31.0" },
+    { name = "schedule", specifier = ">=1.2.2" },
+    { name = "slack-sdk", specifier = ">=3.35.0" },
 ]
 
 [package.metadata.requires-dev]
 dev = [
     { name = "flaky", specifier = ">=3.8.1" },
-    { name = "playwright", specifier = ">=1.45.1" },
-    { name = "pre-commit", specifier = ">=4.2.0" },
-    { name = "pytest", specifier = ">=8.3.2" },
-    { name = "pytest-cov", specifier = ">=5.0.0" },
+    { name = "playwright", specifier = ">=1.49.0" },
+    { name = "pre-commit", specifier = ">=4.0.1" },
+    { name = "pytest", specifier = ">=8.3.4" },
+    { name = "pytest-cov", specifier = ">=6.0.0" },
     { name = "pytest-html", specifier = ">=4.1.1" },
     { name = "pytest-mock", specifier = ">=3.14.0" },
-    { name = "pytest-playwright", specifier = ">=0.5.1" },
-    { name = "pytest-timeout", specifier = ">=2.4.0" },
+    { name = "pytest-playwright", specifier = ">=0.6.2" },
+    { name = "pytest-timeout", specifier = ">=2.3" },
     { name = "pytest-xdist", specifier = ">=3.6.1" },
-    { name = "time-machine", specifier = ">=2.15.0" },
+    { name = "time-machine", specifier = ">=2.16.0" },
 ]
 
 [[package]]
