@@ -9,15 +9,15 @@ readme = "README.md"
 requires-python = ">= 3.10"
 
 dependencies = [
-    "docopt-ng>=0.10.0",
+    "docopt-ng>=0.9.0",
     "flask-cors>=5.0.0",
     "flask>=3.1.0",
-    "fluent-logger>=0.12.0",
+    "fluent-logger>=0.11.1",
     "influxdb-client[ciso]>=1.47.0",
     "slack-sdk>=3.35.0",
-    "rpi-lgpio>=0.7",
+    "rpi-lgpio>=0.6",
     "schedule>=1.2.2",
-    "my-lib @ git+https://github.com/kimata/my-py-lib@c32e04623cb2b3be3352152ac9951114f9c4b391",
+    "my-lib @ git+https://github.com/kimata/my-py-lib@6616dab9764fdc76819c32e195ab4b596f292bf8",
 ]
 
 [dependency-groups]

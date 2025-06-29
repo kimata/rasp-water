@@ -11,7 +11,8 @@ import my_lib.footprint
 import my_lib.serializer
 import my_lib.webapp.config
 import my_lib.webapp.log
-import rasp_water.webapp_valve
+import rasp_water.api.valve
+import rasp_water.api.test.time
 import schedule
 
 RETRY_COUNT = 3
@@ -34,6 +35,11 @@ def get_scheduler():
     return _scheduler_instances[worker_id]
 
 
+def get_current_time():
+    """モック時刻を考慮した現在時刻を取得"""
+    return rasp_water.api.test.time.get_mock_time()
+
+
 def init():
     global schedule_lock  # noqa: PLW0603
     global should_terminate
@@ -51,7 +57,7 @@ def term():
 def valve_auto_control_impl(config, period):
     try:
         # NOTE: Web 経由だと認証つけた場合に困るので、直接関数を呼ぶ
-        rasp_water.webapp_valve.set_valve_state(config, 1, period * 60, True, "scheduler")
+        rasp_water.api.valve.set_valve_state(config, 1, period * 60, True, "scheduler")
         return True
 
         # logging.debug("Request scheduled execution to {url}".format(url=url))
@@ -147,6 +153,9 @@ def schedule_load():
 def set_schedule(config, schedule_data):  # noqa: C901
     scheduler = get_scheduler()
     scheduler.clear()
+    
+    # DUMMY_MODEでは、スケジュールライブラリのモッキングはしない
+    # 代わりに、テスト用APIでモックした時刻を利用
 
     for entry in schedule_data:
         if not entry["is_active"]:
@@ -191,7 +200,7 @@ def set_schedule(config, schedule_data):  # noqa: C901
 
         logging.info(
             "Now is %s, time to next jobs is %d hour(s) %d minute(s) %d second(s)",
-            my_lib.time.now().strftime("%Y-%m-%d %H:%M"),
+            get_current_time().strftime("%Y-%m-%d %H:%M"),
             hours,
             minutes,
             seconds,

@@ -13,9 +13,7 @@ variables:
 
 stages:
     - generate-tag
-    - build-webapp
-    - build-image
-    - pre-test
+    - build
     - test
     - tag-latest
     - deploy
@@ -31,7 +29,7 @@ generate-tag:
         expire_in: 1 hour
 
 build-angular:
-    stage: build-webapp
+    stage: build
 
     needs: []
 
@@ -49,7 +47,7 @@ build-angular:
             - node_modules/
 
 build-image:
-    stage: build-image
+    stage: build
 
     needs:
         - generate-tag
@@ -78,7 +76,7 @@ build-image:
             --tag ${CI_REGISTRY_IMAGE}:${TAG} --push .
 
 test-prepare:
-    stage: pre-test
+    stage: build
 
     needs: []
 

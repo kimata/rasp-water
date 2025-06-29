@@ -8,6 +8,7 @@ import random
 import time
 
 import flaky
+import my_lib.time
 import my_lib.webapp.config
 import pytest
 import requests
@@ -102,6 +103,36 @@ def app_url(server, port):
     return APP_URL_TMPL.format(host=server, port=port)
 
 
+def set_mock_time(host, port, target_time):
+    """テスト用APIを使用してモック時刻を設定"""
+    api_url = APP_URL_TMPL.format(host=host, port=port) + f"api/test/time/set/{target_time.isoformat()}"
+    try:
+        response = requests.post(api_url, timeout=5)
+        return response.status_code == 200
+    except requests.RequestException:
+        return False
+
+
+def advance_mock_time(host, port, seconds):
+    """テスト用APIを使用してモック時刻を進める"""
+    api_url = APP_URL_TMPL.format(host=host, port=port) + f"api/test/time/advance/{seconds}"
+    try:
+        response = requests.post(api_url, timeout=5)
+        return response.status_code == 200
+    except requests.RequestException:
+        return False
+
+
+def reset_mock_time(host, port):
+    """テスト用APIを使用してモック時刻をリセット"""
+    api_url = APP_URL_TMPL.format(host=host, port=port) + "api/test/time/reset"
+    try:
+        response = requests.post(api_url, timeout=5)
+        return response.status_code == 200
+    except requests.RequestException:
+        return False
+
+
 ######################################################################
 def test_time():
     import schedule
@@ -145,7 +176,15 @@ def test_valve(page, host, port):
     page.locator('//input[@id="valveSwitch"]').evaluate("node => node.click()")
 
     check_log(page, "水やりを開始します")
-    check_log(page, "水やりを行いました", period * 60 + 10)
+    
+    # APIで時刻を進めて散水期間をスキップ
+    advance_mock_time(host, port, period * 60)
+    time.sleep(2)  # 散水処理の完了を待つ
+    
+    check_log(page, "水やりを行いました", 5)
+    
+    # テスト終了時にモック時刻をリセット
+    reset_mock_time(host, port)
 
 
 @flaky.flaky(max_runs=3, min_passes=1)
@@ -190,8 +229,10 @@ def test_schedule(page, host, port):
 def test_schedule_run(page, host, port):
     clear_log(page, host, port)
 
-    # NOTE: 次の「分」で実行させるにあたって、秒数を調整する
-    time.sleep((90 - my_lib.time.now().second) % 60)
+    # NOTE: テスト用APIで時刻を設定（秒を30に設定して次の分に実行されるようにする）
+    current_time = my_lib.time.now().replace(second=30, microsecond=0)
+    set_mock_time(host, port, current_time)
+    logging.info("Mock time set to %s", current_time)
 
     enable_checkbox = page.locator('//input[contains(@id,"schedule-entry-")]')
     enable_wday_index = [bool_random() for _ in range(14)]
@@ -222,14 +263,30 @@ def test_schedule_run(page, host, port):
 
     check_log(page, "スケジュールを更新")
 
-    check_log(page, "水やりを開始します", (SCHEDULE_AFTER_MIN * 60) + 10)
+    # APIで時刻を進めてスケジュール実行をトリガー
+    advance_mock_time(host, port, SCHEDULE_AFTER_MIN * 60)
+    time.sleep(2)  # スケジューラーの実行を待つ
+    
+    check_log(page, "水やりを開始します", 5)
 
-    check_log(page, "水やりを行いました", (PERIOD_MIN * 60) + 30)
+    # APIで時刻を進めて散水期間をスキップ
+    advance_mock_time(host, port, PERIOD_MIN * 60)
+    time.sleep(2)  # 散水処理の完了を待つ
+    
+    check_log(page, "水やりを行いました", 5)
+    
+    # テスト終了時にモック時刻をリセット
+    reset_mock_time(host, port)
 
 
 @flaky.flaky(max_runs=3, min_passes=1)
 def test_schedule_disable(page, host, port):
     clear_log(page, host, port)
+
+    # NOTE: テスト用APIで時刻を設定
+    current_time = my_lib.time.now().replace(second=30, microsecond=0)
+    set_mock_time(host, port, current_time)
+    logging.info("Mock time set for disable test")
 
     enable_checkbox = page.locator('//input[contains(@id,"schedule-entry-")]')
     enable_wday_index = [bool_random() for _ in range(14)]
@@ -263,6 +320,10 @@ def test_schedule_disable(page, host, port):
 
     check_log(page, "スケジュールを更新")
 
-    # NOET: 何も実行されていないことを確認
-    time.sleep((SCHEDULE_AFTER_MIN * 60) + 30)
+    # NOTE: 何も実行されていないことを確認
+    advance_mock_time(host, port, (SCHEDULE_AFTER_MIN * 60) + 30)
+    time.sleep(0.5)  # 短時間で確認
     check_log(page, "スケジュールを更新")
+    
+    # テスト終了時にモック時刻をリセット
+    reset_mock_time(host, port)

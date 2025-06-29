@@ -52,8 +52,9 @@ def create_app(config, dummy_mode=False):
     import my_lib.webapp.event
     import my_lib.webapp.log
     import my_lib.webapp.util
-    import rasp_water.webapp_schedule
-    import rasp_water.webapp_valve
+    import rasp_water.api.schedule
+    import rasp_water.api.valve
+    import rasp_water.api.test.time
 
     app = flask.Flask("rasp-water")
 
@@ -66,8 +67,8 @@ def create_app(config, dummy_mode=False):
         else:  # pragma: no cover
             pass
 
-        rasp_water.webapp_schedule.init(config)
-        rasp_water.webapp_valve.init(config)
+        rasp_water.api.schedule.init(config)
+        rasp_water.api.valve.init(config)
         my_lib.webapp.log.init(config)
 
         def notify_terminate():  # pragma: no cover
@@ -86,8 +87,9 @@ def create_app(config, dummy_mode=False):
 
     app.json.compat = True
 
-    app.register_blueprint(rasp_water.webapp_valve.blueprint)
-    app.register_blueprint(rasp_water.webapp_schedule.blueprint)
+    app.register_blueprint(rasp_water.api.valve.blueprint)
+    app.register_blueprint(rasp_water.api.schedule.blueprint)
+    app.register_blueprint(rasp_water.api.test.time.blueprint)
 
     app.register_blueprint(my_lib.webapp.base.blueprint)
     app.register_blueprint(my_lib.webapp.base.blueprint_default)
