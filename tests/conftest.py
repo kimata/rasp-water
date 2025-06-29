@@ -21,7 +21,7 @@ def port(request):
 def page(page):
     from playwright.sync_api import expect
 
-    timeout = 10000
+    timeout = 5000
     page.set_default_navigation_timeout(timeout)
     page.set_default_timeout(timeout)
     expect.set_options(timeout=timeout)

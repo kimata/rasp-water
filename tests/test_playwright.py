@@ -7,11 +7,11 @@ import logging
 import random
 import time
 
-import flaky
 import my_lib.time
 import my_lib.webapp.config
 import pytest
 import requests
+from flaky import flaky
 from playwright.sync_api import expect
 
 APP_URL_TMPL = "http://{host}:{port}/rasp-water/"
@@ -23,7 +23,6 @@ PERIOD_MIN = 1
 @pytest.fixture(autouse=True)
 def _page_init(page, host, port):
     wait_for_server_ready(host, port)
-
     page.on("console", lambda msg: print(msg.text))  # noqa: T201
     page.set_viewport_size({"width": 2400, "height": 1600})
 
@@ -47,7 +46,8 @@ def wait_for_server_ready(host, port):
 
 def clear_log(page, host, port):
     page.goto(app_url(host, port))
-    safe_click(page, 'button:text("クリア")')
+    page.get_by_test_id("clear").click()
+    time.sleep(1)
     check_log(page, "ログがクリアされました")
 
 
@@ -75,8 +75,6 @@ def bool_random():
     return random.random() >= 0.5
 
 
-def safe_click(page, selector):
-    page.locator(selector).click()
 
 
 def check_schedule(page, enable_schedule_index, schedule_time, enable_wday_index):
@@ -99,8 +97,8 @@ def check_schedule(page, enable_schedule_index, schedule_time, enable_wday_index
                     expect(wday_checkbox.nth(i * 7 + j)).not_to_be_checked()
 
 
-def app_url(server, port):
-    return APP_URL_TMPL.format(host=server, port=port)
+def app_url(host, port):
+    return APP_URL_TMPL.format(host=host, port=port)
 
 
 def set_mock_time(host, port, target_time):
@@ -165,7 +163,7 @@ def test_time():
     assert idle_sec < 60
 
 
-@flaky.flaky(max_runs=3, min_passes=1)
+@flaky(max_runs=3, min_passes=1)
 def test_valve(page, host, port):
     clear_log(page, host, port)
 
@@ -187,7 +185,7 @@ def test_valve(page, host, port):
     reset_mock_time(host, port)
 
 
-@flaky.flaky(max_runs=3, min_passes=1)
+@flaky(max_runs=3, min_passes=1)
 def test_schedule(page, host, port):
     clear_log(page, host, port)
 
@@ -215,7 +213,7 @@ def test_schedule(page, host, port):
         if i != enable_schedule_index:
             enable_checkbox.nth(i).evaluate("node => node.click()")
 
-    page.locator('button:text("保存")').click()
+    page.get_by_test_id("save").click()
     check_log(page, "スケジュールを更新")
 
     check_schedule(page, enable_schedule_index, schedule_time, enable_wday_index)
@@ -225,7 +223,7 @@ def test_schedule(page, host, port):
     check_schedule(page, enable_schedule_index, schedule_time, enable_wday_index)
 
 
-@flaky.flaky(max_runs=3, min_passes=1)
+@flaky(max_runs=3, min_passes=1)
 def test_schedule_run(page, host, port):
     clear_log(page, host, port)
 
@@ -259,7 +257,7 @@ def test_schedule_run(page, host, port):
         # NOTE: 散水時間は 1 分にする
         period_input.nth(i).fill(str(PERIOD_MIN))
 
-    page.locator('button:text("保存")').click()
+    page.get_by_test_id("save").click()
 
     check_log(page, "スケジュールを更新")
 
@@ -279,7 +277,7 @@ def test_schedule_run(page, host, port):
     reset_mock_time(host, port)
 
 
-@flaky.flaky(max_runs=3, min_passes=1)
+@flaky(max_runs=3, min_passes=1)
 def test_schedule_disable(page, host, port):
     clear_log(page, host, port)
 
@@ -316,7 +314,7 @@ def test_schedule_disable(page, host, port):
         # NOTE: 無効にする
         enable_checkbox.nth(i).evaluate("node => node.click()")
 
-    page.locator('button:text("保存")').click()
+    page.get_by_test_id("save").click()
 
     check_log(page, "スケジュールを更新")
 
