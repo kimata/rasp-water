@@ -1,124 +1,128 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+このファイルは Claude Code (claude.ai/code) がこのリポジトリで作業する際のガイダンスを提供します。
 
-## Project Overview
+## プロジェクト概要
 
-This is a Raspberry Pi automated watering system ("rasp-water") with the following architecture:
+これは Raspberry Pi 自動水やりシステム（"rasp-water"）で、以下のアーキテクチャを持ちます：
 
-- **Frontend**: Angular 19 application (TypeScript/SCSS) in `src/`
-- **Backend**: Flask application in `flask/src/` (Python)
-- **Hardware Control**: Uses rpi-lgpio to control GPIO pins for electromagnetic valves
-- **Data Storage**: SQLite database for logging and scheduling
-- **External Integrations**: Weather forecasting, Slack notifications, InfluxDB metrics
+- **フロントエンド**: `src/` 内の Angular 20 アプリケーション（TypeScript/SCSS）
+- **バックエンド**: `flask/src/` 内の Flask アプリケーション（Python）
+- **ハードウェア制御**: rpi-lgpio を使用して電磁弁の GPIO ピンを制御
+- **データストレージ**: ログとスケジューリング用の SQLite データベース
+- **外部連携**: 天気予報、Slack通知、InfluxDBメトリクス
 
-## Core Components
+## 主要コンポーネント
 
-### Frontend (Angular)
+### フロントエンド（Angular）
 
-- Main components: `valve-control`, `scheduler-control`, `log`, `header`, `footer`, `toast`
-- Services: `push.service`, `toast.service` for notifications
-- Built with Bootstrap 5 and ng-bootstrap for UI
-- Uses tempus-dominus for date/time picking and FontAwesome icons
+- 主要コンポーネント: `valve-control`, `scheduler-control`, `log`, `header`, `footer`, `toast`
+- サービス: 通知用の `push.service`, `toast.service`
+- UIは Bootstrap 5 と ng-bootstrap で構築
+- 日時選択に tempus-dominus、アイコンに FontAwesome を使用
 
-### Backend (Flask)
+### バックエンド（Flask）
 
-- Entry point: `flask/src/app.py` - main Flask server with blueprint registration
-- Core modules in `flask/src/rasp_water/`:
-    - `valve.py` - Electromagnetic valve control (customize {set,get}\_state methods here)
-    - `scheduler.py` - Automated watering scheduling with weather integration
-    - `weather_forecast.py` - Yahoo weather API integration for rain predictions
-    - `weather_sensor.py` - Rain sensor data collection
-    - `webapp_*.py` - Web API endpoints for valve and schedule control
-- Uses my-lib dependency for common webapp utilities, logging, and configuration
+- エントリーポイント: `flask/src/app.py` - blueprint登録を持つメインFlaskサーバー
+- `flask/src/rasp_water/` 内の主要モジュール:
+    - `valve.py` - 電磁弁制御（{set,get}\_state メソッドをここでカスタマイズ）
+    - `scheduler.py` - 天気連携付き自動水やりスケジュール
+    - `weather_forecast.py` - 雨予報用Yahoo天気API連携
+    - `weather_sensor.py` - 雨センサーデータ収集
+    - `webapp_*.py` - バルブとスケジュール制御用Web APIエンドポイント
+- 共通的なWebアプリユーティリティ、ログ、設定用のmy-lib依存関係を使用
 
-## Development Commands
+## 開発コマンド
 
-### Frontend (Angular)
+### フロントエンド（Angular）
 
 ```bash
-# Install dependencies
+# 依存関係のインストール
 npm ci
 
-# Development server (accessible on all interfaces)
+# 開発サーバー（全インターフェースでアクセス可能）
 npm start
 
-# Build for production
+# 本番ビルド
 npm run build
 
-# Run tests
+# テスト実行
 npm test
 
-# Watch mode during development
+# 開発中のウォッチモード
 npm run watch
 
-# Lint TypeScript files (manual ESLint run)
+# TypeScriptファイルのリント（手動ESLint実行）
 npx eslint 'src/**/*.{ts,tsx}'
 ```
 
-### Backend (Python)
+### バックエンド（Python）
 
 ```bash
-# Using Rye (recommended)
+# uv使用（推奨）
+uv sync
+uv run python flask/src/app.py
+
+# Rye使用（代替）
 rye sync
 rye run python flask/src/app.py
 
-# Using pip (alternative)
+# pip使用（フォールバック）
 pip install -r requirements.lock
 python flask/src/app.py
 
-# Run with debug mode
-rye run python flask/src/app.py -D
+# デバッグモードで実行
+uv run python flask/src/app.py -D
 
-# Run in dummy mode (for testing without hardware)
-rye run python flask/src/app.py -d
+# ダミーモードで実行（ハードウェアなしでのテスト）
+uv run python flask/src/app.py -d
 ```
 
-### Testing
+### テスト
 
 ```bash
-# Run Python tests with coverage
-rye run pytest
+# カバレッジ付きPythonテスト実行
+uv run pytest
 
-# Run single test file
-rye run pytest tests/test_basic.py
+# 単一テストファイル実行
+uv run pytest tests/test_basic.py
 
-# Run Playwright tests (end-to-end browser testing)
-rye run pytest tests/test_playwright.py
+# Playwrightテスト実行（エンドツーエンドブラウザテスト）
+uv run pytest tests/test_playwright.py
 
-# Tests generate HTML report at tests/evidence/index.htm
-# Coverage report at tests/evidence/coverage/
-# Playwright test recordings in tests/evidence/test_*/
+# テストはHTMLレポートを tests/evidence/index.htm に生成
+# カバレッジレポートは tests/evidence/coverage/ に生成
+# Playwrightテスト録画は tests/evidence/test_*/ に保存
 ```
 
-### Docker Deployment
+### Docker デプロイ
 
 ```bash
-# Full build and run
+# フルビルドと実行
 npm ci && npm run build
 docker compose run --build --rm --publish 5000:5000 rasp-water
 ```
 
-## Configuration
+## 設定
 
-- Copy `config.example.yaml` to `config.yaml` and customize
-- Flask app runs on port 5000 by default
-- Angular build outputs to `dist/rasp-water/browser/` with base href `/rasp-water/`
-- Configuration includes GPIO pin settings, sensor calibration, weather API keys
-- Supports InfluxDB, Slack, and weather service integrations
+- `config.example.yaml` を `config.yaml` にコピーしてカスタマイズ
+- Flask アプリはデフォルトでポート5000で動作
+- Angular ビルドは `/rasp-water/` ベースhrefで `dist/rasp-water/browser/` に出力
+- 設定にはGPIOピン設定、センサーキャリブレーション、天気APIキーが含まれる
+- InfluxDB、Slack、天気サービス連携をサポート
 
-## Hardware Integration
+## ハードウェア統合
 
-- GPIO control via rpi-lgpio library (replaces deprecated RPi.GPIO)
-- Requires `/dev/gpiomem` access and ADS1015 overlay for analog sensors
-- ADS1015 ADC for flow rate measurement via IIO interface
-- Valve control logic is in `flask/src/rasp_water/valve.py`
-- Sensor data collection handles flow rate monitoring and error detection
+- rpi-lgpio ライブラリによる GPIO 制御（非推奨の RPi.GPIO を置き換え）
+- アナログセンサー用に `/dev/gpiomem` アクセスと ADS1015 オーバーレイが必要
+- IIOインターフェース経由での流量測定用ADS1015 ADC
+- バルブ制御ロジックは `flask/src/rasp_water/valve.py` にある
+- センサーデータ収集は流量モニタリングとエラー検出を処理
 
-## Key Files to Understand
+## 理解すべき主要ファイル
 
-- `flask/src/app.py` - Flask application factory with blueprint registration
-- `src/app/app.component.ts` - Angular root component
-- `config.yaml` - Runtime configuration for hardware, APIs, and integrations
-- `compose.yaml` - Docker deployment with hardware device access
-- `pyproject.toml` - Python dependency management and test configuration
+- `flask/src/app.py` - blueprint登録を持つFlaskアプリケーションファクトリー
+- `src/app/app.component.ts` - Angular ルートコンポーネント
+- `config.yaml` - ハードウェア、API、連携用ランタイム設定
+- `compose.yaml` - ハードウェアデバイスアクセス付きDocker デプロイ
+- `pyproject.toml` - Python 依存関係管理とテスト設定
