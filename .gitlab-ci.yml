@@ -1,12 +1,5 @@
 image: registry.green-rabbit.net:5000/kimata/local_ubuntu:250615_38f4fdb9
 
-.playwright_test_matrix: &playwright_test_matrix
-    - TEST_NAME: test_time
-    - TEST_NAME: test_valve
-    - TEST_NAME: test_schedule
-    - TEST_NAME: test_schedule_run
-    - TEST_NAME: test_schedule_disable
-
 variables:
     UV_LINK_MODE: copy
     UV_PYTHON_INSTALL_DIR: ${CI_PROJECT_DIR}/.uv_python
@@ -147,9 +140,6 @@ test-playwright:
         - build-angular
         - test-prepare
 
-    parallel:
-        matrix: *playwright_test_matrix
-
     script:
         - export GIT_SSL_NO_VERIFY=1
         - git clone https://gitlab.green-rabbit.net/kimata/hems_config.git
@@ -159,8 +149,8 @@ test-playwright:
         - uv run python ./flask/src/app.py -d 2>&1 > flask_log.txt &
         - >
             uv run pytest --tracing on --output tests/evidence/playwright
-            --junit-xml=tests/evidence/playwright-${TEST_NAME}-junit.xml
-            tests/test_playwright.py::${TEST_NAME}
+            --junit-xml=tests/evidence/playwright-junit.xml
+            tests/test_playwright.py
 
     cache:
         - key:
@@ -182,7 +172,7 @@ test-playwright:
         paths:
             - tests/evidence/**
         reports:
-            junit: tests/evidence/playwright-*-junit.xml
+            junit: tests/evidence/playwright-junit.xml
 
 .test-playwright-docker-base:
     stage: test
@@ -192,21 +182,18 @@ test-playwright:
         - build-image
         - test-prepare
 
-    parallel:
-        matrix: *playwright_test_matrix
-
     variables:
         JOB_TYPE: docker
         CONFIG_ARGS: "-d"
 
     script:
         - >
-            docker ps --filter "label=test=${TEST_NAME}" --filter "label=job=test-playwright-${JOB_TYPE}" |
+            docker ps --filter "label=job=test-playwright-${JOB_TYPE}" |
             grep hours | cut -d " " -f1 | while read id; do docker stop -t 5 $id; done || true
-        - export CONTAINER_NAME="test-playwright-${JOB_TYPE}-${TEST_NAME}-${CI_JOB_ID}"
+        - export CONTAINER_NAME="test-playwright-${JOB_TYPE}-${CI_JOB_ID}"
         - >
             docker run --rm --detach=true --tty=true --name ${CONTAINER_NAME}
-            --label job=test-playwright-${JOB_TYPE} --label test=${TEST_NAME}
+            --label job=test-playwright-${JOB_TYPE}
             ${CI_REGISTRY_IMAGE}:${TAG} ./flask/src/app.py ${CONFIG_ARGS}
 
         - >
@@ -216,8 +203,8 @@ test-playwright:
         - uv run playwright install --with-deps chromium # NOTE: キャッシュを使うより速い
         - >
             uv run pytest --tracing on --output tests/evidence/playwright
-            --junit-xml=tests/evidence/playwright-${JOB_TYPE}-${TEST_NAME}-junit.xml
-            "tests/test_playwright.py::${TEST_NAME}" --host ${TARGET_IP}
+            --junit-xml=tests/evidence/playwright-junit.xml
+            "tests/test_playwright.py" --host ${TARGET_IP}
 
         - docker logs ${CONTAINER_NAME} > flask_log.txt
         - docker stop ${CONTAINER_NAME}
@@ -242,7 +229,7 @@ test-playwright:
         paths:
             - tests/evidence/**
         reports:
-            junit: tests/evidence/playwright-${JOB_TYPE}-*-junit.xml
+            junit: tests/evidence/playwright-junit.xml
 
 test-playwright-docker:
     extends: .test-playwright-docker-base
