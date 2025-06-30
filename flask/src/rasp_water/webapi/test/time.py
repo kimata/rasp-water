@@ -3,157 +3,164 @@
 import datetime
 import logging
 import os
-from unittest.mock import patch
 
 import flask
 import my_lib.time
-import rasp_water.scheduler
-
+import my_lib.webapp.config
+import time_machine
 
 blueprint = flask.Blueprint("rasp-water-test-time", __name__, url_prefix=my_lib.webapp.config.URL_PREFIX)
 
 # テスト用の時刻モック状態を保持
-_mock_time = None
-_time_patcher = None
-_schedule_patcher = None
-_datetime_patcher = None
+_traveler = None
 
 
-def is_dummy_mode():
-    """DUMMY_MODEかどうかを判定"""
-    return os.environ.get("DUMMY_MODE", "false").lower() == "true"
+@blueprint.route("/api/test/time/set/<timestamp>", methods=["POST"])
+def set_mock_time(timestamp):
+    """
+    テスト用時刻を設定するAPI
 
+    Args:
+        timestamp: Unix timestamp (秒) またはISO形式の日時文字列
 
-def get_mock_time():
-    """モック時刻を取得（DUMMY_MODEでない場合は実際の時刻）"""
-    if is_dummy_mode() and _mock_time is not None:
-        return _mock_time
-    return my_lib.time.now()
+    Returns:
+        JSON: 設定された時刻情報
 
+    """
+    global _traveler  # noqa: PLW0603
 
-@blueprint.route("/api/test/time/set/<iso_time>", methods=["POST"])
-def set_time(iso_time):
-    """テスト用: モック時刻を設定（DUMMY_MODEでのみ動作）"""
-    global _mock_time, _time_patcher, _schedule_patcher, _datetime_patcher
-    
-    if not is_dummy_mode():
-        return flask.jsonify({"error": "Only available in DUMMY_MODE"}), 400
-    
+    # DUMMY_MODE でない場合は拒否
+    if os.environ.get("DUMMY_MODE", "false") != "true":
+        return {"error": "Test API is only available in DUMMY_MODE"}, 403
+
     try:
-        # ISO形式の時刻文字列をパース
-        _mock_time = datetime.datetime.fromisoformat(iso_time.replace('Z', '+00:00'))
-        # タイムゾーンを現在のタイムゾーンに変換
-        if _mock_time.tzinfo is not None:
-            _mock_time = _mock_time.astimezone(my_lib.time.get_zoneinfo())
+        # タイムスタンプの解析
+        if timestamp.isdigit():
+            mock_datetime = datetime.datetime.fromtimestamp(int(timestamp), tz=my_lib.time.get_zoneinfo())
         else:
-            _mock_time = _mock_time.replace(tzinfo=my_lib.time.get_zoneinfo())
-        
-        # 既存のパッチャーがあれば停止
-        if _time_patcher:
-            _time_patcher.stop()
-        if _schedule_patcher:
-            _schedule_patcher.stop()
-        if _datetime_patcher:
-            _datetime_patcher.stop()
-
-        # my_lib.time.now() を全体的にモック
-        _time_patcher = patch("my_lib.time.now", return_value=_mock_time)
-        _time_patcher.start()
-
-        # スケジューラーモジュールでもパッチ
-        _schedule_patcher = patch("rasp_water.scheduler.my_lib.time.now", return_value=_mock_time)
-        _schedule_patcher.start()
-
-        # scheduleライブラリのdatetime.datetime.nowもパッチ（タイムゾーン対応）
-        def mock_datetime_now(tz=None):
-            if tz is None:
-                return _mock_time.replace(tzinfo=None)
+            # ISO形式の解析
+            mock_datetime = datetime.datetime.fromisoformat(timestamp.replace('Z', '+00:00'))
+            if mock_datetime.tzinfo is not None:
+                mock_datetime = mock_datetime.astimezone(my_lib.time.get_zoneinfo())
             else:
-                return _mock_time.astimezone(tz)
+                mock_datetime = mock_datetime.replace(tzinfo=my_lib.time.get_zoneinfo())
 
-        _datetime_patcher = patch("datetime.datetime.now", side_effect=mock_datetime_now)
-        _datetime_patcher.start()
+        # 既存のtravelerを停止
+        if _traveler:
+            _traveler.stop()
 
-        logging.info("Mock time set to: %s", _mock_time)
-        
-        return flask.jsonify({"status": "success", "mock_time": _mock_time.isoformat()}), 200
-    except ValueError as e:
-        return flask.jsonify({"error": f"Invalid time format: {e}"}), 400
+        # time_machineを使用して時刻を設定
+        _traveler = time_machine.travel(mock_datetime)
+        _traveler.start()
+
+        logging.info("Mock time set to: %s", mock_datetime)
+
+        return {
+            "success": True,
+            "mock_time": mock_datetime.isoformat(),
+            "unix_timestamp": int(mock_datetime.timestamp()),
+        }
+
+    except (ValueError, TypeError) as e:
+        return {"error": f"Invalid timestamp format: {e}"}, 400
 
 
 @blueprint.route("/api/test/time/advance/<int:seconds>", methods=["POST"])
-def advance_time(seconds):
-    """テスト用: モック時刻を指定秒数進める（DUMMY_MODEでのみ動作）"""
-    global _mock_time, _time_patcher, _schedule_patcher, _datetime_patcher
-    
-    if not is_dummy_mode():
-        return flask.jsonify({"error": "Only available in DUMMY_MODE"}), 400
-    
-    if _mock_time is None:
-        _mock_time = my_lib.time.now()
-    
-    _mock_time += datetime.timedelta(seconds=seconds)
-    
-    # パッチャーを更新
-    if _time_patcher:
-        _time_patcher.stop()
-    if _schedule_patcher:
-        _schedule_patcher.stop()
-    if _datetime_patcher:
-        _datetime_patcher.stop()
+def advance_mock_time(seconds):
+    """
+    モック時刻を指定秒数進める
 
-    _time_patcher = patch("my_lib.time.now", return_value=_mock_time)
-    _time_patcher.start()
+    Args:
+        seconds: 進める秒数
 
-    _schedule_patcher = patch("rasp_water.scheduler.my_lib.time.now", return_value=_mock_time)
-    _schedule_patcher.start()
+    Returns:
+        JSON: 更新された時刻情報
 
-    def mock_datetime_now(tz=None):
-        if tz is None:
-            return _mock_time.replace(tzinfo=None)
-        else:
-            return _mock_time.astimezone(tz)
+    """
+    global _traveler  # noqa: PLW0603
 
-    _datetime_patcher = patch("datetime.datetime.now", side_effect=mock_datetime_now)
-    _datetime_patcher.start()
+    # DUMMY_MODE でない場合は拒否
+    if os.environ.get("DUMMY_MODE", "false") != "true":
+        return {"error": "Test API is only available in DUMMY_MODE"}, 403
 
-    logging.info("Mock time advanced to: %s", _mock_time)
-    
-    return flask.jsonify({"status": "success", "mock_time": _mock_time.isoformat()}), 200
+    if _traveler is None:
+        return {"error": "Mock time not set. Use /api/test/time/set first"}, 400
+
+    # 現在の時刻を取得して、新しい時刻を計算
+    current_mock_time = my_lib.time.now()
+    new_mock_time = current_mock_time + datetime.timedelta(seconds=seconds)
+
+    # 既存のtravelerを停止
+    _traveler.stop()
+
+    # 新しい時刻でtravelerを再作成
+    _traveler = time_machine.travel(new_mock_time)
+    _traveler.start()
+
+    # スケジューラーに現在のスケジュールを再読み込みさせる
+    try:
+        import rasp_water.scheduler
+        from rasp_water.webapi.schedule import schedule_queue
+
+        current_schedule = rasp_water.scheduler.schedule_load()
+        schedule_queue.put(current_schedule)
+        logging.info("Forced scheduler reload with current schedule")
+    except Exception as e:
+        logging.warning("Failed to force scheduler reload: %s", e)
+
+    current_time = my_lib.time.now()
+    logging.info("Mock time advanced to: %s", current_time)
+
+    return {
+        "success": True,
+        "mock_time": current_time.isoformat(),
+        "unix_timestamp": int(current_time.timestamp()),
+        "advanced_seconds": seconds,
+    }
 
 
 @blueprint.route("/api/test/time/reset", methods=["POST"])
-def reset_time():
-    """テスト用: モック時刻をリセット（DUMMY_MODEでのみ動作）"""
-    global _mock_time, _time_patcher, _schedule_patcher, _datetime_patcher
-    
-    if not is_dummy_mode():
-        return flask.jsonify({"error": "Only available in DUMMY_MODE"}), 400
-    
-    if _time_patcher:
-        _time_patcher.stop()
-        _time_patcher = None
+def reset_mock_time():
+    """
+    モック時刻をリセットして実際の時刻に戻す
 
-    if _schedule_patcher:
-        _schedule_patcher.stop()
-        _schedule_patcher = None
+    Returns:
+        JSON: リセット結果
 
-    if _datetime_patcher:
-        _datetime_patcher.stop()
-        _datetime_patcher = None
+    """
+    global _traveler  # noqa: PLW0603
 
-    _mock_time = None
+    # DUMMY_MODE でない場合は拒否
+    if os.environ.get("DUMMY_MODE", "false") != "true":
+        return {"error": "Test API is only available in DUMMY_MODE"}, 403
+
+    if _traveler:
+        _traveler.stop()
+        _traveler = None
 
     logging.info("Mock time reset to real time")
-    
-    return flask.jsonify({"status": "success"}), 200
+
+    return {"success": True, "real_time": my_lib.time.now().isoformat()}
 
 
 @blueprint.route("/api/test/time/current", methods=["GET"])
 def get_current_time():
-    """テスト用: 現在のモック時刻を取得"""
-    if not is_dummy_mode():
-        return flask.jsonify({"error": "Only available in DUMMY_MODE"}), 400
-    
-    current_time = get_mock_time()
-    return flask.jsonify({"current_time": current_time.isoformat(), "is_mock": _mock_time is not None}), 200
+    """
+    現在の時刻（モック時刻または実時刻）を取得
+
+    Returns:
+        JSON: 現在時刻情報
+
+    """
+    # DUMMY_MODE でない場合は拒否
+    if os.environ.get("DUMMY_MODE", "false") != "true":
+        return {"error": "Test API is only available in DUMMY_MODE"}, 403
+
+    current_time = my_lib.time.now()
+
+    return {
+        "current_time": current_time.isoformat(),
+        "unix_timestamp": int(current_time.timestamp()),
+        "is_mocked": _traveler is not None,
+        "mock_time": current_time.isoformat() if _traveler else None,
+    }
