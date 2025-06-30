@@ -14,7 +14,6 @@ blueprint = flask.Blueprint("rasp-water-test-time", __name__, url_prefix=my_lib.
 # テスト用の時刻モック状態を保持
 _traveler = None
 
-
 @blueprint.route("/api/test/time/set/<timestamp>", methods=["POST"])
 def set_mock_time(timestamp):
     """

@@ -34,12 +34,6 @@ def get_scheduler():
 
     return _scheduler_instances[worker_id]
 
-
-def get_current_time():
-    """モック時刻を考慮した現在時刻を取得"""
-    return rasp_water.webapi.test.time.get_mock_time()
-
-
 def init():
     global schedule_lock  # noqa: PLW0603
     global should_terminate
@@ -200,7 +194,7 @@ def set_schedule(config, schedule_data):  # noqa: C901
 
         logging.info(
             "Now is %s, time to next jobs is %d hour(s) %d minute(s) %d second(s)",
-            get_current_time().strftime("%Y-%m-%d %H:%M"),
+            my_lib.time.now().strftime("%Y-%m-%d %H:%M"),
             hours,
             minutes,
             seconds,
