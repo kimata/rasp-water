@@ -185,6 +185,11 @@ def test_time():
 def test_valve(page, host, port):
     clear_log(page, host, port)
 
+    # NOTE: テスト用APIで時刻を設定
+    current_time = my_lib.time.now().replace(second=30, microsecond=0)
+    set_mock_time(host, port, current_time)
+    logging.info("Mock time set to %s", current_time)
+
     period = int(page.locator('//input[@id="momentaryPeriod"]').input_value())
 
     # NOTE: checkbox 自体は hidden にして、CSS で表示しているので、
