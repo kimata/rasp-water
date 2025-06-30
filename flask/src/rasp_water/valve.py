@@ -224,7 +224,6 @@ def control_worker(config, queue):  # noqa: PLR0912, PLR0915, C901
                         period_sec,
                         total,
                     )
-
                     queue.put(
                         {
                             "type": "total",

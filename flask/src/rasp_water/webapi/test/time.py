@@ -4,15 +4,18 @@ import datetime
 import logging
 import os
 
-import flask
 import my_lib.time
 import my_lib.webapp.config
 import time_machine
 
+import flask
+
 blueprint = flask.Blueprint("rasp-water-test-time", __name__, url_prefix=my_lib.webapp.config.URL_PREFIX)
+
 
 # テスト用の時刻モック状態を保持
 _traveler = None
+
 
 @blueprint.route("/api/test/time/set/<timestamp>", methods=["POST"])
 def set_mock_time(timestamp):
@@ -38,10 +41,8 @@ def set_mock_time(timestamp):
             mock_datetime = datetime.datetime.fromtimestamp(int(timestamp), tz=my_lib.time.get_zoneinfo())
         else:
             # ISO形式の解析
-            mock_datetime = datetime.datetime.fromisoformat(timestamp.replace('Z', '+00:00'))
-            if mock_datetime.tzinfo is not None:
-                mock_datetime = mock_datetime.astimezone(my_lib.time.get_zoneinfo())
-            else:
+            mock_datetime = datetime.datetime.fromisoformat(timestamp)
+            if mock_datetime.tzinfo is None:
                 mock_datetime = mock_datetime.replace(tzinfo=my_lib.time.get_zoneinfo())
 
         # 既存のtravelerを停止
@@ -98,10 +99,10 @@ def advance_mock_time(seconds):
 
     # スケジューラーに現在のスケジュールを再読み込みさせる
     try:
-        import rasp_water.scheduler
-        from rasp_water.webapi.schedule import schedule_queue
+        import rasp_water.control.scheduler
+        from rasp_water.control.webapi.schedule import schedule_queue
 
-        current_schedule = rasp_water.scheduler.schedule_load()
+        current_schedule = rasp_water.control.scheduler.schedule_load()
         schedule_queue.put(current_schedule)
         logging.info("Forced scheduler reload with current schedule")
     except Exception as e:
