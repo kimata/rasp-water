@@ -47,14 +47,11 @@ def wait_for_server_ready(host, port):
 def clear_log(page, host, port):
     page.goto(app_url(host, port))
     page.get_by_test_id("clear").click()
-    time.sleep(1)
     check_log(page, "ログがクリアされました")
 
 
 def check_log(page, message, timeout_sec=3):
     expect(page.locator("//app-log//div").first).to_contain_text(message, timeout=timeout_sec * 1000)
-
-    time.sleep(2)
 
     # NOTE: ログクリアする場合、ログの内容が変化しているので、ここで再取得する
     log_list = page.locator("//app-log//div")
@@ -103,6 +100,8 @@ def app_url(host, port):
 
 def set_mock_time(host, port, target_time):
     """テスト用APIを使用してモック時刻を設定"""
+    logging.info("set server time: %s", target_time)
+
     api_url = APP_URL_TMPL.format(host=host, port=port) + f"api/test/time/set/{target_time.isoformat()}"
     try:
         response = requests.post(api_url, timeout=5)
@@ -113,6 +112,8 @@ def set_mock_time(host, port, target_time):
 
 def advance_mock_time(host, port, seconds):
     """テスト用APIを使用してモック時刻を進める"""
+    logging.info("advance server time: %d sec", seconds)
+
     api_url = APP_URL_TMPL.format(host=host, port=port) + f"api/test/time/advance/{seconds}"
     try:
         response = requests.post(api_url, timeout=5)
@@ -123,12 +124,29 @@ def advance_mock_time(host, port, seconds):
 
 def reset_mock_time(host, port):
     """テスト用APIを使用してモック時刻をリセット"""
+    logging.info("reset server time")
+
     api_url = APP_URL_TMPL.format(host=host, port=port) + "api/test/time/reset"
     try:
         response = requests.post(api_url, timeout=5)
         return response.status_code == 200
     except requests.RequestException:
         return False
+
+
+def get_current_server_time(host, port):
+    """テスト用APIを使用してサーバーの現在時刻を取得"""
+    api_url = APP_URL_TMPL.format(host=host, port=port) + "api/test/time/current"
+    try:
+        response = requests.get(api_url, timeout=5)
+        if response.status_code == 200:
+            time_data = response.json()
+            current_time = datetime.datetime.fromisoformat(time_data["current_time"])
+            logging.info("server time: %s", current_time)
+            return current_time
+        return None
+    except requests.RequestException:
+        return None
 
 
 ######################################################################
@@ -177,7 +195,6 @@ def test_valve(page, host, port):
     
     # APIで時刻を進めて散水期間をスキップ
     advance_mock_time(host, port, period * 60)
-    time.sleep(2)  # 散水処理の完了を待つ
     
     check_log(page, "水やりを行いました", 5)
     
@@ -263,15 +280,13 @@ def test_schedule_run(page, host, port):
 
     # APIで時刻を進めてスケジュール実行をトリガー
     advance_mock_time(host, port, SCHEDULE_AFTER_MIN * 60)
-    time.sleep(2)  # スケジューラーの実行を待つ
     
-    check_log(page, "水やりを開始します", 5)
+    check_log(page, "水やりを開始します", 10)
 
     # APIで時刻を進めて散水期間をスキップ
     advance_mock_time(host, port, PERIOD_MIN * 60)
-    time.sleep(2)  # 散水処理の完了を待つ
     
-    check_log(page, "水やりを行いました", 5)
+    check_log(page, "水やりを行いました", 10)
     
     # テスト終了時にモック時刻をリセット
     reset_mock_time(host, port)
@@ -320,7 +335,6 @@ def test_schedule_disable(page, host, port):
 
     # NOTE: 何も実行されていないことを確認
     advance_mock_time(host, port, (SCHEDULE_AFTER_MIN * 60) + 30)
-    time.sleep(0.5)  # 短時間で確認
     check_log(page, "スケジュールを更新")
     
     # テスト終了時にモック時刻をリセット
