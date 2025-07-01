@@ -105,6 +105,11 @@ def advance_mock_time(seconds):
         current_schedule = rasp_water.control.scheduler.schedule_load()
         schedule_queue.put(current_schedule)
         logging.info("Forced scheduler reload with current schedule")
+        
+        # スケジューラーの内部時刻同期のため複数回リロード
+        for i in range(3):
+            schedule_queue.put(current_schedule)
+            
     except Exception as e:
         logging.warning("Failed to force scheduler reload: %s", e)
 

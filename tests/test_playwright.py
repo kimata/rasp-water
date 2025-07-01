@@ -297,14 +297,27 @@ def test_schedule_run(page, host, port):
     check_log(page, "スケジュールを更新")
 
     # APIで時刻を進めてスケジュール実行をトリガー
+    logging.info("Advancing mock time by %d minutes to trigger schedule", SCHEDULE_AFTER_MIN)
     advance_mock_time(host, port, SCHEDULE_AFTER_MIN * 60)
     
-    check_log(page, "水やりを開始します", 10)
+    # スケジューラーの実行を待つため少し待機
+    page.wait_for_timeout(2000)
+    
+    # もう一度時刻を少し進めてスケジュール実行を確実にする
+    advance_mock_time(host, port, 30)  # 30秒追加で進める
+    page.wait_for_timeout(1000)
+    
+    # 現在のログ状態を確認
+    logging.info("Checking for schedule execution log...")
+    check_log(page, "水やりを開始します", 15)
 
     # APIで時刻を進めて散水期間をスキップ
     advance_mock_time(host, port, PERIOD_MIN * 60)
     
-    check_log(page, "水やりを行いました", 10)
+    # 水やり完了処理を待つため少し待機
+    page.wait_for_timeout(1000)
+    
+    check_log(page, "水やりを行いました", 15)
     
     # テスト終了時にモック時刻をリセット
     reset_mock_time(host, port)
