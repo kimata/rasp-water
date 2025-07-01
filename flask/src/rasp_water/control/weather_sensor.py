@@ -16,11 +16,11 @@ import logging
 
 import my_lib.sensor_data
 import my_lib.time
-import rasp_water.scheduler
+import rasp_water.control.scheduler
 
 
 def hours_since_last_watering():
-    schedule_data = rasp_water.scheduler.schedule_load()
+    schedule_data = rasp_water.control.scheduler.schedule_load()
 
     now = my_lib.time.now()
 
@@ -91,7 +91,7 @@ if __name__ == "__main__":
     config = my_lib.config.load(config_file)
 
     my_lib.webapp.config.init(config)
-    rasp_water.scheduler.init()
+    rasp_water.control.scheduler.init()
 
     logging.info("Sum of rainfall is %.1f (%d hours)", get_rain_fall_sum(config, hours), hours)
 

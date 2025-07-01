@@ -14,9 +14,9 @@ import my_lib.footprint
 import my_lib.webapp.config
 import my_lib.webapp.event
 import my_lib.webapp.log
-import rasp_water.valve
-import rasp_water.weather_forecast
-import rasp_water.weather_sensor
+import rasp_water.control.valve
+import rasp_water.control.weather_forecast
+import rasp_water.control.weather_sensor
 
 import flask
 
@@ -39,7 +39,7 @@ def init(config):
 
     flow_stat_manager = multiprocessing.Manager()
     flow_stat_queue = flow_stat_manager.Queue()
-    rasp_water.valve.init(config, flow_stat_queue)
+    rasp_water.control.valve.init(config, flow_stat_queue)
     worker = threading.Thread(target=flow_notify_worker, args=(config, flow_stat_queue))
     worker.start()
 
@@ -56,7 +56,7 @@ def term():
     worker = None
     should_terminate.clear()
 
-    rasp_water.valve.term()
+    rasp_water.control.valve.term()
 
 
 def send_data(config, flow):
@@ -128,7 +128,7 @@ def flow_notify_worker(config, queue):
 
 def get_valve_state():
     try:
-        state = rasp_water.valve.get_control_mode()
+        state = rasp_water.control.valve.get_control_mode()
 
         return {
             "state": state["mode"].value,
@@ -145,7 +145,7 @@ def judge_execute(config, state, auto):
     if (state != 1) or (not auto):
         return True
 
-    rainfall_judge, rain_fall_sum = rasp_water.weather_sensor.get_rain_fall(config)
+    rainfall_judge, rain_fall_sum = rasp_water.control.weather_sensor.get_rain_fall(config)
     if rainfall_judge:
         # NOTE: ダミーモードの場合、とにかく水やりする (CI テストの為)
         if os.environ.get("DUMMY_MODE", "false") == "true":
@@ -156,7 +156,7 @@ def judge_execute(config, state, auto):
         )
         return False
 
-    rainfall_judge, rain_fall_sum = rasp_water.weather_forecast.get_rain_fall(config)
+    rainfall_judge, rain_fall_sum = rasp_water.control.weather_forecast.get_rain_fall(config)
 
     if rainfall_judge:
         # NOTE: ダミーモードの場合、とにかく水やりする (CI テストの為)
@@ -186,7 +186,7 @@ def set_valve_state(config, state, period, auto, host=""):
                 by=f"(by {host})" if host != "" else "",
             )
         )
-        rasp_water.valve.set_control_mode(period)
+        rasp_water.control.valve.set_control_mode(period)
     else:
         my_lib.webapp.log.info(
             "{auto}で水やりを終了します。{by}".format(
@@ -194,7 +194,7 @@ def set_valve_state(config, state, period, auto, host=""):
                 by=f"(by {host})" if host != "" else "",
             )
         )
-        rasp_water.valve.set_state(rasp_water.valve.VALVE_STATE.CLOSE)
+        rasp_water.control.valve.set_state(rasp_water.control.valve.VALVE_STATE.CLOSE)
 
     my_lib.webapp.event.notify_event(my_lib.webapp.event.EVENT_TYPE.CONTROL)
     return get_valve_state()
@@ -224,4 +224,4 @@ def api_valve_ctrl():
 def api_valve_flow():
     config = flask.current_app.config["CONFIG"]
 
-    return flask.jsonify({"cmd": "get", "flow": rasp_water.valve.get_flow(config["flow"]["offset"])["flow"]})
+    return flask.jsonify({"cmd": "get", "flow": rasp_water.control.valve.get_flow(config["flow"]["offset"])["flow"]})

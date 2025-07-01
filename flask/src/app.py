@@ -30,9 +30,9 @@ def sig_handler(num, frame):  # noqa: ARG001
     logging.warning("receive signal %d", num)
 
     if num == signal.SIGTERM:
-        import rasp_water.valve
+        import rasp_water.control.valve
 
-        rasp_water.valve.term()
+        rasp_water.control.valve.term()
 
 
 def create_app(config, dummy_mode=False):
@@ -52,9 +52,9 @@ def create_app(config, dummy_mode=False):
     import my_lib.webapp.event
     import my_lib.webapp.log
     import my_lib.webapp.util
-    import rasp_water.webapi.schedule
-    import rasp_water.webapi.valve
-    import rasp_water.webapi.test.time
+    import rasp_water.control.webapi.schedule
+    import rasp_water.control.webapi.valve
+    import rasp_water.control.webapi.test.time
 
     app = flask.Flask("rasp-water")
 
@@ -67,12 +67,12 @@ def create_app(config, dummy_mode=False):
         else:  # pragma: no cover
             pass
 
-        rasp_water.webapi.schedule.init(config)
-        rasp_water.webapi.valve.init(config)
+        rasp_water.control.webapi.schedule.init(config)
+        rasp_water.control.webapi.valve.init(config)
         my_lib.webapp.log.init(config)
 
         def notify_terminate():  # pragma: no cover
-            rasp_water.valve.set_state(rasp_water.valve.VALVE_STATE.CLOSE)
+            rasp_water.control.valve.set_state(rasp_water.control.valve.VALVE_STATE.CLOSE)
             my_lib.webapp.log.info("🏃 アプリを再起動します。")
             my_lib.webapp.log.term()
 
@@ -87,9 +87,9 @@ def create_app(config, dummy_mode=False):
 
     app.json.compat = True
 
-    app.register_blueprint(rasp_water.webapi.valve.blueprint)
-    app.register_blueprint(rasp_water.webapi.schedule.blueprint)
-    app.register_blueprint(rasp_water.webapi.test.time.blueprint)
+    app.register_blueprint(rasp_water.control.webapi.valve.blueprint)
+    app.register_blueprint(rasp_water.control.webapi.schedule.blueprint)
+    app.register_blueprint(rasp_water.control.webapi.test.time.blueprint)
 
     app.register_blueprint(my_lib.webapp.base.blueprint)
     app.register_blueprint(my_lib.webapp.base.blueprint_default)
