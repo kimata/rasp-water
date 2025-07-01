@@ -1671,6 +1671,7 @@ dependencies = [
     { name = "rpi-lgpio" },
     { name = "schedule" },
     { name = "slack-sdk" },
+    { name = "time-machine" },
 ]
 
 [package.dev-dependencies]
@@ -1685,7 +1686,6 @@ dev = [
     { name = "pytest-playwright" },
     { name = "pytest-timeout" },
     { name = "pytest-xdist" },
-    { name = "time-machine" },
 ]
 
 [package.metadata]
@@ -1699,6 +1699,7 @@ requires-dist = [
     { name = "rpi-lgpio", specifier = ">=0.6" },
     { name = "schedule", specifier = ">=1.2.2" },
     { name = "slack-sdk", specifier = ">=3.35.0" },
+    { name = "time-machine", specifier = ">=2.16.0" },
 ]
 
 [package.metadata.requires-dev]
@@ -1713,7 +1714,6 @@ dev = [
     { name = "pytest-playwright", specifier = ">=0.6.2" },
     { name = "pytest-timeout", specifier = ">=2.3" },
     { name = "pytest-xdist", specifier = ">=3.6.1" },
-    { name = "time-machine", specifier = ">=2.16.0" },
 ]
 
 [[package]]
