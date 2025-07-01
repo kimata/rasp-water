@@ -148,6 +148,10 @@ def set_schedule(config, schedule_data):  # noqa: C901
     scheduler = get_scheduler()
     scheduler.clear()
     
+    # DUMMY_MODEでは、scheduleライブラリの時刻関数をmy_lib.time.now()に設定
+    if os.environ.get("DUMMY_MODE", "false") == "true":
+        scheduler._time_func = my_lib.time.now
+    
     # DUMMY_MODEでは、スケジュールライブラリのモッキングはしない
     # 代わりに、テスト用APIでモックした時刻を利用
 
@@ -224,6 +228,18 @@ def schedule_worker(config, queue):
                 schedule_data = queue.get()
                 set_schedule(config, schedule_data)
 
+            # デバッグ: スケジューラーの実行前に時刻とジョブ状態をログ出力
+            current_time = my_lib.time.now()
+            pending_jobs = len(scheduler.jobs)
+            if pending_jobs > 0:
+                next_run = scheduler.next_run
+                logging.debug("Scheduler check - Current time (my_lib): %s, System time: %s, Pending jobs: %d, Next run: %s", 
+                            current_time, datetime.datetime.now(), pending_jobs, next_run)
+            
+            # DUMMY_MODEでは、scheduleライブラリの内部時刻をmy_lib.time.now()に強制同期
+            if os.environ.get("DUMMY_MODE", "false") == "true":
+                scheduler._time_func = my_lib.time.now
+            
             scheduler.run_pending()
             logging.debug("Sleep %.1f sec...", sleep_sec)
             time.sleep(sleep_sec)

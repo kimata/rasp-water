@@ -265,7 +265,8 @@ def test_schedule_run(page, host, port):
     
     # スケジュール実行時刻を計算（モック時刻基準）
     schedule_time = (current_time + datetime.timedelta(minutes=SCHEDULE_AFTER_MIN)).strftime("%H:%M")
-    logging.info("Schedule time calculated: %s", schedule_time)
+    schedule_datetime = current_time + datetime.timedelta(minutes=SCHEDULE_AFTER_MIN)
+    logging.info("Schedule time calculated: %s (full datetime: %s)", schedule_time, schedule_datetime)
 
     enable_checkbox = page.locator('//input[contains(@id,"schedule-entry-")]')
     enable_wday_index = [bool_random() for _ in range(14)]
@@ -296,15 +297,32 @@ def test_schedule_run(page, host, port):
 
     check_log(page, "スケジュールを更新")
 
+    # 現在の時刻を確認
+    response = requests.get(f"http://{host}:{port}/rasp-water/api/test/time/current")
+    current_mock_time = response.json()["current_time"]
+    logging.info("Current mock time before advancing: %s", current_mock_time)
+    
     # APIで時刻を進めてスケジュール実行をトリガー
-    logging.info("Advancing mock time by %d minutes to trigger schedule", SCHEDULE_AFTER_MIN)
+    target_time = schedule_datetime
+    logging.info("Advancing mock time to trigger schedule at: %s", target_time)
     advance_mock_time(host, port, SCHEDULE_AFTER_MIN * 60)
+    
+    # 時刻進行後の確認
+    response = requests.get(f"http://{host}:{port}/rasp-water/api/test/time/current")
+    advanced_time = response.json()["current_time"]
+    logging.info("Mock time after advancing: %s", advanced_time)
     
     # スケジューラーの実行を待つため少し待機
     page.wait_for_timeout(2000)
     
     # もう一度時刻を少し進めてスケジュール実行を確実にする
     advance_mock_time(host, port, 30)  # 30秒追加で進める
+    
+    # 最終時刻確認
+    response = requests.get(f"http://{host}:{port}/rasp-water/api/test/time/current")
+    final_time = response.json()["current_time"]
+    logging.info("Final mock time: %s", final_time)
+    
     page.wait_for_timeout(1000)
     
     # 現在のログ状態を確認
