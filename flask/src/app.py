@@ -23,6 +23,18 @@ import flask
 
 SCHEMA_CONFIG = "config.schema"
 
+def term():
+    import rasp_water.control.scheduler
+
+    rasp_water.control.scheduler.term()
+
+    # 子プロセスを終了
+    my_lib.proc_util.kill_child()
+
+    # プロセス終了
+    logging.info("Graceful shutdown completed")
+    os._exit(0)
+
 
 def sig_handler(num, frame):  # noqa: ARG001
     global should_terminate
@@ -30,9 +42,7 @@ def sig_handler(num, frame):  # noqa: ARG001
     logging.warning("receive signal %d", num)
 
     if num == signal.SIGTERM:
-        import rasp_water.control.valve
-
-        rasp_water.control.valve.term()
+        term()
 
 
 def create_app(config, dummy_mode=False):
@@ -124,5 +134,12 @@ if __name__ == "__main__":
 
     signal.signal(signal.SIGTERM, sig_handler)
 
-    # NOTE: スクリプトの自動リロード停止したい場合は use_reloader=False にする
-    app.run(host="0.0.0.0", port=port, threaded=True, use_reloader=True, debug=debug_mode)  # noqa: S104
+    # Flaskアプリケーションを実行
+    try:
+        # NOTE: スクリプトの自動リロード停止したい場合は use_reloader=False にする
+        app.run(host="0.0.0.0", port=port, threaded=True, use_reloader=True, debug=debug_mode)  # noqa: S104
+    except KeyboardInterrupt:
+        logging.info("Received KeyboardInterrupt, shutting down...")
+        sig_handler(signal.SIGINT, None)
+    finally:
+        term()
