@@ -40,7 +40,7 @@ export class FooterComponent implements OnInit {
 
     constructor(
         private http: HttpClient,
-        @Inject('ApiEndpoint') private readonly API_URL: string,
+        @Inject('ApiEndpoint') public readonly API_URL: string,
     ) {}
 
     ngOnInit() {
