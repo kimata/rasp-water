@@ -16,6 +16,7 @@ dependencies = [
     "influxdb-client[ciso]>=1.47.0",
     "slack-sdk>=3.35.0",
     "rpi-lgpio>=0.6",
+    "pillow>=10.0.0",
     "schedule>=1.2.2",
     "my-lib @ git+https://github.com/kimata/my-py-lib@3bad8d09c509d25443f54b76d236a616afb6bbeb",
     "time-machine>=2.16.0",
