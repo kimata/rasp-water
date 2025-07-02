@@ -65,6 +65,9 @@ weather:
                 # NOTE: 前回水やりしてから 10mm 以上の降雨があったら、見合わせる
                 sum: 10
 
+metrics:
+  data: flask/data/metrics.db
+                
 slack:
     bot_token: xoxb-XXXXXXXXXXXX-XXXXXXXXXXXXX-XXXXXXXXXXXXXXXXXXXXXXXX
 

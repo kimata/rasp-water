@@ -108,11 +108,23 @@
                 },
                 "offset": {
                     "type": "number"
+                },
+                "threshold": {
+                    "type": "object",
+                    "properties": {
+                        "error": {
+                            "type": "integer"
+                        }
+                    },
+                    "required": [
+                        "error"
+                    ]
                 }
             },
             "required": [
                 "offset",
-                "sensor"
+                "sensor",
+                "threshold"
             ]
         },
         "fluent": {
@@ -260,6 +272,17 @@
                 "rain_fall"
             ]
         },
+        "metrics": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "data"
+            ]
+        },
         "slack": {
             "type": "object",
             "properties": {
@@ -337,6 +360,7 @@
         "fluent",
         "influxdb",
         "liveness",
+        "metrics",
         "slack",
         "weather",
         "webapp"

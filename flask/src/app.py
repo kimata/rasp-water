@@ -21,6 +21,16 @@ import flask_cors
 
 import flask
 
+import my_lib.webapp.base
+import my_lib.webapp.event
+import my_lib.webapp.log
+import my_lib.webapp.util
+import rasp_water.control.webapi.schedule
+import rasp_water.control.webapi.valve
+import rasp_water.control.webapi.test.time
+import rasp_water.metrics.webapi.page
+
+
 SCHEMA_CONFIG = "config.schema"
 
 def term():
@@ -58,14 +68,6 @@ def create_app(config, dummy_mode=False):
     my_lib.webapp.config.URL_PREFIX = "/rasp-water"
     my_lib.webapp.config.init(config)
 
-    import my_lib.webapp.base
-    import my_lib.webapp.event
-    import my_lib.webapp.log
-    import my_lib.webapp.util
-    import rasp_water.control.webapi.schedule
-    import rasp_water.control.webapi.valve
-    import rasp_water.control.webapi.test.time
-
     app = flask.Flask("rasp-water")
 
     # NOTE: アクセスログは無効にする
@@ -97,15 +99,18 @@ def create_app(config, dummy_mode=False):
 
     app.json.compat = True
 
-    app.register_blueprint(rasp_water.control.webapi.valve.blueprint)
-    app.register_blueprint(rasp_water.control.webapi.schedule.blueprint)
-    app.register_blueprint(rasp_water.control.webapi.test.time.blueprint)
+    app.register_blueprint(rasp_water.control.webapi.valve.blueprint, url_prefix=my_lib.webapp.config.URL_PREFIX)
+    app.register_blueprint(rasp_water.control.webapi.schedule.blueprint, url_prefix=my_lib.webapp.config.URL_PREFIX)
+    app.register_blueprint(rasp_water.metrics.webapi.page.blueprint, url_prefix=my_lib.webapp.config.URL_PREFIX)
 
-    app.register_blueprint(my_lib.webapp.base.blueprint)
+    if dummy_mode:
+        app.register_blueprint(rasp_water.control.webapi.test.time.blueprint, url_prefix=my_lib.webapp.config.URL_PREFIX)
+
     app.register_blueprint(my_lib.webapp.base.blueprint_default)
-    app.register_blueprint(my_lib.webapp.event.blueprint)
-    app.register_blueprint(my_lib.webapp.log.blueprint)
-    app.register_blueprint(my_lib.webapp.util.blueprint)
+    app.register_blueprint(my_lib.webapp.base.blueprint, url_prefix=my_lib.webapp.config.URL_PREFIX)
+    app.register_blueprint(my_lib.webapp.event.blueprint, url_prefix=my_lib.webapp.config.URL_PREFIX)
+    app.register_blueprint(my_lib.webapp.log.blueprint, url_prefix=my_lib.webapp.config.URL_PREFIX)
+    app.register_blueprint(my_lib.webapp.util.blueprint, url_prefix=my_lib.webapp.config.URL_PREFIX)
 
     my_lib.webapp.config.show_handler_list(app)
 
