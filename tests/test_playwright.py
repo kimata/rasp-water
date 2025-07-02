@@ -258,10 +258,11 @@ def test_schedule(page, host, port):
 def test_schedule_run(page, host, port):
     clear_log(page, host, port)
 
-    # NOTE: テスト用APIで時刻を設定（秒を30に設定して次の分に実行されるようにする）
-    current_time = my_lib.time.now().replace(second=30, microsecond=0)
+    # NOTE: テスト用APIで時刻を設定（固定時刻で確実にテストできるようにする）
+    # 12:00:55に設定して、12:01に散水するスケジュールが実行されるようにする
+    current_time = my_lib.time.now().replace(hour=12, minute=0, second=45)
     set_mock_time(host, port, current_time)
-    logging.info("Mock time set to %s", current_time)
+    get_current_server_time(host, port)
     
     # スケジュール実行時刻を計算（モック時刻基準）
     schedule_time = (current_time + datetime.timedelta(minutes=SCHEDULE_AFTER_MIN)).strftime("%H:%M")
@@ -297,35 +298,9 @@ def test_schedule_run(page, host, port):
 
     check_log(page, "スケジュールを更新")
 
-    # 現在の時刻を確認
-    response = requests.get(f"http://{host}:{port}/rasp-water/api/test/time/current")
-    current_mock_time = response.json()["current_time"]
-    logging.info("Current mock time before advancing: %s", current_mock_time)
-    
-    # APIで時刻を進めてスケジュール実行をトリガー
-    target_time = schedule_datetime
-    logging.info("Advancing mock time to trigger schedule at: %s", target_time)
-    advance_mock_time(host, port, SCHEDULE_AFTER_MIN * 60)
-    
-    # 時刻進行後の確認
-    response = requests.get(f"http://{host}:{port}/rasp-water/api/test/time/current")
-    advanced_time = response.json()["current_time"]
-    logging.info("Mock time after advancing: %s", advanced_time)
-    
-    # スケジューラーの実行を待つため少し待機
-    page.wait_for_timeout(2000)
-    
-    # もう一度時刻を少し進めてスケジュール実行を確実にする
-    advance_mock_time(host, port, 30)  # 30秒追加で進める
-    
-    # 最終時刻確認
-    response = requests.get(f"http://{host}:{port}/rasp-water/api/test/time/current")
-    final_time = response.json()["current_time"]
-    logging.info("Final mock time: %s", final_time)
-    
-    page.wait_for_timeout(1000)
-    
-    # 現在のログ状態を確認
+    time.sleep(15)
+
+       # 現在のログ状態を確認
     logging.info("Checking for schedule execution log...")
     check_log(page, "水やりを開始します", 15)
 
@@ -341,7 +316,6 @@ def test_schedule_run(page, host, port):
     reset_mock_time(host, port)
 
 
-@flaky(max_runs=3, min_passes=1)
 def test_schedule_disable(page, host, port):
     clear_log(page, host, port)
 
