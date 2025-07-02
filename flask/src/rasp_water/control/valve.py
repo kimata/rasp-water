@@ -115,6 +115,7 @@ config = None
 pin_no = GPIO_PIN_DEFAULT
 worker = None
 should_terminate = threading.Event()
+current_auto_mode = False  # 現在の水やりが自動モードかどうか
 
 
 # NOTE: STAT_PATH_VALVE_CONTROL_COMMAND の内容に基づいて、
@@ -122,7 +123,7 @@ should_terminate = threading.Event()
 # 時間を操作したテストを行うため、この関数の中では、
 # time.time() の代わりに my_lib.rpi.gpio_time() を使う。
 def control_worker(config, queue):  # noqa: PLR0912, PLR0915, C901
-    global should_terminate
+    global should_terminate, current_auto_mode
 
     sleep_sec = 0.1
 
@@ -229,6 +230,7 @@ def control_worker(config, queue):  # noqa: PLR0912, PLR0915, C901
                             "type": "total",
                             "period": period_sec,
                             "total": total,
+                            "auto": current_auto_mode,
                         }
                     )
 
@@ -375,8 +377,11 @@ def get_state():
         return VALVE_STATE.CLOSE
 
 
-def set_control_mode(open_sec):
-    logging.info("Open valve for %d sec", open_sec)
+def set_control_mode(open_sec, auto=False):
+    global current_auto_mode
+    current_auto_mode = auto
+    
+    logging.info("Open valve for %d sec (auto=%s)", open_sec, auto)
 
     set_state(VALVE_STATE.OPEN)
     my_lib.footprint.update(STAT_PATH_VALVE_CONTROL_COMMAND, my_lib.rpi.gpio_time() + open_sec)

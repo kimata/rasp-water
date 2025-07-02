@@ -107,10 +107,34 @@ def flow_notify_worker(config, queue):
                             time_str=second_str(stat["period"]), water=stat["total"]
                         )
                     )
+                    
+                    # メトリクス記録
+                    try:
+                        import rasp_water.metrics.collector
+                        operation_type = "auto" if stat.get("auto", False) else "manual"
+                        rasp_water.metrics.collector.record_watering(
+                            operation_type=operation_type,
+                            duration_seconds=stat["period"],
+                            volume_liters=stat["total"],
+                            metrics_data_path=config["metrics"]["data"]
+                        )
+                    except Exception as e:
+                        logging.warning("Failed to record watering metrics: %s", e)
                 elif stat["type"] == "instantaneous":
                     send_data(config, stat["flow"])
                 elif stat["type"] == "error":
                     my_lib.webapp.log.error(stat["message"])
+                    
+                    # エラーメトリクス記録
+                    try:
+                        import rasp_water.metrics.collector
+                        rasp_water.metrics.collector.record_error(
+                            error_type="valve_control",
+                            error_message=stat["message"],
+                            metrics_data_path=config["metrics"]["data"]
+                        )
+                    except Exception as e:
+                        logging.warning("Failed to record error metrics: %s", e)
                 else:  # pragma: no cover
                     pass
             time.sleep(sleep_sec)
@@ -186,7 +210,7 @@ def set_valve_state(config, state, period, auto, host=""):
                 by=f"(by {host})" if host != "" else "",
             )
         )
-        rasp_water.control.valve.set_control_mode(period)
+        rasp_water.control.valve.set_control_mode(period, auto)
     else:
         my_lib.webapp.log.info(
             "{auto}で水やりを終了します。{by}".format(
