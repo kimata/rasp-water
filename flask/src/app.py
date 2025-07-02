@@ -25,6 +25,7 @@ import my_lib.webapp.base
 import my_lib.webapp.event
 import my_lib.webapp.log
 import my_lib.webapp.util
+import my_lib.proc_util
 import rasp_water.control.webapi.schedule
 import rasp_water.control.webapi.valve
 import rasp_water.control.webapi.test.time
