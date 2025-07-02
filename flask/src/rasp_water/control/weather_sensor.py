@@ -63,7 +63,14 @@ def get_rain_fall_sum(config, hours):
 
 def get_rain_fall(config):
     hours = hours_since_last_watering()
-    rain_fall_sum = get_rain_fall_sum(config, hours)
+    # InfluxDBクエリエラーを避けるため、最小1時間に設定
+    hours = max(1, hours)
+    
+    try:
+        rain_fall_sum = get_rain_fall_sum(config, hours)
+    except Exception as e:
+        logging.warning("Failed to get rain fall data, assuming no rain: %s", e)
+        rain_fall_sum = 0.0
 
     logging.info("Rain fall sum since last watering: %.1f (%d hours)", rain_fall_sum, hours)
 
