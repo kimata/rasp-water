@@ -60,8 +60,10 @@ def valve_auto_control_impl(config, period):
         # )
         # logging.debug(res.text)
         # return res.status_code == 200
-    except Exception:
-        logging.exception("Failed to control valve automatically")
+    except Exception as e:
+        logging.exception("Failed to control valve automatically: %s", str(e))
+        import traceback
+        logging.error("Full traceback: %s", traceback.format_exc())
 
     return False
 
